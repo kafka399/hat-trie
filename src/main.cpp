@@ -16,18 +16,18 @@ int indexof(char ch) {
 int main() {
     hat_trie<26, indexof> ht;
 
-    ht.insert("a");
-    ht.insert("b");
+    ht.insert("the");
+    ht.insert("their");
     ht.insert("c");
-    ht.insert("d");
-    ht.insert("e");
+    ht.insert("dah");
+    ht.insert("ehh");
 
-    ht.insert("a");
-    ht.insert("b");
-    ht.insert("c");
-    ht.insert("d");
-    ht.insert("e");
-
+    cout << ht.search("the") << endl;
+    cout << ht.search("b") << endl;
+    cout << ht.search("c") << endl;
+    cout << ht.search("dah") << endl;
+    cout << ht.search("e") << endl;
+    cout << ht.search("f") << endl;
 
     return 0;
 }
