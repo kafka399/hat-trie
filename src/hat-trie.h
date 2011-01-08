@@ -7,6 +7,7 @@
 #define HAT_TRIE_H
 
 #include <bitset>
+#include <exception>
 #include <set>
 #include <string>
 #include <utility>
@@ -17,6 +18,13 @@ namespace vaszauskas {
 
 template <int AlphabetSize, int (*indexof)(char)>
 class hat_trie;
+
+// Exception class for bad index values.
+class bad_index : public exception {
+    virtual const char *what() const throw() {
+        return "Invalid index value from indexof() function.";
+    }
+};
 
 }
 
@@ -128,6 +136,7 @@ class hat_trie {
     enum { BUCKET_SIZE_THRESHOLD = 2 };
 
     void init();
+    int getindex(char ch) throw(bad_index);
     bool search(const string& s);
     bool search(const string& s, pair<void *, int> &p, size_t& pos);
     void burst(container *htc);
@@ -188,8 +197,6 @@ namespace vaszauskas {
 template <int AlphabetSize, int (*indexof)(char)>
 hat_trie<AlphabetSize, indexof>::hat_trie() {
     init();
-    assert(CONTAINER_POINTER == 0);
-    assert(NODE_POINTER == 1);
 }
 
 template <int AlphabetSize, int (*indexof)(char)>
@@ -204,6 +211,15 @@ void hat_trie<AlphabetSize, indexof>::init() {
     _size = 0;
     root = new container();
     type = CONTAINER_POINTER;
+}
+
+template <int AlphabetSize, int (*indexof)(char)>
+int hat_trie<AlphabetSize, indexof>::getindex(char ch) throw(bad_index) {
+    int result = indexof(ch);
+    if (result < 0 || result >= AlphabetSize) {
+        throw bad_index();
+    }
+    return result;
 }
 
 template <int AlphabetSize, int (*indexof)(char)>
@@ -231,14 +247,14 @@ search(const string& s, pair<void *, int>& p, size_t& pos) {
         // Traverse the trie until either @a s is used up, @a s is found in
         // the trie, or @a s is not found in the trie.
         while (pos < s.length()) {
-            int index = indexof(s[pos]);
+            int index = getindex(s[pos]);
             v = n->children[index];
             if (v) {
                 if (n->types[index] == NODE_POINTER) {
                     n = (node *)v;
-                    //cout << "followed node path" << endl;
+                    //cout << "followed node path by " << s[pos] << endl;
                 } else if (n->types[index] == CONTAINER_POINTER) {
-                    //cout << "found container pointer" << endl;
+                    //cout << "found container pointer at " << s[pos] << endl;
                     if (pos == s.length() - 1) {
                         // This node represents @a s.
                         p = pair<void *, int>(v, CONTAINER_POINTER);
@@ -246,11 +262,15 @@ search(const string& s, pair<void *, int>& p, size_t& pos) {
                         //cout << "return here" << endl;
                         return ((container *)v)->word;
                     } else {
+                        //cout << "found existing container" << endl;
                         // @a s should appear in the container represented by
                         // @a v.
                         p = pair<void *, int>(v, CONTAINER_POINTER);
-                        return ((container *)v)->word ||
-                               ((container *)v)->contains(s.substr(pos + 1));
+                        if (pos == s.length()) {
+                            return ((container *)v)->word;
+                        } else {
+                            return ((container *)v)->contains(s.substr(pos + 1));
+                        }
                     }
                 }
             } else {
@@ -270,7 +290,7 @@ search(const string& s, pair<void *, int>& p, size_t& pos) {
 
 template <int AlphabetSize, int (*indexof)(char)>
 void hat_trie<AlphabetSize, indexof>::insert(const string& s) {
-    cout << "INSERTING " << s << endl;
+    //cout << "INSERTING " << s << endl;
     if (type == CONTAINER_POINTER) {
         // Insert into the container root points to.
         container *htc = (container *)root;
@@ -296,12 +316,18 @@ void hat_trie<AlphabetSize, indexof>::insert(const string& s) {
                     // Just set the node's end of word flag to true.
                     n->types.set(AlphabetSize);
                 } else {
-                    //cout << "pos != s.length()" << endl;
+                    //cout << "pos != s.length(): " << pos << endl;
                     // A new container needs to be made to accomodate @a s.
                     container *c = new container(s[pos]);
                     c->parent = n;
-                    c->insert(s.substr(pos + 1));
-                    int index = indexof(s[pos]);
+                    if (pos + 1 == s.length()) {
+                        // The new container itself represents @a s.
+                        c->word = true;
+                    } else {
+                        // Add the remainder of @a s to the new container.
+                        c->insert(s.substr(pos + 1));
+                    }
+                    int index = getindex(s[pos]);
                     n->children[index] = c;
                     n->types[index] = CONTAINER_POINTER;
                 }
@@ -318,7 +344,6 @@ void hat_trie<AlphabetSize, indexof>::insert(const string& s) {
                     // Insert the leftover part of @a s into the container.
                     c->insert(s.substr(pos + 1));
                     if (c->size() > BUCKET_SIZE_THRESHOLD) {
-                        //cout << "burst" << endl;
                         burst(c);
                     }
                 }
@@ -333,12 +358,13 @@ hat_trie<AlphabetSize, indexof>::burst(container *htc) {
     //cout << "BURSTING " << endl;
     // Construct new node.
     node *result = new node(htc->ch);
+    result->types[AlphabetSize] = htc->word;
 
     // Make a set of containers for the data in the old container and add them
     // to the new node.
     set<string>::iterator it;
     for (it = htc->container.begin(); it != htc->container.end(); ++it) {
-        int index = indexof((*it)[0]);
+        int index = getindex((*it)[0]);
         if (result->children[index] == NULL) {
             container *insertion = new container((*it)[0]);
             insertion->word = it->length() == 1;
@@ -355,7 +381,7 @@ hat_trie<AlphabetSize, indexof>::burst(container *htc) {
     node *parent = htc->parent;
     result->parent = parent;
     if (parent) {
-        int index = indexof(htc->ch);
+        int index = getindex(htc->ch);
         parent->children[index] = result;
         parent->types[index] = NODE_POINTER;
     } else {

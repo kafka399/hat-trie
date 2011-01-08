@@ -27,8 +27,10 @@ string trim(string s) {
 }
 
 bool test(const string& s, hat_trie<26, indexof>& ht, const set<string>& st) {
-    cout << "TESTING " << s << ": ";
-    bool a = ht.search(s);
+    cout << "TESTING " << s << ": " << flush;
+    bool a;
+    try { a = ht.search(s); }
+    catch (bad_index e) { a = false; }
     bool b = st.find(s) != st.end();
     cout << a << " " << b << endl;
     return a == b;
@@ -45,8 +47,10 @@ int main() {
         reader = trim(reader);
         if (reader.length() > 0) {
             ht.insert(reader);
-            s.insert(reader);
-            //ht.print(ht.root, ht.type);
+            if (s.find(reader) == s.end()) {
+                s.insert(reader);
+                //ht.print(ht.root, ht.type);
+            }
         }
     }
     cout << "TRIE STRUCTURE:" << endl;
@@ -56,21 +60,6 @@ int main() {
         assert(test(v[i], ht, s));
     }
     test("earth.", ht, s);
-    return 0;
-
-    ht.insert("the");
-    ht.insert("their");
-    ht.insert("c");
-    ht.insert("dah");
-    ht.insert("ehh");
-
-    cout << ht.search("the") << endl;
-    cout << ht.search("b") << endl;
-    cout << ht.search("c") << endl;
-    cout << ht.search("dah") << endl;
-    cout << ht.search("e") << endl;
-    cout << ht.search("f") << endl;
-
     return 0;
 }
 
