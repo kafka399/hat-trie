@@ -72,7 +72,7 @@ class hat_trie_node {
 
   public:
     char ch;
-    void *children[AlphabetSize];     // untyped pointers to children
+    void *children[AlphabetSize];  // untyped pointers to children
     // To keep track of pointer types. The extra bit is an end-of-string flag.
     std::bitset<AlphabetSize + 1> types;
     node *parent;
@@ -84,8 +84,7 @@ namespace vaszauskas {
 
 template <int AlphabetSize, int (*indexof)(char)>
 class hat_trie {
-
-  public:
+  private:
     typedef hat_trie_node<AlphabetSize, indexof> node;
     typedef hat_trie_container<AlphabetSize, indexof> container;
 

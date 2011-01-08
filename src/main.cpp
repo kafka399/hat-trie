@@ -40,23 +40,22 @@ bool test(const string& s, hat_trie<27, indexof>& ht, const set<string>& st) {
     return a == b;
 }
 
-void print(const set<string>& s) {
-    set<string>::iterator it;
-    for (it = s.begin(); it != s.end(); ++it) {
+template <class T>
+void print(const T& t) {
+    typename T::iterator it;
+    for (it = t.begin(); it != t.end(); ++it) {
         cout << *it << endl;
     }
 }
 
 int main() {
+    std::ios_base::sync_with_stdio(false);
     array_hash ah;
     string reader = "sOTEHUSNUHTSONTHEU";
     set<string> s;
     while (cin >> reader) {
-        reader = trim(reader);
-        if (reader.length() > 0) {
-            //ah.insert(reader.c_str(), reader.length());
-            s.insert(reader);
-        }
+        ah.insert(reader.c_str(), reader.length());
+        //s.insert(reader);
     }
     //ah.print();
     //print(s);

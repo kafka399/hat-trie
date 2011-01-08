@@ -10,7 +10,6 @@ using namespace std;
 namespace vaszauskas {
 
 class array_hash {
-
   public:
     array_hash();
     ~array_hash();
@@ -18,11 +17,27 @@ class array_hash {
     void insert(const char *str, uint16_t length = 0);
     void print();
 
-  public:
+    class iterator {
+      public:
+        iterator();
+
+        iterator& operator++();
+        iterator& operator--();
+        pair<const char *, uint16_t> operator*();
+        bool operator==(const iterator& rhs);
+        bool operator!=(const iterator& rhs);
+
+      private:
+        unsigned char *data;
+        unsigned char *slot;
+    };
+
+  private:
     enum { SLOT_COUNT = 2048 };
     unsigned char **data;
 
     int hash(const char *str, uint16_t length, int seed = 23);
+    void search(const char *str, uint16_t length);
 };
 
 array_hash::array_hash() {
@@ -39,16 +54,20 @@ array_hash::~array_hash() {
     delete data;
 }
 
+void array_hash::search(const char *str, uint16_t length) {
+
+}
+
 void array_hash::insert(const char *str, uint16_t length) {
-    int slot = hash(str, length);
-    //cout << "INSERTING " << str << " INTO SLOT " << slot << endl;
+    // Find the length of @a str if necessary.
     if (length == 0) {
         length = strlen(str);
     }
+    // Find the location to write to.
+    int slot = hash(str, length);
+    unsigned char *p = data[slot];
     if (data[slot]) {
         // Append the new string to the end of this slot.
-        unsigned char *p = data[slot];
-
         // How big does the new allocation need to be?
         uint32_t size = 0;
         uint16_t w = *((uint16_t *)data[slot]);
@@ -70,54 +89,19 @@ void array_hash::insert(const char *str, uint16_t length) {
         memcpy(data[slot], p, size);
         delete [] p;
         p = data[slot] + size;
-        memcpy(p, &length, sizeof(uint16_t));
-        p += sizeof(uint16_t);
-        memcpy(p, str, length);
-        p += length;
-        length = 0;
-        memcpy(p, &length, sizeof(uint16_t));
-
-
-
-
-      //uint32_t size = *((uint32_t *)data[slot]) + length + sizeof(uint16_t);
-      //unsigned char *p = data[slot];
-      //data[slot] = new unsigned char[size];
-      //memcpy(data[slot], p, *((uint32_t *)p));
-      //delete p;
-      //p = data[slot] + size - length - sizeof(uint16_t);
-      //memcpy(data[slot], &size, sizeof(uint32_t));
-      //memcpy(p - sizeof(uint16_t), &length, sizeof(uint16_t));
-      //memcpy(p, str, length);
-      //p += length;
-      //length = 0;
-      //memcpy(p, &length, sizeof(uint16_t));
-
-      //cout << size + 2 * sizeof(uint16_t) + length << endl;
-      //for (size_t i = 0; i < size + 2 * sizeof(uint16_t) + 5; ++i) {
-      //    int8_t ch = data[slot][i];
-      //    cout << int(ch) << " ";
-      //}
-      //cout << endl;
     } else {
         // Make a new slot for this string.
-        //cout << "new slot" << endl;
         uint32_t size = length + 2 * sizeof(uint16_t);
         data[slot] = new unsigned char[size];
-        unsigned char *p = data[slot];
-        memcpy(p, &length, sizeof(uint16_t));
-        p += sizeof(uint16_t);
-        memcpy(p, str, length);
-        p += length;
-        length = 0;
-        memcpy(p, &length, sizeof(uint16_t));
-
-      //for (size_t i = 0; i < size; ++i) {
-      //    int8_t ch = data[slot][i];
-      //    cout << int(ch) << " ";
-      //}
-      //cout << endl;
+        p = data[slot];
     }
+    // Write data for @a s.
+    memcpy(p, &length, sizeof(uint16_t));
+    p += sizeof(uint16_t);
+    memcpy(p, str, length);
+    p += length;
+    length = 0;
+    memcpy(p, &length, sizeof(uint16_t));
 }
 
 void array_hash::print() {
@@ -147,6 +131,11 @@ int array_hash::hash(const char *str, uint16_t length, int seed) {
     }
     return h & (SLOT_COUNT - 1);
 }
+
+array_hash::iterator::iterator() : data(NULL), slot(NULL) {
+
+}
+
 
 }  // namespace vaszauskas
 
