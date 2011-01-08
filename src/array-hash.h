@@ -15,19 +15,18 @@ class array_hash {
     array_hash();
     ~array_hash();
 
-    void insert(const char *data, uint16_t length = 0);
+    void insert(const char *str, uint16_t length = 0);
     void print();
 
-  private:
-    enum { SLOT_COUNT = 2 };
+  public:
+    enum { SLOT_COUNT = 512 };
     unsigned char **data;
 
-    int hash(const char *data, uint16_t length, int seed = 23);
-
+    int hash(const char *str, uint16_t length, int seed = 23);
 };
 
 array_hash::array_hash() {
-    data = (unsigned char **)malloc(SLOT_COUNT);
+    data = new unsigned char *[SLOT_COUNT];
     for (int i = 0; i < SLOT_COUNT; ++i) {
         data[i] = NULL;
     }
@@ -35,23 +34,25 @@ array_hash::array_hash() {
 
 array_hash::~array_hash() {
     for (int i = 0; i < SLOT_COUNT; ++i) {
-        free(data[i]);
+        delete data[i];
     }
-    free(data);
+    delete data;
 }
 
 void array_hash::insert(const char *str, uint16_t length) {
+    int slot = hash(str, length);
+    //cout << "INSERTING " << str << " INTO SLOT " << slot << endl;
     if (length == 0) {
         length = strlen(str);
     }
-    int slot = hash(str, length);
-    //cout << "INSERTING " << str << " INTO SLOT " << slot << endl;
     if (data[slot]) {
         // Append the new string to the end of this slot.
-        //cout << "APPENDING " << str << endl;
         uint32_t size = *((uint32_t *)data[slot]) + length + sizeof(uint16_t);
-        data[slot] = (unsigned char *)realloc(data[slot], size);
-        unsigned char *p = data[slot] + size - length - sizeof(uint16_t);
+        unsigned char *p = data[slot];
+        data[slot] = new unsigned char[size];
+        memcpy(data[slot], p, *((uint32_t *)p));
+        delete p;
+        p = data[slot] + size - length - sizeof(uint16_t);
         memcpy(data[slot], &size, sizeof(uint32_t));
         memcpy(p - sizeof(uint16_t), &length, sizeof(uint16_t));
         memcpy(p, str, length);
@@ -67,7 +68,7 @@ void array_hash::insert(const char *str, uint16_t length) {
     } else {
         // Make a new slot for this string.
         uint32_t size = sizeof(uint32_t) + length + 2 * sizeof(uint16_t);
-        data[slot] = (unsigned char *)malloc(size);
+        data[slot] = new unsigned char[size];
         unsigned char *p = data[slot];
         memcpy(p, &size, sizeof(uint32_t));
         p += sizeof(uint32_t);
@@ -89,7 +90,6 @@ void array_hash::insert(const char *str, uint16_t length) {
 void array_hash::print() {
     for (int i = 0; i < SLOT_COUNT; ++i) {
         if (data[i]) {
-            //cout << "slot at " << i << endl;
             // Print out all strings in this array.
             unsigned char *p = data[i];
             p += sizeof(uint32_t);  // skip allocated size
@@ -104,15 +104,14 @@ void array_hash::print() {
                 length = *((uint16_t *)p);
             }
         } else {
-            //cout << "no slot at " << i << endl;
         }
     }
 }
 
-int array_hash::hash(const char *data, uint16_t length, int seed) {
+int array_hash::hash(const char *str, uint16_t length, int seed) {
     int h = seed;
     for (uint16_t i = 0; i < length; ++i) {
-        h = h ^ ((h << 5) + (h >> 2) + data[i]);
+        h = h ^ ((h << 5) + (h >> 2) + str[i]);
     }
     return h & (SLOT_COUNT - 1);
 }
