@@ -31,3 +31,4 @@ doc:
 #   obj/main.o: src/main.* src/matrix.*
 obj/main.o: src/main.cpp
 obj/main.o: src/hat-trie.*
+obj/main.o: src/array-hash.h

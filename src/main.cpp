@@ -3,6 +3,9 @@
 #include <string>
 #include <vector>
 
+#include <unistd.h>  // for sleep()
+
+#include "array-hash.h"
 #include "hat-trie.h"
 
 using namespace std;
@@ -12,6 +15,7 @@ int indexof(char ch) {
     if (ch - 'a' < 26 && ch - 'a' >= 0) {
         return ch - 'a';
     }
+    if (ch == '\'') return 26;
     return -1;
 }
 
@@ -26,7 +30,7 @@ string trim(string s) {
     return result;
 }
 
-bool test(const string& s, hat_trie<26, indexof>& ht, const set<string>& st) {
+bool test(const string& s, hat_trie<27, indexof>& ht, const set<string>& st) {
     cout << "TESTING " << s << ": " << flush;
     bool a;
     try { a = ht.search(s); }
@@ -36,30 +40,48 @@ bool test(const string& s, hat_trie<26, indexof>& ht, const set<string>& st) {
     return a == b;
 }
 
-int main() {
-    hat_trie<26, indexof> ht;
-    vector<string> v;
-    set<string> s;
+void print(const set<string>& s) {
+    set<string>::iterator it;
+    for (it = s.begin(); it != s.end(); ++it) {
+        cout << *it << endl;
+    }
+}
 
+int main() {
+    array_hash ah;
     string reader;
+    set<string> s;
     while (cin >> reader) {
-        v.push_back(reader);
         reader = trim(reader);
         if (reader.length() > 0) {
-            ht.insert(reader);
-            if (s.find(reader) == s.end()) {
-                s.insert(reader);
-                //ht.print(ht.root, ht.type);
-            }
+            ah.insert(reader.c_str(), reader.length());
+            s.insert(reader);
         }
     }
-    cout << "TRIE STRUCTURE:" << endl;
-    ht.print(ht.root, ht.type);
-    cout << endl;
-    for (size_t i = 0; i < v.size(); ++i) {
-        assert(test(v[i], ht, s));
-    }
-    test("earth.", ht, s);
+    //ah.print();
+    print(s);
+
+//  hat_trie<27, indexof> ht;
+//  vector<string> v;
+//  set<string> s;
+
+//  string reader;
+//  while (cin >> reader) {
+//      //v.push_back(reader);
+//      reader = trim(reader);
+//      if (reader.length() > 0) {
+//          //ht.insert(reader);
+//          s.insert(reader);
+//      }
+//  }
+    //cout << "TRIE STRUCTURE:" << endl;
+    //ht.print(ht.root, ht.type);
+    //cout << endl;
+    //for (size_t i = 0; i < v.size(); ++i) {
+        //assert(test(v[i], ht, s));
+    //}
+    //test("earth.", ht, s);
+    //sleep(10);
     return 0;
 }
 

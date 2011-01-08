@@ -133,7 +133,7 @@ class hat_trie {
 
     // constant values for the hat trie
     enum { CONTAINER_POINTER, NODE_POINTER };
-    enum { BUCKET_SIZE_THRESHOLD = 2 };
+    enum { BUCKET_SIZE_THRESHOLD = 512 };
 
     void init();
     int getindex(char ch) throw(bad_index);
