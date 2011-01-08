@@ -57,7 +57,7 @@ int main() {
         ah.insert(reader.c_str(), reader.length());
         //s.insert(reader);
     }
-    //ah.print();
+    ah.print();
     //print(s);
     //sleep(10);
 

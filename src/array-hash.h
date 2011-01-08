@@ -37,7 +37,7 @@ class array_hash {
     unsigned char **data;
 
     int hash(const char *str, uint16_t length, int seed = 23);
-    void search(const char *str, uint16_t length);
+    uint32_t search(const char *str, uint16_t length, unsigned char *p = NULL);
 };
 
 array_hash::array_hash() {
@@ -54,8 +54,28 @@ array_hash::~array_hash() {
     delete data;
 }
 
-void array_hash::search(const char *str, uint16_t length) {
+uint32_t array_hash::search(const char *str, uint16_t length, unsigned char *p) {
+    if (p == NULL) {
+      p = data[hash(str, length)];
+    }
 
+    uint32_t size = 0;
+    uint16_t w = *((uint16_t *)p);
+    while (w != 0) {
+        p += sizeof(uint16_t);
+        if (w == length) {
+            // The string being scanned is the same length as @a str. Make
+            // sure they aren't the same string.
+            if (strncmp(str, (const char *)p, length) == 0) {
+                // Found @a str.
+                return 0;
+            }
+        }
+        size += w + sizeof(uint16_t);
+        p += w;
+        w = *((uint16_t *)p);
+    }
+    return size;
 }
 
 void array_hash::insert(const char *str, uint16_t length) {
@@ -66,25 +86,14 @@ void array_hash::insert(const char *str, uint16_t length) {
     // Find the location to write to.
     int slot = hash(str, length);
     unsigned char *p = data[slot];
-    if (data[slot]) {
+    if (p) {
         // Append the new string to the end of this slot.
-        // How big does the new allocation need to be?
-        uint32_t size = 0;
-        uint16_t w = *((uint16_t *)data[slot]);
-        while (w != 0) {
-            data[slot] += sizeof(uint16_t);
-            if (w == length) {
-                // The string being scanned is the same length as @a str. Make
-                // sure they aren't the same string.
-                if (strncmp(str, (const char *)data[slot], length) == 0) {
-                    data[slot] = p;
-                    return;
-                }
-            }
-            size += w + sizeof(uint16_t);
-            data[slot] += w;
-            w = *((uint16_t *)data[slot]);
+        uint32_t size = search(str, length, p);
+        if (size == 0) {
+            // @a str is already in the array hash. Return here.
+            return;
         }
+        // Append the new string to the end of this slot.
         data[slot] = new unsigned char[size + 2 * sizeof(uint16_t) + length];
         memcpy(data[slot], p, size);
         delete [] p;
