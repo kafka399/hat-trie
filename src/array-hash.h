@@ -19,7 +19,7 @@ class array_hash {
     void print();
 
   public:
-    enum { SLOT_COUNT = 512 };
+    enum { SLOT_COUNT = 2048 };
     unsigned char **data;
 
     int hash(const char *str, uint16_t length, int seed = 23);
@@ -47,31 +47,29 @@ void array_hash::insert(const char *str, uint16_t length) {
     }
     if (data[slot]) {
         // Append the new string to the end of this slot.
-        uint32_t size = *((uint32_t *)data[slot]) + length + sizeof(uint16_t);
         unsigned char *p = data[slot];
-        data[slot] = new unsigned char[size];
-        memcpy(data[slot], p, *((uint32_t *)p));
-        delete p;
-        p = data[slot] + size - length - sizeof(uint16_t);
-        memcpy(data[slot], &size, sizeof(uint32_t));
-        memcpy(p - sizeof(uint16_t), &length, sizeof(uint16_t));
-        memcpy(p, str, length);
-        p += length;
-        length = 0;
-        memcpy(p, &length, sizeof(uint16_t));
 
-      //for (int i = 0; i < size; ++i) {
-      //    int8_t ch = data[slot][i];
-      //    cout << int(ch) << " ";
-      //}
-      //cout << endl;
-    } else {
-        // Make a new slot for this string.
-        uint32_t size = sizeof(uint32_t) + length + 2 * sizeof(uint16_t);
-        data[slot] = new unsigned char[size];
-        unsigned char *p = data[slot];
-        memcpy(p, &size, sizeof(uint32_t));
-        p += sizeof(uint32_t);
+        // How big does the new allocation need to be?
+        uint32_t size = 0;
+        uint16_t w = *((uint16_t *)data[slot]);
+        while (w != 0) {
+            data[slot] += sizeof(uint16_t);
+            if (w == length) {
+                // The string being scanned is the same length as @a str. Make
+                // sure they aren't the same string.
+                if (strncmp(str, (const char *)data[slot], length) == 0) {
+                    data[slot] = p;
+                    return;
+                }
+            }
+            size += w + sizeof(uint16_t);
+            data[slot] += w;
+            w = *((uint16_t *)data[slot]);
+        }
+        data[slot] = new unsigned char[size + 2 * sizeof(uint16_t) + length];
+        memcpy(data[slot], p, size);
+        delete [] p;
+        p = data[slot] + size;
         memcpy(p, &length, sizeof(uint16_t));
         p += sizeof(uint16_t);
         memcpy(p, str, length);
@@ -79,7 +77,42 @@ void array_hash::insert(const char *str, uint16_t length) {
         length = 0;
         memcpy(p, &length, sizeof(uint16_t));
 
-      //for (int i = 0; i < size; ++i) {
+
+
+
+      //uint32_t size = *((uint32_t *)data[slot]) + length + sizeof(uint16_t);
+      //unsigned char *p = data[slot];
+      //data[slot] = new unsigned char[size];
+      //memcpy(data[slot], p, *((uint32_t *)p));
+      //delete p;
+      //p = data[slot] + size - length - sizeof(uint16_t);
+      //memcpy(data[slot], &size, sizeof(uint32_t));
+      //memcpy(p - sizeof(uint16_t), &length, sizeof(uint16_t));
+      //memcpy(p, str, length);
+      //p += length;
+      //length = 0;
+      //memcpy(p, &length, sizeof(uint16_t));
+
+      //cout << size + 2 * sizeof(uint16_t) + length << endl;
+      //for (size_t i = 0; i < size + 2 * sizeof(uint16_t) + 5; ++i) {
+      //    int8_t ch = data[slot][i];
+      //    cout << int(ch) << " ";
+      //}
+      //cout << endl;
+    } else {
+        // Make a new slot for this string.
+        //cout << "new slot" << endl;
+        uint32_t size = length + 2 * sizeof(uint16_t);
+        data[slot] = new unsigned char[size];
+        unsigned char *p = data[slot];
+        memcpy(p, &length, sizeof(uint16_t));
+        p += sizeof(uint16_t);
+        memcpy(p, str, length);
+        p += length;
+        length = 0;
+        memcpy(p, &length, sizeof(uint16_t));
+
+      //for (size_t i = 0; i < size; ++i) {
       //    int8_t ch = data[slot][i];
       //    cout << int(ch) << " ";
       //}
@@ -92,7 +125,6 @@ void array_hash::print() {
         if (data[i]) {
             // Print out all strings in this array.
             unsigned char *p = data[i];
-            p += sizeof(uint32_t);  // skip allocated size
             uint16_t length = *((uint16_t *)p);
             while (length != 0) {
                 p += sizeof(uint16_t);

@@ -49,25 +49,18 @@ void print(const set<string>& s) {
 
 int main() {
     array_hash ah;
-
-    //assert(ah.data[2] == NULL);
     string reader = "sOTEHUSNUHTSONTHEU";
-    //assert(ah.data[2] == NULL);
     set<string> s;
-    //assert(ah.data[2] == NULL);
     while (cin >> reader) {
-        //assert(ah.data[2] == NULL);
         reader = trim(reader);
-        //assert(ah.data[2] == NULL);
         if (reader.length() > 0) {
-            //assert(ah.data[2] == NULL);
-            ah.insert(reader.c_str(), reader.length());
-            //s.insert(reader);
+            //ah.insert(reader.c_str(), reader.length());
+            s.insert(reader);
         }
     }
     //ah.print();
     //print(s);
-    sleep(10);
+    //sleep(10);
 
 //  hat_trie<27, indexof> ht;
 //  vector<string> v;
