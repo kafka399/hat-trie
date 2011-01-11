@@ -26,10 +26,12 @@ class array_hash {
         pair<const char *, uint16_t> operator*();
         bool operator==(const iterator& rhs);
         bool operator!=(const iterator& rhs);
+        iterator& operator=(const iterator &rhs);
 
       private:
-        unsigned char *data;
-        unsigned char *slot;
+        int slot;
+        unsigned char *p;
+        unsigned char **data;
     };
 
   private:
@@ -56,9 +58,10 @@ array_hash::~array_hash() {
 
 uint32_t array_hash::search(const char *str, uint16_t length, unsigned char *p) {
     if (p == NULL) {
-      p = data[hash(str, length)];
+        // Find the position in @a data for @a str.
+        p = data[hash(str, length)];
     }
-
+    // Search for @a str in this slot.
     uint32_t size = 0;
     uint16_t w = *((uint16_t *)p);
     while (w != 0) {
@@ -128,7 +131,6 @@ void array_hash::print() {
                 p += length;
                 length = *((uint16_t *)p);
             }
-        } else {
         }
     }
 }
@@ -141,10 +143,20 @@ int array_hash::hash(const char *str, uint16_t length, int seed) {
     return h & (SLOT_COUNT - 1);
 }
 
-array_hash::iterator::iterator() : data(NULL), slot(NULL) {
+array_hash::iterator::iterator() : slot(0), p(NULL), data(NULL) {
 
 }
 
+array_hash::iterator& array_hash::iterator::operator++() {
+    // Move data to the next string in this slot.
+    data += *((uint16_t *)p) + sizeof(uint16_t);
+    if (*((uint16_t *)p) == 0) {
+        // Move down to the next slot.
+        ++slot;
+        //while (slot < SLOT_COUNT &&
+    }
+    return *this;
+}
 
 }  // namespace vaszauskas
 
