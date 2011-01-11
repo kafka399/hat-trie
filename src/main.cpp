@@ -51,7 +51,7 @@ void print(const T& t) {
 int main() {
     std::ios_base::sync_with_stdio(false);
     array_hash ah;
-    string reader = "sOTEHUSNUHTSONTHEU";
+    string reader;
     set<string> s;
     while (cin >> reader) {
         ah.insert(reader.c_str(), reader.length());

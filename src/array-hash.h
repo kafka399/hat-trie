@@ -35,7 +35,7 @@ class array_hash {
     };
 
   private:
-    enum { SLOT_COUNT = 2048 };
+    enum { SLOT_COUNT = 2048 };  // MUST be a power of 2
     unsigned char **data;
 
     int hash(const char *str, uint16_t length, int seed = 23);
@@ -56,6 +56,17 @@ array_hash::~array_hash() {
     delete data;
 }
 
+/**
+ * Searches for @a str in the array hash.
+ *
+ * @param str     string to search for
+ * @param length  length of @a str
+ * @param p       slot in @a data that @a str goes into
+ *
+ * @return  If this function finds @a str in the array hash, returns 0. If
+ *          not, returns the new size of the array that would need to be
+ *          allocated to store the array and @a str.
+ */
 uint32_t array_hash::search(const char *str, uint16_t length, unsigned char *p) {
     if (p == NULL) {
         // Find the position in @a data for @a str.
@@ -81,6 +92,14 @@ uint32_t array_hash::search(const char *str, uint16_t length, unsigned char *p) 
     return size;
 }
 
+/**
+ * Inserts @a str into the tree.
+ *
+ * @param str     string to insert
+ * @param length  length of @a str. If at all possible, this should be
+ *                provided with by the caller. Calculating length separately
+ *                slows this function down significantly.
+ */
 void array_hash::insert(const char *str, uint16_t length) {
     // Find the length of @a str if necessary.
     if (length == 0) {
@@ -116,6 +135,9 @@ void array_hash::insert(const char *str, uint16_t length) {
     memcpy(p, &length, sizeof(uint16_t));
 }
 
+/**
+ * Print out all the strings stored in the array hash.
+ */
 void array_hash::print() {
     for (int i = 0; i < SLOT_COUNT; ++i) {
         if (data[i]) {
@@ -135,12 +157,21 @@ void array_hash::print() {
     }
 }
 
+/**
+ * Hashing function for the array hash.
+ *
+ * @param str     string to hash
+ * @param length  length of @a str
+ * @param seed    seed for the hash function
+ *
+ * @return  Hashed value of @a str, the slot in @a data @a str should go into.
+ */
 int array_hash::hash(const char *str, uint16_t length, int seed) {
     int h = seed;
     for (uint16_t i = 0; i < length; ++i) {
         h = h ^ ((h << 5) + (h >> 2) + str[i]);
     }
-    return h & (SLOT_COUNT - 1);
+    return h & (SLOT_COUNT - 1);  // same as h % SLOT_COUNT
 }
 
 array_hash::iterator::iterator() : slot(0), p(NULL), data(NULL) {
@@ -153,7 +184,6 @@ array_hash::iterator& array_hash::iterator::operator++() {
     if (*((uint16_t *)p) == 0) {
         // Move down to the next slot.
         ++slot;
-        //while (slot < SLOT_COUNT &&
     }
     return *this;
 }
