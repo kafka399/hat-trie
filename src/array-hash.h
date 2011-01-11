@@ -7,7 +7,7 @@
 
 using namespace std;
 
-namespace vaszauskas {
+namespace stx {
 
 class array_hash {
   public:
@@ -188,7 +188,7 @@ array_hash::iterator& array_hash::iterator::operator++() {
     return *this;
 }
 
-}  // namespace vaszauskas
+}  // namespace stx
 
 #endif
 

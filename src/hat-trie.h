@@ -14,7 +14,7 @@
 
 using namespace std;
 
-namespace vaszauskas {
+namespace stx {
 
 template <int AlphabetSize, int (*indexof)(char)>
 class hat_trie;
@@ -38,7 +38,7 @@ class hat_trie_container;
 
 template <int AlphabetSize, int (*indexof)(char)>
 class hat_trie_container {
-    friend class vaszauskas::hat_trie<AlphabetSize, indexof>;
+    friend class stx::hat_trie<AlphabetSize, indexof>;
 
   private:
     typedef hat_trie_node<AlphabetSize, indexof> node;
@@ -60,7 +60,7 @@ class hat_trie_container {
 
 template <int AlphabetSize, int (*indexof)(char)>
 class hat_trie_node {
-    friend class vaszauskas::hat_trie<AlphabetSize, indexof>;
+    friend class stx::hat_trie<AlphabetSize, indexof>;
 
   private:
     typedef hat_trie_container<AlphabetSize, indexof> container;
@@ -80,7 +80,7 @@ class hat_trie_node {
 
 }  // unnamed namespace
 
-namespace vaszauskas {
+namespace stx {
 
 template <int AlphabetSize, int (*indexof)(char)>
 class hat_trie {
@@ -141,7 +141,7 @@ class hat_trie {
     void burst(container *htc);
 };
 
-}  // namespace vaszauskas
+}  // namespace stx
 
 namespace {
 
@@ -191,7 +191,7 @@ hat_trie_node<AlphabetSize, indexof>::
 
 }  // anonymous namespace
 
-namespace vaszauskas {
+namespace stx {
 
 template <int AlphabetSize, int (*indexof)(char)>
 hat_trie<AlphabetSize, indexof>::hat_trie() {
@@ -390,7 +390,7 @@ hat_trie<AlphabetSize, indexof>::burst(container *htc) {
     delete htc;
 }
 
-}  // namespace vaszauskas
+}  // namespace stx
 
 #endif  // HAT_TRIE_H
 

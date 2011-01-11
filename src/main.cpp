@@ -9,7 +9,7 @@
 #include "hat-trie.h"
 
 using namespace std;
-using namespace vaszauskas;
+using namespace stx;
 
 int indexof(char ch) {
     if (ch - 'a' < 26 && ch - 'a' >= 0) {
