@@ -70,12 +70,23 @@ int main() {
     std::ios_base::sync_with_stdio(false);
     array_hash ah;
     string reader;
+    vector<string> v;
     set<string> s;
     while (cin >> reader) {
-        ah.insert(reader.c_str(), reader.length());
-        s.insert(reader);
+        //ah.insert(reader.c_str(), reader.length());
+        //s.insert(reader);
+        v.push_back(reader);
     }
-    assert(compare(ah, s));
+    for (int i = 0; i < v.size(); ++i) {
+        assert(ah.find(v[i].c_str(), v[i].length()) == false);
+    }
+    //array_hash::iterator it;
+    //int i = 0;
+    //for (it = ah.begin(); it != ah.end(); ++it) {
+        //if (*it) i = 1;
+    //}
+    //assert(compare(ah, s));
+    //sleep(10);
 
     return 0;
 }
