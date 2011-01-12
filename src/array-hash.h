@@ -92,7 +92,7 @@ array_hash::~array_hash() {
 uint32_t array_hash::search(const char *str, uint16_t length, char *p) {
     if (p == NULL) {
         // Find the position in @a data for @a str.
-        p = data[hash(str, length)];
+        p = data[hash(str, length - 1)];  // don't hash the NULL terminator
     }
     // Search for @a str in this slot.
     uint32_t size = 0;
@@ -102,7 +102,8 @@ uint32_t array_hash::search(const char *str, uint16_t length, char *p) {
         if (w == length) {
             // The string being scanned is the same length as @a str. Make
             // sure they aren't the same string.
-            if (strncmp(str, (const char *)p, length) == 0) {
+            //if (strncmp(str, (const char *)p, length) == 0) {
+            if (strcmp(str, p) == 0) {
                 // Found @a str.
                 return 0;
             }
@@ -127,9 +128,8 @@ void array_hash::insert(const char *str, uint16_t length) {
     if (length == 0) {
         length = strlen(str);
     }
-    ++length;  // include space for the NULL terminator
-    // Find the location to write to.
-    int slot = hash(str, length);
+    ++length;  // include space for the NULL terminator...
+    int slot = hash(str, length - 1);   // ... but don't hash it
     char *p = data[slot];
     if (p) {
         // Append the new string to the end of this slot.
@@ -171,10 +171,6 @@ void array_hash::print() {
             while (length != 0) {
                 p += sizeof(uint16_t);
                 cout << p << endl;
-                //for (int i = 0; i < length; ++i) {
-                    //cout << p[i];
-                //}
-                //cout << endl;
                 p += length;
                 length = *((uint16_t *)p);
             }
