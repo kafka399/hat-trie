@@ -51,6 +51,10 @@ class array_hash {
     uint32_t search(const char *str, uint16_t length, unsigned char *p = NULL);
 };
 
+// ----------
+// array_hash
+// ----------
+
 /**
  * Standard default constructor.
  *
