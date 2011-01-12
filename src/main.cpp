@@ -55,6 +55,17 @@ void print(T& t) {
     }
 }
 
+template <class A>
+bool compare(const A& a, const set<string>& s) {
+    set<string>::iterator it;
+    for (it = s.begin(); it != s.end(); ++it) {
+        if (a.find(it->c_str()) == false) {
+            return false;
+        }
+    }
+    return true;
+}
+
 int main() {
     std::ios_base::sync_with_stdio(false);
     array_hash ah;
@@ -64,31 +75,8 @@ int main() {
         ah.insert(reader.c_str(), reader.length());
         //s.insert(reader);
     }
-    print(ah);
-    //print(s);
-    //sleep(10);
+    //assert(compare(ah, s));
 
-//  hat_trie<27, indexof> ht;
-//  vector<string> v;
-//  set<string> s;
-
-//  string reader;
-//  while (cin >> reader) {
-//      //v.push_back(reader);
-//      reader = trim(reader);
-//      if (reader.length() > 0) {
-//          //ht.insert(reader);
-//          s.insert(reader);
-//      }
-//  }
-    //cout << "TRIE STRUCTURE:" << endl;
-    //ht.print(ht.root, ht.type);
-    //cout << endl;
-    //for (size_t i = 0; i < v.size(); ++i) {
-        //assert(test(v[i], ht, s));
-    //}
-    //test("earth.", ht, s);
-    //sleep(10);
     return 0;
 }
 
