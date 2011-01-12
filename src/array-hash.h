@@ -179,8 +179,9 @@ void array_hash::insert(const char *str, uint16_t length) {
  */
 bool array_hash::find(const char *str, uint16_t length) const {
     if (length == 0) {
-        length = strlen(str) + 1;  // extra space for the NULL terminator
+        length = strlen(str);
     }
+    ++length;  // extra space for the NULL terminator
     return search(str, length) == 0;
 }
 
