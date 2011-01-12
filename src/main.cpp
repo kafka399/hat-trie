@@ -51,8 +51,8 @@ template <class T>
 void print(T& t) {
     typename T::iterator it;
     for (it = t.begin(); it != t.end(); ++it) {
-        //cout << *it << endl;
-        print(*it);
+        cout << *it << endl;
+        //print(*it);
     }
 }
 

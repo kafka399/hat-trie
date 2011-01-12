@@ -32,23 +32,23 @@ class array_hash {
 
         iterator& operator++();
         iterator& operator--();
-        pair<const char *, uint16_t> operator*();
+        const char *operator*();
         bool operator==(const iterator& rhs);
         bool operator!=(const iterator& rhs);
         iterator& operator=(const iterator &rhs);
 
       private:
         int slot;
-        unsigned char *p;
-        unsigned char **data;
+        char *p;
+        char **data;
     };
 
   private:
     enum { SLOT_COUNT = 2048 };  // MUST be a power of 2
-    unsigned char **data;
+    char **data;
 
     int hash(const char *str, uint16_t length, int seed = 23);
-    uint32_t search(const char *str, uint16_t length, unsigned char *p = NULL);
+    uint32_t search(const char *str, uint16_t length, char *p = NULL);
 };
 
 // ----------
@@ -61,7 +61,7 @@ class array_hash {
  * Creates a NULL-constructed table of slots for the array hash.
  */
 array_hash::array_hash() {
-    data = new unsigned char *[SLOT_COUNT];
+    data = new char *[SLOT_COUNT];
     for (int i = 0; i < SLOT_COUNT; ++i) {
         data[i] = NULL;
     }
@@ -89,7 +89,7 @@ array_hash::~array_hash() {
  *          not, returns the new size of the array that would need to be
  *          allocated to store the array and @a str.
  */
-uint32_t array_hash::search(const char *str, uint16_t length, unsigned char *p) {
+uint32_t array_hash::search(const char *str, uint16_t length, char *p) {
     if (p == NULL) {
         // Find the position in @a data for @a str.
         p = data[hash(str, length)];
@@ -119,7 +119,7 @@ uint32_t array_hash::search(const char *str, uint16_t length, unsigned char *p) 
  *
  * @param str     string to insert
  * @param length  length of @a str. If at all possible, this should be
- *                provided with by the caller. Calculating length separately
+ *                provided by the caller. Calculating length separately
  *                slows this function down significantly.
  */
 void array_hash::insert(const char *str, uint16_t length) {
@@ -127,9 +127,10 @@ void array_hash::insert(const char *str, uint16_t length) {
     if (length == 0) {
         length = strlen(str);
     }
+    ++length;  // include space for the NULL terminator
     // Find the location to write to.
     int slot = hash(str, length);
-    unsigned char *p = data[slot];
+    char *p = data[slot];
     if (p) {
         // Append the new string to the end of this slot.
         uint32_t size = search(str, length, p);
@@ -138,20 +139,21 @@ void array_hash::insert(const char *str, uint16_t length) {
             return;
         }
         // Append the new string to the end of this slot.
-        data[slot] = new unsigned char[size + 2 * sizeof(uint16_t) + length];
+        data[slot] = new char[size + 2 * sizeof(uint16_t) + length];
         memcpy(data[slot], p, size);
         delete [] p;
         p = data[slot] + size;
     } else {
         // Make a new slot for this string.
         uint32_t size = length + 2 * sizeof(uint16_t);
-        data[slot] = new unsigned char[size];
+        data[slot] = new char[size];
         p = data[slot];
     }
     // Write data for @a s.
     memcpy(p, &length, sizeof(uint16_t));
     p += sizeof(uint16_t);
-    memcpy(p, str, length);
+    strcpy(p, str);
+    //memcpy(p, str, length);
     p += length;
     length = 0;
     memcpy(p, &length, sizeof(uint16_t));
@@ -164,14 +166,15 @@ void array_hash::print() {
     for (int i = 0; i < SLOT_COUNT; ++i) {
         if (data[i]) {
             // Print out all strings in this array.
-            unsigned char *p = data[i];
+            char *p = data[i];
             uint16_t length = *((uint16_t *)p);
             while (length != 0) {
                 p += sizeof(uint16_t);
-                for (int i = 0; i < length; ++i) {
-                    cout << p[i];
-                }
-                cout << endl;
+                cout << p << endl;
+                //for (int i = 0; i < length; ++i) {
+                    //cout << p[i];
+                //}
+                //cout << endl;
                 p += length;
                 length = *((uint16_t *)p);
             }
@@ -264,17 +267,11 @@ array_hash::iterator& array_hash::iterator::operator++() {
 /**
  * Dereference this iterator into its component parts.
  */
-pair<const char *, uint16_t>
-array_hash::iterator::operator*() {
-    pair<const char *, uint16_t> result;
+const char *array_hash::iterator::operator*() {
+    const char *result = NULL;
     if (p) {
-        result.first = (const char *)(p) + 2;
-        result.second = *((uint16_t *)p);
-    } else {
-        result.first = NULL;
-        result.second = 0;
+        result = p + sizeof(uint16_t);
     }
-
     return result;
 }
 
