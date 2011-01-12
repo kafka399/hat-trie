@@ -25,6 +25,7 @@ class array_hash {
 
     void insert(const char *str, uint16_t length = 0);
     bool find(const char *str, uint16_t length = 0) const;
+    size_t size() const;
 
     iterator begin() const;
     iterator end() const;
@@ -52,6 +53,7 @@ class array_hash {
   private:
     enum { SLOT_COUNT = 2048 };  // MUST be a power of 2
     char **data;
+    size_t _size;
 
     int hash(const char *str, uint16_t length, int seed = 23) const;
     uint32_t search(const char *str, uint16_t length, char *p = NULL) const;
@@ -71,6 +73,7 @@ array_hash::array_hash() {
     for (int i = 0; i < SLOT_COUNT; ++i) {
         data[i] = NULL;
     }
+    _size = 0;
 }
 
 /**
@@ -161,6 +164,7 @@ void array_hash::insert(const char *str, uint16_t length) {
     p += length;
     length = 0;
     memcpy(p, &length, sizeof(uint16_t));
+    ++_size;
 }
 
 /**
@@ -181,7 +185,14 @@ bool array_hash::find(const char *str, uint16_t length) const {
 }
 
 /**
- * Gets an iterator to the first element in the hash table.
+ * Gets the number of elements in the table.
+ */
+size_t array_hash::size() const {
+    return _size;
+}
+
+/**
+ * Gets an iterator to the first element in the table.
  */
 array_hash::iterator array_hash::begin() const {
     iterator result;

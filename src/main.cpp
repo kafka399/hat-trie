@@ -63,7 +63,7 @@ bool compare(const A& a, const set<string>& s) {
             return false;
         }
     }
-    return true;
+    return s.size() == a.size();
 }
 
 int main() {
@@ -73,9 +73,9 @@ int main() {
     set<string> s;
     while (cin >> reader) {
         ah.insert(reader.c_str(), reader.length());
-        //s.insert(reader);
+        s.insert(reader);
     }
-    //assert(compare(ah, s));
+    assert(compare(ah, s));
 
     return 0;
 }
