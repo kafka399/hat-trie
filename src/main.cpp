@@ -40,11 +40,19 @@ bool test(const string& s, hat_trie<27, indexof>& ht, const set<string>& st) {
     return a == b;
 }
 
+void print(const pair<const char *, uint16_t>& p) {
+    for (int i = 0; i < p.second; ++i) {
+        cout << p.first[i];
+    }
+    cout << endl;
+}
+
 template <class T>
-void print(const T& t) {
+void print(T& t) {
     typename T::iterator it;
     for (it = t.begin(); it != t.end(); ++it) {
-        cout << *it << endl;
+        //cout << *it << endl;
+        print(*it);
     }
 }
 
@@ -57,7 +65,7 @@ int main() {
         ah.insert(reader.c_str(), reader.length());
         //s.insert(reader);
     }
-    ah.print();
+    print(ah);
     //print(s);
     //sleep(10);
 

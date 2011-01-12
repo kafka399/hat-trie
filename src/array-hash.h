@@ -4,6 +4,7 @@
 #include <iostream>
 #include <stdint.h>
 #include <cstring>
+#include <utility>
 
 using namespace std;
 
@@ -11,15 +12,23 @@ namespace stx {
 
 class array_hash {
   public:
+    class iterator;
+
     array_hash();
     ~array_hash();
 
     void insert(const char *str, uint16_t length = 0);
     void print();
 
+    iterator begin();
+    iterator end();
+
     class iterator {
+        friend class array_hash;
+
       public:
         iterator();
+        iterator(const iterator& rhs);
 
         iterator& operator++();
         iterator& operator--();
@@ -42,6 +51,11 @@ class array_hash {
     uint32_t search(const char *str, uint16_t length, unsigned char *p = NULL);
 };
 
+/**
+ * Standard default constructor.
+ *
+ * Creates a NULL-constructed table of slots for the array hash.
+ */
 array_hash::array_hash() {
     data = new unsigned char *[SLOT_COUNT];
     for (int i = 0; i < SLOT_COUNT; ++i) {
@@ -49,6 +63,9 @@ array_hash::array_hash() {
     }
 }
 
+/**
+ * Standard destructor.
+ */
 array_hash::~array_hash() {
     for (int i = 0; i < SLOT_COUNT; ++i) {
         delete data[i];
@@ -61,7 +78,8 @@ array_hash::~array_hash() {
  *
  * @param str     string to search for
  * @param length  length of @a str
- * @param p       slot in @a data that @a str goes into
+ * @param p       slot in @a data that @a str goes into. If this value is
+ *                NULL, the slot is calculated using @a hash().
  *
  * @return  If this function finds @a str in the array hash, returns 0. If
  *          not, returns the new size of the array that would need to be
@@ -158,6 +176,29 @@ void array_hash::print() {
 }
 
 /**
+ * Gets an iterator to the first element in the hash table.
+ */
+array_hash::iterator array_hash::begin() {
+    iterator result;
+    result.slot = 0;
+    result.data = data;
+    result.p = NULL;
+    while (result.data[result.slot] == NULL) {
+        ++result.slot;
+    }
+    result.p = result.data[result.slot];
+    return result;
+}
+
+array_hash::iterator array_hash::end() {
+    iterator result;
+    result.slot = SLOT_COUNT;
+    result.data = data;
+    result.p = NULL;
+    return result;
+}
+
+/**
  * Hashing function for the array hash.
  *
  * @param str     string to hash
@@ -171,20 +212,89 @@ int array_hash::hash(const char *str, uint16_t length, int seed) {
     for (uint16_t i = 0; i < length; ++i) {
         h = h ^ ((h << 5) + (h >> 2) + str[i]);
     }
-    return h & (SLOT_COUNT - 1);  // same as h % SLOT_COUNT
+    return h & (SLOT_COUNT - 1);  // same as h % SLOT_COUNT if SLOT_COUNT
+                                  // is a power of 2
 }
 
+// --------------------
+// array_hash::iterator
+// --------------------
+
+/**
+ * Standard default constructor.
+ */
 array_hash::iterator::iterator() : slot(0), p(NULL), data(NULL) {
 
 }
 
+/**
+ * Standard copy constructor.
+ */
+array_hash::iterator::iterator(const iterator& rhs) {
+    *this = rhs;
+}
+
+/**
+ * Move this iterator forward to the next element in the array hash.
+ *
+ * @return  self-reference
+ */
 array_hash::iterator& array_hash::iterator::operator++() {
-    // Move data to the next string in this slot.
-    data += *((uint16_t *)p) + sizeof(uint16_t);
+    // Move @a p to the next string in this slot.
+    p += *((uint16_t *)p) + sizeof(uint16_t);
     if (*((uint16_t *)p) == 0) {
         // Move down to the next slot.
         ++slot;
+        while (data[slot] == NULL && slot < SLOT_COUNT) {
+            ++slot;
+        }
+        if (slot == SLOT_COUNT) {
+            p = NULL;
+        } else {
+            p = data[slot];
+        }
     }
+    return *this;
+}
+
+/**
+ * Dereference this iterator into its component parts.
+ */
+pair<const char *, uint16_t>
+array_hash::iterator::operator*() {
+    pair<const char *, uint16_t> result;
+    if (p) {
+        result.first = (const char *)(p) + 2;
+        result.second = *((uint16_t *)p);
+    } else {
+        result.first = NULL;
+        result.second = 0;
+    }
+
+    return result;
+}
+
+/**
+ * Standard equality operator.
+ */
+bool array_hash::iterator::operator==(const iterator& rhs) {
+    return data == rhs.data && slot == rhs.slot && p == rhs.p;
+}
+
+/**
+ * Standard inequality operator.
+ */
+bool array_hash::iterator::operator!=(const iterator& rhs) {
+    return !(*this == rhs);
+}
+
+/**
+ * Standard assignment operator.
+ */
+array_hash::iterator& array_hash::iterator::operator=(const iterator& rhs) {
+    data = rhs.data;
+    p = rhs.p;
+    slot = rhs.slot;
     return *this;
 }
 
