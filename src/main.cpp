@@ -2,7 +2,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
-
+#include <time.h>
 #include <unistd.h>  // for sleep()
 
 #include "array-hash.h"
@@ -65,6 +65,20 @@ bool compare(const A& a, const set<string>& s) {
     }
     return s.size() == a.size();
 }
+//timer code
+clock_t START_TIME = 1, STOP_TIME = 1;
+void timeStart() {
+	START_TIME = clock() * CLOCKS_PER_SEC;
+}
+void timeStop() {
+	STOP_TIME = clock() * CLOCKS_PER_SEC;
+}
+double timeReport() {
+	double res =  (STOP_TIME - START_TIME)/1000.0;
+	cout << "Timer logged " << res << " ms."  << endl;
+	return res;
+}
+
 
 int main() {
     std::ios_base::sync_with_stdio(false);
@@ -73,13 +87,13 @@ int main() {
     vector<string> v;
     set<string> s;
     while (cin >> reader) {
-        //ah.insert(reader.c_str(), reader.length());
+        ah.insert(reader.c_str(), reader.length());
         //s.insert(reader);
-        v.push_back(reader);
+	//v.push_back(reader);
     }
-    for (int i = 0; i < v.size(); ++i) {
-        assert(ah.find(v[i].c_str(), v[i].length()) == false);
-    }
+	timeStart();
+    print(ah);
+	timeStop();
     //array_hash::iterator it;
     //int i = 0;
     //for (it = ah.begin(); it != ah.end(); ++it) {
