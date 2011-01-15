@@ -40,7 +40,8 @@ class array_hash {
 
         iterator& operator++();
         iterator& operator--();
-        pair<const char *, uint16_t> operator*();
+        //pair<const char *, uint16_t> operator*();
+        const char *operator*() const;
         bool operator==(const iterator& rhs);
         bool operator!=(const iterator& rhs);
         iterator& operator=(const iterator &rhs);
@@ -158,7 +159,7 @@ void array_hash::insert(const char *str) {
     ++_size;
 
     // debug print code
-  //for (int i = 0; i < 24; ++i) {
+  //for (int i = 0; i < *((size_type *)(data[slot])); ++i) {
   //    cout << int(data[slot][i]) << " ";
   //}
   //cout << endl;
@@ -227,6 +228,7 @@ int array_hash::hash(const char *str, length_type& length, int seed) const {
         h = h ^ ((h << 5) + (h >> 2) + str[length]);
         ++length;
     }
+    ++length;  // include space for the NULL terminator
     return h & (SLOT_COUNT - 1);  // same as h % SLOT_COUNT if SLOT_COUNT
                                   // is a power of 2
 }
@@ -283,6 +285,7 @@ array_hash::iterator& array_hash::iterator::operator--() {
  * @return  pair where @a first is a pointer to the (non-NULL terminated)
  *          string, and @a second is the length of the string
  */
+/*
 pair<const char *, uint16_t> array_hash::iterator::operator*() {
     pair<const char *, uint16_t> result;
     if (p) {
@@ -290,6 +293,13 @@ pair<const char *, uint16_t> array_hash::iterator::operator*() {
         result.second = *((length_type *)(p));
     }
     return result;
+}
+*/
+const char *array_hash::iterator::operator*() const {
+    if (p) {
+        return p + sizeof(length_type);
+    }
+    return NULL;
 }
 
 /**
