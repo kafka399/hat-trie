@@ -34,7 +34,7 @@ bool test(const string& s, hat_trie<27, indexof>& ht, const set<string>& st) {
     cout << "TESTING " << s << ": " << flush;
     bool a;
     try { a = ht.search(s); }
-    catch (bad_index e) { a = false; }
+    catch (bad_index) { a = false; }
     bool b = st.find(s) != st.end();
     cout << a << " " << b << endl;
     return a == b;
@@ -51,8 +51,8 @@ template <class T>
 void print(T& t) {
     typename T::iterator it;
     for (it = t.begin(); it != t.end(); ++it) {
-        print(*it);
-        //cout << *it << endl;
+        //print(*it);
+        cout << *it << endl;
     }
 }
 
@@ -66,6 +66,7 @@ bool compare(const A& a, const set<string>& s) {
     }
     return s.size() == a.size();
 }
+
 //timer code
 clock_t START_TIME = 1, STOP_TIME = 1;
 void timeStart() {
@@ -85,31 +86,24 @@ int main() {
     hat_trie<> ht;
     array_hash ah;
     string reader;
-    vector<string> v;
+    //vector<string> v;
     set<string> s;
+    timeStart();
     while (cin >> reader) {
-        reader = trim(reader);
-        if (reader.length() > 0) {
-            ht.insert(reader);
-        }
+        //reader = trim(reader);
+        //if (reader.length() > 0) {
+            //ht.insert(reader);
+            //s.insert(reader);
+            //ah.insert(reader.c_str());
+        //}
         //ah.insert(reader.c_str());
-        //s.insert(reader);
+        ht.insert(reader);
     }
-	//timeStart();
-  //ah.insert("the");
-  //ah.insert("the");
-  //ah.insert("hello");
-  //ah.insert("abcd");
-  //print(ah);
-	//timeStop();
-    //timeReport();
-    //array_hash::iterator it;
-    //int i = 0;
-    //for (it = ah.begin(); it != ah.end(); ++it) {
-        //if (*it) i = 1;
-    //}
-    //assert(compare(ah, s));
-    //sleep(10);
+    timeStop();
+    timeReport();
+    //ht.print(ht.root, hat_trie<>::NODE_POINTER);
+    //cout << s.size() << endl;
+    //assert(ht.size() == s.size());
 
     return 0;
 }

@@ -175,6 +175,9 @@ void array_hash::insert(const char *str) {
 bool array_hash::find(const char *str) const {
     length_type length;
     char *p = data[hash(str, length)];
+    if (p == NULL) {
+        return false;
+    }
     return search(str, length, p) != NULL;
 }
 
