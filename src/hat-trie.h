@@ -12,11 +12,13 @@
 #include <string>
 #include <utility>
 
+#include "array-hash.h"
+
 using namespace std;
 
 namespace stx {
 
-template <int AlphabetSize, int (*indexof)(char)>
+template <int alphabet_size, int (*indexof)(char)>
 class hat_trie;
 
 // Exception class for bad index values.
@@ -30,41 +32,61 @@ class bad_index : public exception {
 
 namespace {
 
-template <int AlphabetSize, int (*indexof)(char)>
-class hat_trie_node;
+// default value for hat_trie alphabet size
+const int DEFAULT_ALPHABET_SIZE = 26;
 
-template <int AlphabetSize, int (*indexof)(char)>
+/**
+ * Default indexof function for hat_tries.
+ */
+int alphabet_index(char ch) {
+    if (ch >= 'a' && ch <= 'z') {
+        return ch - 'a';
+    }
+    return -1;
+}
+
+// --------------------------
+// hat trie helper structures
+// --------------------------
+
+template <int alphabet_size, int (*indexof)(char)>
 class hat_trie_container;
 
-template <int AlphabetSize, int (*indexof)(char)>
+template <int alphabet_size, int (*indexof)(char)>
+class hat_trie_node;
+
+template <int alphabet_size, int (*indexof)(char)>
 class hat_trie_container {
-    friend class stx::hat_trie<AlphabetSize, indexof>;
+    friend class stx::hat_trie<alphabet_size, indexof>;
 
   private:
-    typedef hat_trie_node<AlphabetSize, indexof> node;
+    typedef hat_trie_node<alphabet_size, indexof> node;
 
   public:
+    typedef stx::array_hash store_type;
+
     hat_trie_container(char ch = '\0');
     virtual ~hat_trie_container();
 
     bool contains(const string& s);
     void insert(const string& s);
+    void insert(const pair<const char *, uint16_t>& p);
     size_t size() const;
 
   private:
     char ch;
     bool word;
     node *parent;
-    set<string> container;
+    stx::array_hash store;
 };
 
-template <int AlphabetSize, int (*indexof)(char)>
+template <int alphabet_size, int (*indexof)(char)>
 class hat_trie_node {
-    friend class stx::hat_trie<AlphabetSize, indexof>;
+    friend class stx::hat_trie<alphabet_size, indexof>;
 
   private:
-    typedef hat_trie_container<AlphabetSize, indexof> container;
-    typedef hat_trie_node<AlphabetSize, indexof> node;
+    typedef hat_trie_container<alphabet_size, indexof> container;
+    typedef hat_trie_node<alphabet_size, indexof> node;
 
   public:
     hat_trie_node(char ch = '\0');
@@ -72,9 +94,9 @@ class hat_trie_node {
 
   public:
     char ch;
-    void *children[AlphabetSize];  // untyped pointers to children
+    void *children[alphabet_size];  // untyped pointers to children
     // To keep track of pointer types. The extra bit is an end-of-string flag.
-    std::bitset<AlphabetSize + 1> types;
+    std::bitset<alphabet_size + 1> types;
     node *parent;
 };
 
@@ -82,11 +104,12 @@ class hat_trie_node {
 
 namespace stx {
 
-template <int AlphabetSize, int (*indexof)(char)>
+template <int alphabet_size = DEFAULT_ALPHABET_SIZE,
+          int (*indexof)(char) = alphabet_index>
 class hat_trie {
   private:
-    typedef hat_trie_node<AlphabetSize, indexof> node;
-    typedef hat_trie_container<AlphabetSize, indexof> container;
+    typedef hat_trie_node<alphabet_size, indexof> node;
+    typedef hat_trie_container<alphabet_size, indexof> container;
 
   public:
     hat_trie();
@@ -112,12 +135,12 @@ class hat_trie {
             node *n = (node *)p;
             if (n->ch != '\0') {
                 cout << space << n->ch;
-                if (n->types[AlphabetSize]) {
+                if (n->types[alphabet_size]) {
                     cout << " ~";
                 }
                 cout << endl;
             }
-            for (int i = 0; i < AlphabetSize; ++i) {
+            for (int i = 0; i < alphabet_size; ++i) {
                 if (n->children[i]) {
                     print(n->children[i], n->types[i], space + "  ");
                 }
@@ -132,7 +155,7 @@ class hat_trie {
 
     // constant values for the hat trie
     enum { CONTAINER_POINTER, NODE_POINTER };
-    enum { BUCKET_SIZE_THRESHOLD = 512 };
+    enum { BUCKET_SIZE_THRESHOLD = 1024 };
 
     void init();
     int getindex(char ch) throw(bad_index);
@@ -145,46 +168,54 @@ class hat_trie {
 
 namespace {
 
-template <int AlphabetSize, int (*indexof)(char)>
-hat_trie_container<AlphabetSize, indexof>::
+// ---------------------------------
+// hat_trie_container implementation
+// ---------------------------------
+
+template <int alphabet_size, int (*indexof)(char)>
+hat_trie_container<alphabet_size, indexof>::
 hat_trie_container(char ch) : ch(ch), word(false), parent(NULL) {
 
 }
 
-template <int AlphabetSize, int (*indexof)(char)>
-hat_trie_container<AlphabetSize, indexof>::
+template <int alphabet_size, int (*indexof)(char)>
+hat_trie_container<alphabet_size, indexof>::
 ~hat_trie_container() {
 
 }
 
-template <int AlphabetSize, int (*indexof)(char)>
-bool hat_trie_container<AlphabetSize, indexof>::
+template <int alphabet_size, int (*indexof)(char)>
+bool hat_trie_container<alphabet_size, indexof>::
 contains(const string& s) {
-    return container.find(s) != container.end();
+    return store.find(s.c_str());
 }
 
-template <int AlphabetSize, int (*indexof)(char)>
-void hat_trie_container<AlphabetSize, indexof>::
+template <int alphabet_size, int (*indexof)(char)>
+void hat_trie_container<alphabet_size, indexof>::
 insert(const string& s) {
-    container.insert(s);
+    store.insert(s.c_str());
 }
 
-template <int AlphabetSize, int (*indexof)(char)>
-size_t hat_trie_container<AlphabetSize, indexof>::
+template <int alphabet_size, int (*indexof)(char)>
+size_t hat_trie_container<alphabet_size, indexof>::
 size() const {
-    return container.size();
+    return store.size();
 }
 
-template <int AlphabetSize, int (*indexof)(char)>
-hat_trie_node<AlphabetSize, indexof>::
+// ----------------------------
+// hat_trie_node implementation
+// ----------------------------
+
+template <int alphabet_size, int (*indexof)(char)>
+hat_trie_node<alphabet_size, indexof>::
 hat_trie_node(char ch) : ch(ch), parent(NULL) {
-    for (int i = 0; i < AlphabetSize; ++i) {
+    for (int i = 0; i < alphabet_size; ++i) {
         children[i] = NULL;
     }
 }
 
-template <int AlphabetSize, int (*indexof)(char)>
-hat_trie_node<AlphabetSize, indexof>::
+template <int alphabet_size, int (*indexof)(char)>
+hat_trie_node<alphabet_size, indexof>::
 ~hat_trie_node() {
 
 }
@@ -193,44 +224,48 @@ hat_trie_node<AlphabetSize, indexof>::
 
 namespace stx {
 
-template <int AlphabetSize, int (*indexof)(char)>
-hat_trie<AlphabetSize, indexof>::hat_trie() {
+// -----------------------
+// hat_trie implementation
+// -----------------------
+
+template <int alphabet_size, int (*indexof)(char)>
+hat_trie<alphabet_size, indexof>::hat_trie() {
     init();
 }
 
-template <int AlphabetSize, int (*indexof)(char)>
-hat_trie<AlphabetSize, indexof>::~hat_trie() {
+template <int alphabet_size, int (*indexof)(char)>
+hat_trie<alphabet_size, indexof>::~hat_trie() {
     if (type == CONTAINER_POINTER) { delete (container *)root; }
     else if (type == NODE_POINTER) { delete (node *)root; }
     root = NULL;
 }
 
-template <int AlphabetSize, int (*indexof)(char)>
-void hat_trie<AlphabetSize, indexof>::init() {
+template <int alphabet_size, int (*indexof)(char)>
+void hat_trie<alphabet_size, indexof>::init() {
     _size = 0;
     root = new container();
     type = CONTAINER_POINTER;
 }
 
-template <int AlphabetSize, int (*indexof)(char)>
-int hat_trie<AlphabetSize, indexof>::getindex(char ch) throw(bad_index) {
+template <int alphabet_size, int (*indexof)(char)>
+int hat_trie<alphabet_size, indexof>::getindex(char ch) throw(bad_index) {
     int result = indexof(ch);
-    if (result < 0 || result >= AlphabetSize) {
+    if (result < 0 || result >= alphabet_size) {
         throw bad_index();
     }
     return result;
 }
 
-template <int AlphabetSize, int (*indexof)(char)>
-bool hat_trie<AlphabetSize, indexof>::
+template <int alphabet_size, int (*indexof)(char)>
+bool hat_trie<alphabet_size, indexof>::
 search(const string& s) {
     pair<void *, int> p;
     size_t pos;
     return search(s, p, pos);
 }
 
-template <int AlphabetSize, int (*indexof)(char)>
-bool hat_trie<AlphabetSize, indexof>::
+template <int alphabet_size, int (*indexof)(char)>
+bool hat_trie<alphabet_size, indexof>::
 search(const string& s, pair<void *, int>& p, size_t& pos) {
     // Search for @a s in the tree.
     if (type == CONTAINER_POINTER) {
@@ -282,13 +317,13 @@ search(const string& s, pair<void *, int>& p, size_t& pos) {
         // meaning @a s should appear at node @a n in the trie. Return true
         // iff the end of string flag in @a n is set.
         p = pair<void *, int>(n, NODE_POINTER);
-        return n->types[AlphabetSize];
+        return n->types[alphabet_size];
     }
     return false;
 }
 
-template <int AlphabetSize, int (*indexof)(char)>
-void hat_trie<AlphabetSize, indexof>::insert(const string& s) {
+template <int alphabet_size, int (*indexof)(char)>
+void hat_trie<alphabet_size, indexof>::insert(const string& s) {
     //cout << "INSERTING " << s << endl;
     if (type == CONTAINER_POINTER) {
         // Insert into the container root points to.
@@ -302,7 +337,7 @@ void hat_trie<AlphabetSize, indexof>::insert(const string& s) {
         // Find the location in the trie that the new word should be inserted
         // into.
         pair<void *, int> p;
-        size_t pos;
+        size_t pos = 0;
         if (search(s, p, pos)) {
             //cout << "found " << s << " in the trie, so didn't insert" << endl;
         } else {
@@ -313,7 +348,7 @@ void hat_trie<AlphabetSize, indexof>::insert(const string& s) {
                 if (pos == s.length()) {
                     //cout << "pos == s.length()" << endl;
                     // Just set the node's end of word flag to true.
-                    n->types.set(AlphabetSize);
+                    n->types.set(alphabet_size);
                 } else {
                     //cout << "pos != s.length(): " << pos << endl;
                     // A new container needs to be made to accomodate @a s.
@@ -351,28 +386,34 @@ void hat_trie<AlphabetSize, indexof>::insert(const string& s) {
     }
 }
 
-template <int AlphabetSize, int (*indexof)(char)>
+template <int alphabet_size, int (*indexof)(char)>
 void
-hat_trie<AlphabetSize, indexof>::burst(container *htc) {
+hat_trie<alphabet_size, indexof>::burst(container *htc) {
     //cout << "BURSTING " << endl;
     // Construct new node.
     node *result = new node(htc->ch);
-    result->types[AlphabetSize] = htc->word;
+    result->types[alphabet_size] = htc->word;
 
     // Make a set of containers for the data in the old container and add them
     // to the new node.
-    set<string>::iterator it;
-    for (it = htc->container.begin(); it != htc->container.end(); ++it) {
-        int index = getindex((*it)[0]);
+    // TODO container::store_type::iterator it;
+    array_hash::iterator it;
+    for (it = htc->store.begin(); it != htc->store.end(); ++it) {
+        //int index = getindex(it.first[0]);
+        int index = getindex((*it).first[0]);
         if (result->children[index] == NULL) {
-            container *insertion = new container((*it)[0]);
-            insertion->word = it->length() == 1;
+            container *insertion = new container((*it).first[0]);
+            insertion->word = (*it).second == 1;
             insertion->parent = result;
             result->children[index] = insertion;
             result->types[index] = CONTAINER_POINTER;
         }
-        if (it->length() > 1) {
-            ((container *)result->children[index])->insert(it->substr(1));
+        if ((*it).second > 1) {
+            //((container *)result->children[index])->insert(it->substr(1));
+            ((container *)result->children[index])->insert(
+                    pair<const char *, uint16_t>((*it).first + 1, (*it).second - 1));
+                //it->substr(1));
+
         }
     }
 
