@@ -51,7 +51,8 @@ template <class T>
 void print(T& t) {
     typename T::iterator it;
     for (it = t.begin(); it != t.end(); ++it) {
-        cout << *it << endl;
+        print(*it);
+        //cout << *it << endl;
     }
 }
 
@@ -81,19 +82,20 @@ double timeReport() {
 
 
 int main() {
-    std::ios_base::sync_with_stdio(false);
+    std::ios_base::sync_with_stdio(false);  // speed up reading from stdin
     array_hash ah;
     string reader;
     vector<string> v;
     set<string> s;
     while (cin >> reader) {
-        ah.insert(reader.c_str(), reader.length());
+        ah.insert(reader.c_str());
         //s.insert(reader);
 	//v.push_back(reader);
     }
-	timeStart();
-    print(ah);
-	timeStop();
+	//timeStart();
+    //print(ah);
+	//timeStop();
+    //timeReport();
     //array_hash::iterator it;
     //int i = 0;
     //for (it = ah.begin(); it != ah.end(); ++it) {
