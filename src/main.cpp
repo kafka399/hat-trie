@@ -80,7 +80,6 @@ double timeReport() {
 	return res;
 }
 
-
 int main() {
     std::ios_base::sync_with_stdio(false);  // speed up reading from stdin
     hat_trie<> ht;
@@ -89,9 +88,12 @@ int main() {
     vector<string> v;
     set<string> s;
     while (cin >> reader) {
-        ah.insert(reader.c_str());
+        reader = trim(reader);
+        if (reader.length() > 0) {
+            ht.insert(reader);
+        }
+        //ah.insert(reader.c_str());
         //s.insert(reader);
-        //ht.insert(reader);
     }
 	//timeStart();
   //ah.insert("the");

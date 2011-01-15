@@ -38,7 +38,7 @@ const int DEFAULT_ALPHABET_SIZE = 26;
 /**
  * Default indexof function for hat_tries.
  */
-int alphabet_index(char ch) {
+inline int alphabet_index(char ch) {
     if (ch >= 'a' && ch <= 'z') {
         return ch - 'a';
     }
@@ -70,7 +70,6 @@ class hat_trie_container {
 
     bool contains(const string& s);
     void insert(const string& s);
-    void insert(const pair<const char *, uint16_t>& p);
     size_t size() const;
 
   private:
@@ -324,7 +323,7 @@ search(const string& s, pair<void *, int>& p, size_t& pos) {
 
 template <int alphabet_size, int (*indexof)(char)>
 void hat_trie<alphabet_size, indexof>::insert(const string& s) {
-    //cout << "INSERTING " << s << endl;
+    cout << "INSERTING " << s << endl;
     if (type == CONTAINER_POINTER) {
         // Insert into the container root points to.
         container *htc = (container *)root;
@@ -389,7 +388,7 @@ void hat_trie<alphabet_size, indexof>::insert(const string& s) {
 template <int alphabet_size, int (*indexof)(char)>
 void
 hat_trie<alphabet_size, indexof>::burst(container *htc) {
-    //cout << "BURSTING " << endl;
+    cout << "BURSTING " << endl;
     // Construct new node.
     node *result = new node(htc->ch);
     result->types[alphabet_size] = htc->word;
@@ -400,20 +399,18 @@ hat_trie<alphabet_size, indexof>::burst(container *htc) {
     array_hash::iterator it;
     for (it = htc->store.begin(); it != htc->store.end(); ++it) {
         //int index = getindex(it.first[0]);
-        int index = getindex((*it).first[0]);
+        int index = getindex((*it)[0]);
         if (result->children[index] == NULL) {
-            container *insertion = new container((*it).first[0]);
-            insertion->word = (*it).second == 1;
+            container *insertion = new container((*it)[0]);
+            //insertion->word = length == 1;
+            insertion->word == ((*it)[1] != '\0');
             insertion->parent = result;
             result->children[index] = insertion;
             result->types[index] = CONTAINER_POINTER;
         }
-        if ((*it).second > 1) {
+        if ((*it)[1] != '\0') {  // then the length is > 1
             //((container *)result->children[index])->insert(it->substr(1));
-            ((container *)result->children[index])->insert(
-                    pair<const char *, uint16_t>((*it).first + 1, (*it).second - 1));
-                //it->substr(1));
-
+            ((container *)result->children[index])->insert((*it) + 1);
         }
     }
 
