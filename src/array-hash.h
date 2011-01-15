@@ -12,9 +12,6 @@ namespace stx {
 
 /**
  * Hash table container for unsorted strings.
- *
- * All of the operations of this hash table can be SIGNIFICANTLY sped up if
- * the length of the string is provided as a parameter.
  */
 class array_hash {
   private:
@@ -97,9 +94,8 @@ array_hash::~array_hash() {
  * @param length  length of @a str
  * @param p       slot in @a data that @a str goes into
  *
- * @return  If this function finds @a str in the table, returns 0. If
- *          not, returns the new size of the array that would need to be
- *          allocated to store the array and @a str.
+ * @return  If @a str is found in the table, returns a pointer to the string
+ *          and its corresponding length. If not, returns NULL.
  */
 char *array_hash::search(const char *str, length_type length, char *p) const {
     // Search for @a str in the slot pointed to by @a p.
@@ -112,7 +108,7 @@ char *array_hash::search(const char *str, length_type length, char *p) const {
             // sure they aren't the same string.
             if (strncmp(str, p, length) == 0) {
                 // Found @a str.
-                return p;
+                return p - sizeof(length_type);
             }
         }
         p += w;
@@ -125,9 +121,6 @@ char *array_hash::search(const char *str, length_type length, char *p) const {
  * Inserts @a str into the table.
  *
  * @param str     string to insert
- * @param length  length of @a str. If at all possible, this should be
- *                provided by the caller. Calculating length separately
- *                slows this function down significantly.
  */
 void array_hash::insert(const char *str) {
   //cout << "INSERTING " << str << endl;
@@ -175,9 +168,6 @@ void array_hash::insert(const char *str) {
  * Searches for @a str in the table.
  *
  * @param str     string to search for
- * @param length  length of @a str. If at all possible, this should be
- *                provided by the caller. Calculating length separately
- *                slows this function down significantly.
  *
  * @return  true if @a str is in the table, false otherwise
  */
@@ -224,7 +214,8 @@ array_hash::iterator array_hash::end() const {
  * Hashes @a str to an integer, its slot in the hash table.
  *
  * @param str     string to hash
- * @param length  length of @a str
+ * @param length  length of @a str. This function calculates this value as it
+ *                runs.
  * @param seed    seed for the hash function
  *
  * @return  hashed value of @a str, its slot in the table
@@ -281,10 +272,16 @@ array_hash::iterator& array_hash::iterator::operator++() {
     return *this;
 }
 
+array_hash::iterator& array_hash::iterator::operator--() {
+    // TODO
+    return *this;
+}
+
 /**
  * Iterator dereference operator.
  *
- * @return  pointer to the string represented by this iterator
+ * @return  pair where @a first is a pointer to the (non-NULL terminated)
+ *          string, and @a second is the length of the string
  */
 pair<const char *, uint16_t> array_hash::iterator::operator*() {
     pair<const char *, uint16_t> result;
