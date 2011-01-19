@@ -69,7 +69,7 @@ class hat_trie_container {
     virtual ~hat_trie_container();
 
     bool contains(const char *p);
-    void insert(const char *p);
+    bool insert(const char *p);
     size_t size() const;
 
   private:
@@ -114,7 +114,12 @@ class hat_trie {
     hat_trie();
     virtual ~hat_trie();
 
+    // accessors
+    size_t size() const;
+
+    // modifiers
     void insert(const string& s);
+
     void print(void *p, int type, const string& space = "") {
         if (type == CONTAINER_POINTER) {
             container *c = (container *)p;
@@ -148,7 +153,6 @@ class hat_trie {
         }
     }
 
-    size_t size() const;
 
   public:
     size_t _size;  // number of distinct elements in the trie
@@ -193,9 +197,9 @@ contains(const char *p) {
 }
 
 template <int alphabet_size, int (*indexof)(char)>
-void hat_trie_container<alphabet_size, indexof>::
+bool hat_trie_container<alphabet_size, indexof>::
 insert(const char *p) {
-    store.insert(p);
+    return store.insert(p);
 }
 
 template <int alphabet_size, int (*indexof)(char)>
@@ -327,15 +331,22 @@ search(const string& s, pair<void *, int>& p, size_t& pos) {
 }
 
 template <int alphabet_size, int (*indexof)(char)>
+size_t hat_trie<alphabet_size, indexof>::size() const {
+    return _size;
+}
+
+template <int alphabet_size, int (*indexof)(char)>
 void hat_trie<alphabet_size, indexof>::insert(const string& s) {
 //    cout << "INSERTING " << s << endl;
     if (type == CONTAINER_POINTER) {
 //        cout << "insert into node container" << endl;
         // Insert into the container root points to.
         container *htc = (container *)root;
-        htc->insert(s.c_str());
-        if (htc->size() > BUCKET_SIZE_THRESHOLD) {
-            burst(htc);
+        if (htc->insert(s.c_str())) {
+            ++_size;
+            if (htc->size() > BUCKET_SIZE_THRESHOLD) {
+                burst(htc);
+            }
         }
 
     } else if (type == NODE_POINTER) {
@@ -366,7 +377,12 @@ void hat_trie<alphabet_size, indexof>::insert(const string& s) {
                     } else {
                         // Add the remainder of @a s to the new container.
                         //c->insert(s.substr(pos + 1));
-                        c->insert(s.data() + pos + 1);
+                        if (c->insert(s.data() + pos + 1)) {
+                            ++_size;
+                            if (c->size() > BUCKET_SIZE_THRESHOLD) {
+                                burst(c);
+                            }
+                        }
                     }
                     int index = getindex(s[pos]);
                     n->children[index] = c;
@@ -384,9 +400,11 @@ void hat_trie<alphabet_size, indexof>::insert(const string& s) {
 //                    cout << "pos != s.length()" << endl;
                     // Insert the leftover part of @a s into the container.
                     //c->insert(s.substr(pos + 1));
-                    c->insert(s.data() + pos + 1);
-                    if (c->size() > BUCKET_SIZE_THRESHOLD) {
-                        burst(c);
+                    if (c->insert(s.data() + pos + 1)) {
+                        ++_size;
+                        if (c->size() > BUCKET_SIZE_THRESHOLD) {
+                            burst(c);
+                        }
                     }
                 }
             }

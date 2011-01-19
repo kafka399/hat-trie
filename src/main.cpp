@@ -83,27 +83,25 @@ double timeReport() {
 
 int main() {
     std::ios_base::sync_with_stdio(false);  // speed up reading from stdin
-    hat_trie<> ht;
+    hat_trie<27, indexof> ht;
     array_hash ah;
     string reader;
     //vector<string> v;
     set<string> s;
-    timeStart();
+    size_t size = 0;
     while (cin >> reader) {
-        //reader = trim(reader);
-        //if (reader.length() > 0) {
-            //ht.insert(reader);
-            //s.insert(reader);
+        reader = trim(reader);
+        if (reader.length() > 0) {
+            ht.insert(reader);
             //ah.insert(reader.c_str());
-        //}
+            //s.insert(reader);
+            ++size;
+        }
+        //ht.insert(reader);
         //ah.insert(reader.c_str());
-        ht.insert(reader);
     }
-    timeStop();
-    timeReport();
     //ht.print(ht.root, hat_trie<>::NODE_POINTER);
-    //cout << s.size() << endl;
-    //assert(ht.size() == s.size());
+    //sleep(10);
 
     return 0;
 }

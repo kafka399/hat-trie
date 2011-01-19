@@ -24,7 +24,7 @@ class array_hash {
     array_hash();
     ~array_hash();
 
-    void insert(const char *str);
+    bool insert(const char *str);
     bool find(const char *str) const;
     size_t size() const;
 
@@ -121,10 +121,13 @@ char *array_hash::search(const char *str, length_type length, char *p) const {
 /**
  * Inserts @a str into the table.
  *
- * @param str     string to insert
+ * @param str  string to insert
+ *
+ * @return  true if @a str is successfully inserted, false if @a str already
+ *          appears in the table
  */
-void array_hash::insert(const char *str) {
-  //cout << "INSERTING " << str << endl;
+bool array_hash::insert(const char *str) {
+    //cout << "INSERTING " << str << endl;
     length_type length;
     int slot = hash(str, length);
     char *p = data[slot];
@@ -132,7 +135,7 @@ void array_hash::insert(const char *str) {
         // Append the new string to the end of this slot.
         if (search(str, length, p) != NULL) {
             // @a str is already in the table. Nothing needs to be done.
-            return;
+            return false;
         }
         // Append the new string to the end of this slot.
         size_type old_size = *((size_type *)(p));
@@ -157,6 +160,7 @@ void array_hash::insert(const char *str) {
     length = 0;
     memcpy(p, &length, sizeof(length_type));
     ++_size;
+    return true;
 
     // debug print code
   //for (int i = 0; i < *((size_type *)(data[slot])); ++i) {
@@ -168,7 +172,7 @@ void array_hash::insert(const char *str) {
 /**
  * Searches for @a str in the table.
  *
- * @param str     string to search for
+ * @param str  string to search for
  *
  * @return  true if @a str is in the table, false otherwise
  */
