@@ -1,0 +1,4 @@
+This implementation is currently *VERY* incomplete. Working:
+
+  - insert(string)
+  - search(string)

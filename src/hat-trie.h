@@ -268,7 +268,7 @@ int hat_trie<alphabet_size, indexof>::getindex(char ch) throw(bad_index) {
 template <int alphabet_size, int (*indexof)(char)>
 bool hat_trie<alphabet_size, indexof>::
 search(const string& s) {
-    const char *ps;
+    const char *ps = s.c_str();
     pair<void *, int> p;
     return search(ps, p);
 }
