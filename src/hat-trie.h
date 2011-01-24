@@ -194,6 +194,9 @@ hat_trie_container<alphabet_size, indexof>::
 template <int alphabet_size, int (*indexof)(char)>
 bool hat_trie_container<alphabet_size, indexof>::
 contains(const char *p) {
+    if (*p == '\0') {
+        return word;
+    }
     return store.find(p);
 }
 
@@ -285,53 +288,23 @@ search(const char *& pos, pair<void *, int>& p) {
     } else if (type == NODE_POINTER) {
         node *n = (node *)root;
         void *v = NULL;
-        //pos = 0;
-        //pos = s.c_str();
-        // Traverse the trie until either @a s is used up, @a s is found in
-        // the trie, or @a s is not found in the trie.
-        //while (pos < s.length()) {
         while (*pos) {
-            //int index = getindex(s[pos]);
             int index = getindex(*pos);
             v = n->children[index];
             if (v) {
                 if (n->types[index] == NODE_POINTER) {
                     n = (node *)v;
-//                    cout << "followed node path by " << s[pos] << endl;
                 } else if (n->types[index] == CONTAINER_POINTER) {
-//                    cout << "found container pointer at " << s[pos] << endl;
-                    //if (pos + 1 == s.length()) {
-                    if ((*pos + 1) == '\0') {
-                        // This node represents @a s.
-                        p = pair<void *, int>(v, CONTAINER_POINTER);
-                        ++pos;
-//                        cout << "return here" << endl;
-                        return ((container *)v)->word;
-                    } else {
-//                        cout << "found existing container" << endl;
-                        // @a s should appear in the container represented by
-                        // @a v.
-                        p = pair<void *, int>(v, CONTAINER_POINTER);
-                        //if (pos == s.length()) {
-                        if (*pos == '\0') {
-//                            cout << "here" << endl;
-                            return ((container *)v)->word;
-                        } else {
-                            //return ((container *)v)->contains(s.substr(pos + 1));
-                            //return ((container *)v)->contains(s.data() + pos + 1);
-                            return ((container *)v)->contains(pos + 1);
-                        }
-                    }
+                    p = pair<void *, int>(v, CONTAINER_POINTER);
+                    return ((container *)v)->contains(pos + 1);
                 }
             } else {
+                // TODO can you eliminate this return statement?
                 p = pair<void *, int>(n, NODE_POINTER);
                 return false;
             }
             ++pos;
         }
-        // If we get here, no container was found that could have held @a s,
-        // meaning @a s should appear at node @a n in the trie. Return true
-        // iff the end of string flag in @a n is set.
         p = pair<void *, int>(n, NODE_POINTER);
         return n->types[alphabet_size];
     }

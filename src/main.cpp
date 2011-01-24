@@ -100,7 +100,7 @@ int main() {
         //ht.insert(reader);
         //ah.insert(reader.c_str());
     }
-    ht.print(ht.root, hat_trie<>::NODE_POINTER);
+    //ht.print(ht.root, hat_trie<>::NODE_POINTER);
     //sleep(10);
 
     return 0;
