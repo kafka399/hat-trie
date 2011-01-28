@@ -162,11 +162,12 @@ class hat_trie {
 
     // constant values for the hat trie
     enum { CONTAINER_POINTER, NODE_POINTER };
-    enum { BUCKET_SIZE_THRESHOLD = 1024 };
+    enum { BUCKET_SIZE_THRESHOLD = 2 };
 
     void init();
     int getindex(char ch) throw(bad_index);
     bool search(const char *& s, pair<void *, int> &p);
+    void insert(container *htc, const char *s);
     void burst(container *htc);
 };
 
@@ -255,13 +256,17 @@ void hat_trie<alphabet_size, indexof>::insert(const string& s) {
     if (type == CONTAINER_POINTER) {
         // Insert into the container root points to.
         container *htc = (container *)root;
-        if (htc->insert(s.c_str())) {
-            ++_size;
-            if (htc->size() > BUCKET_SIZE_THRESHOLD) {
-                burst(htc);
-            }
-        }
+        insert((container *)root, s.c_str());
+//      if (htc->insert(s.c_str())) {
+//          ++_size;
+//          if (htc->size() > BUCKET_SIZE_THRESHOLD) {
+//              burst(htc);
+//          }
+//      }
 
+    } else if (type == NODE_POINTER) {
+
+    }
     } else if (type == NODE_POINTER) {
         // Find the location in the trie that the new word should be inserted
         // into.
@@ -270,6 +275,7 @@ void hat_trie<alphabet_size, indexof>::insert(const string& s) {
         if (search(pos, p)) {
 //            cout << "found " << s << " in the trie, so didn't insert" << endl;
         } else {
+            cout << 1 << endl;
             // @a s wasn't found in the trie. Insert it.
             if (p.second == NODE_POINTER) {
                 node *n = (node *)p.first;
@@ -298,16 +304,20 @@ void hat_trie<alphabet_size, indexof>::insert(const string& s) {
                     n->types[index] = CONTAINER_POINTER;
                 }
             } else if (p.second == CONTAINER_POINTER) {
+                cout << 2 << endl;
                 // The word needs to be added to the trie.
                 container *c = (container *)p.first;
                 if (*pos == '\0') {
                     // Set the container's word flag to true.
                     c->word = true;
                 } else {
+                    cout << 3 << endl;
                     // Insert the leftover part of @a s into the container.
                     if (c->insert(pos + 1)) {
+                        cout << 4 << endl;
                         ++_size;
                         if (c->size() > BUCKET_SIZE_THRESHOLD) {
+                            cout << 5 << endl;
                             burst(c);
                         }
                     }
@@ -374,6 +384,18 @@ getindex(char ch) throw(bad_index) {
     return result;
 }
 
+/**
+ * Searches for @a s in the trie, returning statistics about its position.
+ *
+ * @param s  string to search for. If @a *s = \0, @a s is in the trie
+ *           part of this data structure. If not, @a s is in a
+ *           container.
+ * @param p  stores the position of @a s. @a first is a pointer to the
+ *           node or container for @a s, and @a second is the pointer
+ *           type
+ *
+ * @return  true if @a s is found in the trie, false otherwise
+ */
 template <int alphabet_size, int (*indexof)(char)>
 bool hat_trie<alphabet_size, indexof>::
 search(const char *& s, pair<void *, int>& p) {
@@ -382,7 +404,6 @@ search(const char *& s, pair<void *, int>& p) {
         container *htc = (container *)root;
         p = pair<void *, int>(root, CONTAINER_POINTER);
         bool b = htc->contains(s);
-        s = '\0';
         return b;
 
     } else if (type == NODE_POINTER) {
@@ -394,6 +415,7 @@ search(const char *& s, pair<void *, int>& p) {
             int index = getindex(*s);
             v = n->children[index];
             if (v) {
+                ++s;
                 if (n->types[index] == NODE_POINTER) {
                     // Keep moving down the trie structure.
                     n = (node *)v;
@@ -401,13 +423,12 @@ search(const char *& s, pair<void *, int>& p) {
                     // s should appear in the container v. If it
                     // doesn't, it's not in the trie.
                     p = pair<void *, int>(v, CONTAINER_POINTER);
-                    return ((container *)v)->contains(s + 1);
+                    return ((container *)v)->contains(s);
                 }
             } else {
                 p = pair<void *, int>(n, NODE_POINTER);
                 return false;
             }
-            ++s;
         }
         // If we get here, no container was found that could have held
         // s, meaning node n represents s in the trie. Return true if
@@ -419,9 +440,20 @@ search(const char *& s, pair<void *, int>& p) {
 }
 
 template <int alphabet_size, int (*indexof)(char)>
-void
-hat_trie<alphabet_size, indexof>::burst(container *htc) {
-//    cout << "BURSTING " << endl;
+void hat_trie<alphabet_size, indexof>::
+insert(hat_trie_container *htc, const char *s) {
+    if (htc->insert(s)) {
+        ++_size;
+        if (htc->size() > BURST_THRESHOLD) {
+            burst(htc);
+        }
+    }
+}
+
+template <int alphabet_size, int (*indexof)(char)>
+void hat_trie<alphabet_size, indexof>::
+burst(container *htc) {
+    cout << "BURSTING " << endl;
     // Construct new node.
     node *result = new node(htc->ch);
     result->types[alphabet_size] = htc->word;
