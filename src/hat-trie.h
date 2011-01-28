@@ -114,6 +114,9 @@ class hat_trie_node {
 
 namespace stx {
 
+/**
+ * Trie-based data structure for managing sorted strings.
+ */
 template <int alphabet_size = DEFAULT_ALPHABET_SIZE,
           int (*indexof)(char) = alphabet_index>
 class hat_trie {
@@ -168,7 +171,7 @@ class hat_trie {
     }
 
 
-  public:
+  private:
     size_t _size;  // number of distinct elements in the trie
     void *root;    // root of the trie
     char type;     // pointer type of root
