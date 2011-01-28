@@ -99,16 +99,16 @@ array_hash::~array_hash() {
  *          and its corresponding length. If not, returns NULL.
  */
 char *array_hash::search(const char *str, length_type length, char *p) const {
-    // Search for @a str in the slot pointed to by @a p.
+    // Search for str in the slot p points to.
     p += sizeof(size_type);  // skip past size at beginning of slot
     length_type w = *((length_type *)p);
     while (w != 0) {
         p += sizeof(length_type);
         if (w == length) {
-            // The string being scanned is the same length as @a str. Make
-            // sure they aren't the same string.
+            // The string being scanned is the same length as str.
+            // Make sure they aren't the same string.
             if (strncmp(str, p, length) == 0) {
-                // Found @a str.
+                // Found str.
                 return p - sizeof(length_type);
             }
         }
@@ -134,7 +134,7 @@ bool array_hash::insert(const char *str) {
     if (p) {
         // Append the new string to the end of this slot.
         if (search(str, length, p) != NULL) {
-            // @a str is already in the table. Nothing needs to be done.
+            // str is already in the table. Nothing needs to be done.
             return false;
         }
         // Append the new string to the end of this slot.
@@ -152,7 +152,7 @@ bool array_hash::insert(const char *str) {
         *((size_type *)(data[slot])) = size;
         p = data[slot] + sizeof(size_type);
     }
-    // Write data for @a s.
+    // Write data for s.
     memcpy(p, &length, sizeof(length_type));
     p += sizeof(length_type);
     memcpy(p, str, length);
@@ -264,7 +264,7 @@ array_hash::iterator::iterator(const iterator& rhs) {
  * @return  self-reference
  */
 array_hash::iterator& array_hash::iterator::operator++() {
-    // Move @a p to the next string in this slot.
+    // Move p to the next string in this slot.
     p += *((length_type *)p) + sizeof(length_type);
     if (*((length_type *)p) == 0) {
         // Move down to the next slot.
