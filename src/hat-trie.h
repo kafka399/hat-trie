@@ -142,7 +142,6 @@ class hat_trie {
                 cout << endl;
             }
             for (it = c->store.begin(); it != c->store.end(); ++it) {
-                assert(strcmp(*it, "") != 0);
                 cout << space + "  " << *it << " ~" << endl;
             }
         } else if (type == NODE_POINTER) {
@@ -170,7 +169,7 @@ class hat_trie {
 
     // constant values for the hat trie
     enum { CONTAINER_POINTER, NODE_POINTER };
-    enum { BURST_THRESHOLD = 1 };
+    enum { BURST_THRESHOLD = 1024 };
 
     void init();
     int get_index(char ch) throw(bad_index);
@@ -212,15 +211,10 @@ template <int alphabet_size, int (*indexof)(char)>
 bool hat_trie_container<alphabet_size, indexof>::
 insert(const char *p) {
     if (*p == '\0') {
-        cerr << "found null p; setting word to true" << endl;
         bool b = word;
         word = true;
-        for (int i = 0; i < 2; ++i) {
-            assert(store.data[i] == NULL);
-        }
         return !b;
     }
-    cerr << "before insert 3" << endl;
     return store.insert(p);
 }
 
@@ -283,28 +277,18 @@ hat_trie<alphabet_size, indexof>::~hat_trie() {
 template <int alphabet_size, int (*indexof)(char)>
 void hat_trie<alphabet_size, indexof>::
 insert(const string& s) {
-    cout << "TRIE: INSERTING " << s << endl;
     if (type == CONTAINER_POINTER) {
         // Insert into the container root points to.
         //container *htc = (container *)root;
         insert((container *)root, s.c_str());
-//      if (htc->insert(s.c_str())) {
-//          ++_size;
-//          if (htc->size() > BURST_THRESHOLD) {
-//              burst(htc);
-//          }
-//      }
 
     } else if (type == NODE_POINTER) {
         // Search for s in the trie.
         const char *pos = s.c_str();
         pair<void *, int> p;
-        cerr << "before search" << endl;
         if (search(pos, p) == false) {
-            cerr << "after search" << endl;
             // Was s found in the structure of the trie?
             if (*pos == '\0') {
-                cerr << "empty string" << endl;
                 // s was found in the trie's structure. Mark its location
                 // as the end of a word.
                 if (p.second == NODE_POINTER) {
@@ -313,13 +297,11 @@ insert(const string& s) {
                     ((container *)(p.first))->word = true;
                 }
             } else {
-                cerr << "non-empty string" << endl;
                 // s was not found in the trie's structure. Either make a
                 // new container for it or insert it into an already
                 // existing container.
                 container *c = NULL;
                 if (p.second == NODE_POINTER) {
-                    cerr << "MAKING NEW CONTAINER" << endl;
                     // Make a new container for s.
                     node *n = (node *)p.first;
                     //cout << 1 << endl;
@@ -333,14 +315,11 @@ insert(const string& s) {
                     n->types[index] = CONTAINER_POINTER;
                     ++pos;
                 } else if (p.second == CONTAINER_POINTER) {
-                    cerr << "FOUND EXISTING CONTAINER" << endl;
                     c = (container *)p.first;
                 }
 
                 // Insert s into the container.
-                cerr << "before insert" << endl;
                 insert(c, pos);
-                cerr << "after insert" << endl;
             }
         }
     }
@@ -467,9 +446,7 @@ search(const char *& s, pair<void *, int>& p) {
 template <int alphabet_size, int (*indexof)(char)>
 void hat_trie<alphabet_size, indexof>::
 insert(container *htc, const char *s) {
-    cerr << "before insert 2" << endl;
     if (htc->insert(s)) {
-        cerr << "after insert 2" << endl;
         ++_size;
         if (htc->size() > BURST_THRESHOLD) {
             burst(htc);
@@ -480,7 +457,6 @@ insert(container *htc, const char *s) {
 template <int alphabet_size, int (*indexof)(char)>
 void hat_trie<alphabet_size, indexof>::
 burst(container *htc) {
-    cerr << "BURSTING " << endl;
     // Construct new node.
     node *result = new node(htc->ch);
     result->set_word(htc->word);
@@ -495,14 +471,12 @@ burst(container *htc) {
         assert(strlen(*it) > 0);
         if (result->children[index] == NULL) {
             container *insertion = new container((*it)[0]);
-            //insertion->word = length == 1;
             insertion->word = ((*it)[1] == '\0');
             insertion->parent = result;
             result->children[index] = insertion;
             result->types[index] = CONTAINER_POINTER;
         }
         if ((*it)[1] != '\0') {  // then the length is > 1
-            //((container *)result->children[index])->insert(it->substr(1));
             ((container *)result->children[index])->insert((*it) + 1);
         }
     }

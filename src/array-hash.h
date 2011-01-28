@@ -55,7 +55,7 @@ class array_hash {
     // TODO
     char **data;
   private:
-    enum { SLOT_COUNT = 2 };  // MUST be a power of 2
+    enum { SLOT_COUNT = 512 };  // MUST be a power of 2
     size_t _size;
 
     int hash(const char *str, length_type& length, int seed = 23) const;
@@ -100,7 +100,6 @@ array_hash::~array_hash() {
  *          and its corresponding length. If not, returns NULL.
  */
 char *array_hash::search(const char *str, length_type length, char *p) const {
-    cerr << "SEARCHING FOR " << str << endl;
     // Search for str in the slot p points to.
     p += sizeof(size_type);  // skip past size at beginning of slot
     length_type w = *((length_type *)p);
@@ -129,7 +128,6 @@ char *array_hash::search(const char *str, length_type length, char *p) const {
  *          appears in the table
  */
 bool array_hash::insert(const char *str) {
-    cerr << "INSERTING " << str << " INTO ARRAY HASH" << endl;
     length_type length;
     int slot = hash(str, length);
     assert(length != 1);
@@ -140,7 +138,6 @@ bool array_hash::insert(const char *str) {
             // str is already in the table. Nothing needs to be done.
             return false;
         }
-        cerr << "appending" << endl;
         // Append the new string to the end of this slot.
         size_type old_size = *((size_type *)(p));
         size_type new_size = old_size + sizeof(length_type) + length;
@@ -150,14 +147,12 @@ bool array_hash::insert(const char *str) {
         delete [] p;
         p = data[slot] + old_size - sizeof(length_type);
     } else {
-        cerr << "making new slot" << endl;
         // Make a new slot for this string.
         size_type size = sizeof(size_type) + 2 * sizeof(length_type) + length;
         data[slot] = new char[size];
         *((size_type *)(data[slot])) = size;
         p = data[slot] + sizeof(size_type);
     }
-    cerr << "writing data" << endl;
     // Write data for s.
     memcpy(p, &length, sizeof(length_type));
     p += sizeof(length_type);
@@ -168,10 +163,10 @@ bool array_hash::insert(const char *str) {
     ++_size;
 
     // debug print code
-    for (size_t i = 0; i < *((size_type *)(data[slot])); ++i) {
-        cerr << int(data[slot][i]) << " ";
-    }
-    cerr << endl;
+//  for (size_t i = 0; i < *((size_type *)(data[slot])); ++i) {
+//      cerr << int(data[slot][i]) << " ";
+//  }
+//  cerr << endl;
     return true;
 }
 
@@ -239,7 +234,6 @@ array_hash::iterator array_hash::end() const {
  * @return  hashed value of @a str, its slot in the table
  */
 int array_hash::hash(const char *str, length_type& length, int seed) const {
-    cerr << "HASHING " << str << endl;
     int h = seed;
     length = 0;
     while (str[length]) {
@@ -247,7 +241,6 @@ int array_hash::hash(const char *str, length_type& length, int seed) const {
         ++length;
     }
     ++length;  // include space for the NULL terminator
-    cerr << "DONE HASHING" << endl;
     return h & (SLOT_COUNT - 1);  // same as h % SLOT_COUNT if SLOT_COUNT
                                   // is a power of 2
 }
