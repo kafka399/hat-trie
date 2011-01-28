@@ -274,7 +274,7 @@ array_hash::iterator& array_hash::iterator::operator++() {
     if (*((length_type *)p) == 0) {
         // Move down to the next slot.
         ++slot;
-        while (data[slot] == NULL && slot < SLOT_COUNT) {
+        while (slot < SLOT_COUNT && data[slot] == NULL) {
             ++slot;
         }
         if (slot == SLOT_COUNT) {
