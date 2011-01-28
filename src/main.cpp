@@ -85,24 +85,13 @@ double timeReport() {
 int main() {
     std::ios_base::sync_with_stdio(false);  // speed up reading from stdin
     hat_trie<27, indexof> ht;
-
-  //set<string> s;
-  //s.insert("the");
-  //s.insert("there");
-  //s.insert("their");
-  //s.insert("therefore");
-  //s.insert("ther");
-
-  //for (set<string>::iterator it = s.begin(); it != s.end(); ++it) {
-  //    ht.insert(*it);
-  //    ht.print();
-  //    cout << endl;
-  //}
-
     string reader;
+    set<string> s;
+    array_hash ah;
     while (cin >> reader) {
         ht.insert(reader);
-        //ht.print();
+        //s.insert(reader);
+        //ah.insert(reader.c_str());
     }
 
     return 0;
