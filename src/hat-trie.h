@@ -70,9 +70,12 @@ class hat_trie_container {
     hat_trie_container(char ch = '\0');
     virtual ~hat_trie_container();
 
-    bool contains(const char *p);
-    bool insert(const char *p);
+    // accessors
+    bool contains(const char *p) const;
     size_t size() const;
+
+    // modifiers
+    bool insert(const char *p);
 
   private:
     char ch;
@@ -93,7 +96,10 @@ class hat_trie_node {
     hat_trie_node(char ch = '\0');
     ~hat_trie_node();
 
+    // accessors
     bool is_word() const;
+
+    // modifiers
     void set_word(bool b);
 
   public:
@@ -200,7 +206,7 @@ hat_trie_container<alphabet_size, indexof>::
 
 template <int alphabet_size, int (*indexof)(char)>
 bool hat_trie_container<alphabet_size, indexof>::
-contains(const char *p) {
+contains(const char *p) const {
     if (*p == '\0') {
         return word;
     }
