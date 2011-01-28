@@ -16,6 +16,7 @@ int indexof(char ch) {
         return ch - 'a';
     }
     if (ch == '\'') return 26;
+    cout << "UNINDEXED CHAR: " << ch << endl;
     return -1;
 }
 
@@ -84,24 +85,24 @@ double timeReport() {
 int main() {
     std::ios_base::sync_with_stdio(false);  // speed up reading from stdin
     hat_trie<27, indexof> ht;
-    array_hash ah;
+
+  //set<string> s;
+  //s.insert("the");
+  //s.insert("there");
+  //s.insert("their");
+  //s.insert("therefore");
+  //s.insert("ther");
+
+  //for (set<string>::iterator it = s.begin(); it != s.end(); ++it) {
+  //    ht.insert(*it);
+  //    ht.print();
+  //    cout << endl;
+  //}
+
     string reader;
-    //vector<string> v;
-    set<string> s;
-    size_t size = 0;
     while (cin >> reader) {
-        reader = trim(reader);
-        if (reader.length() > 0) {
-            ht.insert(reader);
-            //ah.insert(reader.c_str());
-            //s.insert(reader);
-            ++size;
-        }
-        //ht.insert(reader);
-        //ah.insert(reader.c_str());
+        ht.insert(reader);
     }
-    //ht.print(ht.root, hat_trie<>::NODE_POINTER);
-    //sleep(10);
 
     return 0;
 }

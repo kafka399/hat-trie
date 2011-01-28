@@ -91,6 +91,9 @@ class hat_trie_node {
     hat_trie_node(char ch = '\0');
     ~hat_trie_node();
 
+    bool is_word() const;
+    void set_word(bool b);
+
   public:
     char ch;
     void *children[alphabet_size];  // untyped pointers to children
@@ -121,6 +124,9 @@ class hat_trie {
     // modifiers
     void insert(const string& s);
 
+    void print() {
+        print(root, type);
+    }
     void print(void *p, int type, const string& space = "") {
         if (type == CONTAINER_POINTER) {
             container *c = (container *)p;
@@ -162,10 +168,10 @@ class hat_trie {
 
     // constant values for the hat trie
     enum { CONTAINER_POINTER, NODE_POINTER };
-    enum { BUCKET_SIZE_THRESHOLD = 2 };
+    enum { BURST_THRESHOLD = 2 };
 
     void init();
-    int getindex(char ch) throw(bad_index);
+    int get_index(char ch) throw(bad_index);
     bool search(const char *& s, pair<void *, int> &p);
     void insert(container *htc, const char *s);
     void burst(container *htc);
@@ -203,6 +209,13 @@ contains(const char *p) {
 template <int alphabet_size, int (*indexof)(char)>
 bool hat_trie_container<alphabet_size, indexof>::
 insert(const char *p) {
+    if (*p == '\0') {
+        cerr << "found null p; setting word to true" << endl;
+        bool b = word;
+        word = true;
+        return !b;
+    }
+    cerr << "before insert 3" << endl;
     return store.insert(p);
 }
 
@@ -230,6 +243,18 @@ hat_trie_node<alphabet_size, indexof>::
 
 }
 
+template <int alphabet_size, int (*indexof)(char)>
+bool hat_trie_node<alphabet_size, indexof>::
+is_word() const {
+    return types[alphabet_size];
+}
+
+template <int alphabet_size, int (*indexof)(char)>
+void hat_trie_node<alphabet_size, indexof>::
+set_word(bool val) {
+    types[alphabet_size] = val;
+}
+
 }  // anonymous namespace
 
 namespace stx {
@@ -251,106 +276,59 @@ hat_trie<alphabet_size, indexof>::~hat_trie() {
 }
 
 template <int alphabet_size, int (*indexof)(char)>
-void hat_trie<alphabet_size, indexof>::insert(const string& s) {
-    cout << "INSERTING " << s << endl;
+void hat_trie<alphabet_size, indexof>::
+insert(const string& s) {
+    cout << "TRIE: INSERTING " << s << endl;
     if (type == CONTAINER_POINTER) {
         // Insert into the container root points to.
-        container *htc = (container *)root;
+        //container *htc = (container *)root;
         insert((container *)root, s.c_str());
 //      if (htc->insert(s.c_str())) {
 //          ++_size;
-//          if (htc->size() > BUCKET_SIZE_THRESHOLD) {
+//          if (htc->size() > BURST_THRESHOLD) {
 //              burst(htc);
 //          }
 //      }
 
     } else if (type == NODE_POINTER) {
-
-    }
-    } else if (type == NODE_POINTER) {
-        // Find the location in the trie that the new word should be inserted
-        // into.
+        // Search for s in the trie.
         const char *pos = s.c_str();
         pair<void *, int> p;
-        if (search(pos, p)) {
-//            cout << "found " << s << " in the trie, so didn't insert" << endl;
-        } else {
-            cout << 1 << endl;
-            // @a s wasn't found in the trie. Insert it.
-            if (p.second == NODE_POINTER) {
-                node *n = (node *)p.first;
-                if (*pos == '\0') {
-                    // Just set the node's end of word flag to true.
-                    n->types.set(alphabet_size);
-                } else {
-                    // A new container needs to be made to accomodate @a s.
-                    container *c = new container(*pos);
+        if (search(pos, p) == false) {
+            // Was s found in the structure of the trie?
+            if (*pos == '\0') {
+                // s was found in the trie's structure. Mark its location
+                // as the end of a word.
+                if (p.second == NODE_POINTER) {
+                    ((node *)(p.first))->set_word(true);
+                } else if (p.second == CONTAINER_POINTER) {
+                    ((container *)(p.first))->word = true;
+                }
+            } else {
+                // s was not found in the trie's structure. Either make a
+                // new container for it or insert it into an already
+                // existing container.
+                container *c = NULL;
+                if (p.second == NODE_POINTER) {
+                    // Make a new container for s.
+                    node *n = (node *)p.second;
+                    int index = get_index(*pos);
+                    c = new container(*pos);
                     c->parent = n;
-                    if (*(pos + 1) == '\0') {
-                        // The new container itself represents @a s.
-                        c->word = true;
-                    } else {
-                        // Add the remainder of @a s to the new container.
-                        if (c->insert(pos + 1)) {
-                            ++_size;
-                            if (c->size() > BUCKET_SIZE_THRESHOLD) {
-                                burst(c);
-                            }
-                        }
-                    }
-                    //int index = getindex(s[pos]);
-                    int index = getindex(*pos);
                     n->children[index] = c;
                     n->types[index] = CONTAINER_POINTER;
+                    ++pos;
+                } else if (p.second == CONTAINER_POINTER) {
+                    c = (container *)p.first;
+                    cerr << "FOUND EXISTING CONTAINER" << endl;
                 }
-            } else if (p.second == CONTAINER_POINTER) {
-                cout << 2 << endl;
-                // The word needs to be added to the trie.
-                container *c = (container *)p.first;
-                if (*pos == '\0') {
-                    // Set the container's word flag to true.
-                    c->word = true;
-                } else {
-                    cout << 3 << endl;
-                    // Insert the leftover part of @a s into the container.
-                    if (c->insert(pos + 1)) {
-                        cout << 4 << endl;
-                        ++_size;
-                        if (c->size() > BUCKET_SIZE_THRESHOLD) {
-                            cout << 5 << endl;
-                            burst(c);
-                        }
-                    }
-                }
+
+                // Insert s into the container.
+                cerr << "before insert" << endl;
+                insert(c, pos);
+                cerr << "after insert" << endl;
             }
         }
-
-//      container *c = NULL;
-//      if (p.second == NODE_POINTER) {
-//          node *n = (node *)p.first;
-//          if (*pos == '\0') {
-//              // Set the node's end of word flag to true.
-//              n->types.set(alphabet_size);
-//          } else {
-//              // A new container needs to be made to accomodate @a s.
-//              c = new container(*pos);
-//              c->parent = n;
-//              int index = getindex(*pos);
-//              n->children[index] = c;
-//              n->types[index] = CONTAINER_POINTER;
-//              ++pos;
-//            //if (*pos == '\0') {
-//            //    // The new container represents @a s.
-//            //    c->word = true;
-//            //}
-//          }
-//      } else if (p.second == CONTAINER_POINTER) {
-//          // The word needs to be added to a container already in the trie.
-//          c = (container *)p.first;
-//      }
-//      if (c) {
-
-//      }
     }
 }
 
@@ -376,7 +354,7 @@ void hat_trie<alphabet_size, indexof>::init() {
 
 template <int alphabet_size, int (*indexof)(char)>
 int hat_trie<alphabet_size, indexof>::
-getindex(char ch) throw(bad_index) {
+get_index(char ch) throw(bad_index) {
     int result = indexof(ch);
     if (result < 0 || result >= alphabet_size) {
         throw bad_index();
@@ -399,6 +377,39 @@ getindex(char ch) throw(bad_index) {
 template <int alphabet_size, int (*indexof)(char)>
 bool hat_trie<alphabet_size, indexof>::
 search(const char *& s, pair<void *, int>& p) {
+//  node *n = NULL;
+//  container *c = NULL;
+//  if (type == CONTAINER_POINTER) { c = (container *)root; }
+//  else if (type == NODE_POINTER) { n = (node *)root; }
+
+//  // Search for a container that could hold @a s.
+//  int index;
+//  while (c == NULL && *s) {
+//      // Try to move down the trie.
+//      index = get_index(*s);
+
+//      // If the trie has a path in this direction, follow it.
+//      if (n->children[index]) {
+//          if (n->types[index] == NODE_POINTER) {
+//              n = (node *)(n->children[index]);
+//          } else if (n->types[index] == CONTAINER_POINTER) {
+//              c = (container *)(n->children[index]);
+//          }
+//          ++s;
+//      } else {
+//          // The trie has no path in this direction.
+//          p = pair<void *, int>(n, NODE_POINTER);
+//          return false;
+//      }
+//  }
+//  if (c) {
+//      p = pair<void *, int>(c, CONTAINER_POINTER);
+//      return c->contains(s);
+//  } else {
+//      p = pair<void *, int>(n, NODE_POINTER);
+//      return n->types[
+//  }
+
     // Search for a s in the tree.
     if (type == CONTAINER_POINTER) {
         container *htc = (container *)root;
@@ -412,7 +423,7 @@ search(const char *& s, pair<void *, int>& p) {
         node *n = (node *)root;
         void *v = NULL;
         while (*s) {
-            int index = getindex(*s);
+            int index = get_index(*s);
             v = n->children[index];
             if (v) {
                 ++s;
@@ -434,15 +445,17 @@ search(const char *& s, pair<void *, int>& p) {
         // s, meaning node n represents s in the trie. Return true if
         // the end of word flag in n is set.
         p = pair<void *, int>(n, NODE_POINTER);
-        return n->types[alphabet_size];
+        return n->is_word();
     }
     return false;
 }
 
 template <int alphabet_size, int (*indexof)(char)>
 void hat_trie<alphabet_size, indexof>::
-insert(hat_trie_container *htc, const char *s) {
+insert(container *htc, const char *s) {
+    cerr << "before insert 2" << endl;
     if (htc->insert(s)) {
+        cerr << "after insert 2" << endl;
         ++_size;
         if (htc->size() > BURST_THRESHOLD) {
             burst(htc);
@@ -453,22 +466,23 @@ insert(hat_trie_container *htc, const char *s) {
 template <int alphabet_size, int (*indexof)(char)>
 void hat_trie<alphabet_size, indexof>::
 burst(container *htc) {
-    cout << "BURSTING " << endl;
+    cerr << "BURSTING " << endl;
     // Construct new node.
     node *result = new node(htc->ch);
-    result->types[alphabet_size] = htc->word;
+    result->set_word(htc->word);
 
     // Make a set of containers for the data in the old container and add them
     // to the new node.
     // TODO container::store_type::iterator it;
     array_hash::iterator it;
     for (it = htc->store.begin(); it != htc->store.end(); ++it) {
-        //int index = getindex(it.first[0]);
-        int index = getindex((*it)[0]);
+        //int index = get_index(it.first[0]);
+        int index = get_index((*it)[0]);
+        assert(strlen(*it) > 0);
         if (result->children[index] == NULL) {
             container *insertion = new container((*it)[0]);
             //insertion->word = length == 1;
-            insertion->word = ((*it)[1] != '\0');
+            insertion->word = ((*it)[1] == '\0');
             insertion->parent = result;
             result->children[index] = insertion;
             result->types[index] = CONTAINER_POINTER;
@@ -483,7 +497,7 @@ burst(container *htc) {
     node *parent = htc->parent;
     result->parent = parent;
     if (parent) {
-        int index = getindex(htc->ch);
+        int index = get_index(htc->ch);
         parent->children[index] = result;
         parent->types[index] = NODE_POINTER;
     } else {
