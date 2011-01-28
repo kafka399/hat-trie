@@ -1,7 +1,9 @@
 // TODO
 // what if bursting gives you a container that still has more elements than
 // BURST_THRESHOLD? I think bursting this one lazily (on the next time you
-// insert into this container) is acceptable.
+// insert into this container) is acceptable. No container will have more
+// values in it than BURST_THRESHOLD + 1.
+//   NO! it accumulates!
 
 #ifndef HAT_TRIE_H
 #define HAT_TRIE_H
@@ -140,7 +142,7 @@ class hat_trie {
                 cout << endl;
             }
             for (it = c->store.begin(); it != c->store.end(); ++it) {
-                //assert(*it != "");
+                assert(strcmp(*it, "") != 0);
                 cout << space + "  " << *it << " ~" << endl;
             }
         } else if (type == NODE_POINTER) {
@@ -168,7 +170,7 @@ class hat_trie {
 
     // constant values for the hat trie
     enum { CONTAINER_POINTER, NODE_POINTER };
-    enum { BURST_THRESHOLD = 2 };
+    enum { BURST_THRESHOLD = 1 };
 
     void init();
     int get_index(char ch) throw(bad_index);
@@ -213,6 +215,9 @@ insert(const char *p) {
         cerr << "found null p; setting word to true" << endl;
         bool b = word;
         word = true;
+        for (int i = 0; i < 2; ++i) {
+            assert(store.data[i] == NULL);
+        }
         return !b;
     }
     cerr << "before insert 3" << endl;
@@ -294,9 +299,12 @@ insert(const string& s) {
         // Search for s in the trie.
         const char *pos = s.c_str();
         pair<void *, int> p;
+        cerr << "before search" << endl;
         if (search(pos, p) == false) {
+            cerr << "after search" << endl;
             // Was s found in the structure of the trie?
             if (*pos == '\0') {
+                cerr << "empty string" << endl;
                 // s was found in the trie's structure. Mark its location
                 // as the end of a word.
                 if (p.second == NODE_POINTER) {
@@ -305,22 +313,28 @@ insert(const string& s) {
                     ((container *)(p.first))->word = true;
                 }
             } else {
+                cerr << "non-empty string" << endl;
                 // s was not found in the trie's structure. Either make a
                 // new container for it or insert it into an already
                 // existing container.
                 container *c = NULL;
                 if (p.second == NODE_POINTER) {
+                    cerr << "MAKING NEW CONTAINER" << endl;
                     // Make a new container for s.
-                    node *n = (node *)p.second;
+                    node *n = (node *)p.first;
+                    //cout << 1 << endl;
                     int index = get_index(*pos);
                     c = new container(*pos);
+                    for (int i = 0; i < 2; ++i) {
+                        assert(c->store.data[i] == NULL);
+                    }
                     c->parent = n;
                     n->children[index] = c;
                     n->types[index] = CONTAINER_POINTER;
                     ++pos;
                 } else if (p.second == CONTAINER_POINTER) {
-                    c = (container *)p.first;
                     cerr << "FOUND EXISTING CONTAINER" << endl;
+                    c = (container *)p.first;
                 }
 
                 // Insert s into the container.

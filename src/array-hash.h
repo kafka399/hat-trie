@@ -52,9 +52,10 @@ class array_hash {
         char **data;
     };
 
+    // TODO
+    char **data;
   private:
     enum { SLOT_COUNT = 2 };  // MUST be a power of 2
-    char **data;
     size_t _size;
 
     int hash(const char *str, length_type& length, int seed = 23) const;
@@ -202,13 +203,17 @@ size_t array_hash::size() const {
  */
 array_hash::iterator array_hash::begin() const {
     iterator result;
-    result.slot = 0;
-    result.data = data;
-    result.p = NULL;
-    while (result.data[result.slot] == NULL) {
-        ++result.slot;
+    if (_size == 0) {
+        result = end();
+    } else {
+        result.slot = 0;
+        result.data = data;
+        result.p = NULL;
+        while (result.data[result.slot] == NULL) {
+            ++result.slot;
+        }
+        result.p = result.data[result.slot] + sizeof(size_type);
     }
-    result.p = result.data[result.slot] + sizeof(size_type);
     return result;
 }
 

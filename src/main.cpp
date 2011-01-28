@@ -102,6 +102,7 @@ int main() {
     string reader;
     while (cin >> reader) {
         ht.insert(reader);
+        ht.print();
     }
 
     return 0;
