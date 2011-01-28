@@ -23,8 +23,14 @@ namespace stx {
 template <int alphabet_size, int (*indexof)(char)>
 class hat_trie;
 
-// Exception class for bad index values.
-class bad_index : public exception {
+/**
+ * Exception class for unindexed characters.
+ *
+ * This exception is thrown when a hat_trie encounters an
+ * unindexed character. The indexof() function returns -1 for
+ * unindexed characters.
+ */
+class unindexed_character : public exception {
     virtual const char *what() const throw() {
         return "hat_trie: found unindexed character.";
     }
@@ -181,7 +187,7 @@ class hat_trie {
     enum { BURST_THRESHOLD = 1024 };
 
     void init();
-    int get_index(char ch) throw(bad_index);
+    int get_index(char ch) throw(unindexed_character);
     bool search(const char *& s, pair<void *, int> &p);
     void insert(container *htc, const char *s);
     void burst(container *htc);
@@ -356,10 +362,10 @@ void hat_trie<alphabet_size, indexof>::init() {
 
 template <int alphabet_size, int (*indexof)(char)>
 int hat_trie<alphabet_size, indexof>::
-get_index(char ch) throw(bad_index) {
+get_index(char ch) throw(unindexed_character) {
     int result = indexof(ch);
     if (result < 0 || result >= alphabet_size) {
-        throw bad_index();
+        throw unindexed_character();
     }
     return result;
 }
