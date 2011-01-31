@@ -385,39 +385,6 @@ get_index(char ch) throw(unindexed_character) {
 template <int alphabet_size, int (*indexof)(char)>
 bool hat_trie<alphabet_size, indexof>::
 search(const char *& s, pair<void *, int>& p) {
-//  node *n = NULL;
-//  container *c = NULL;
-//  if (type == CONTAINER_POINTER) { c = (container *)root; }
-//  else if (type == NODE_POINTER) { n = (node *)root; }
-
-//  // Search for a container that could hold @a s.
-//  int index;
-//  while (c == NULL && *s) {
-//      // Try to move down the trie.
-//      index = get_index(*s);
-
-//      // If the trie has a path in this direction, follow it.
-//      if (n->children[index]) {
-//          if (n->types[index] == NODE_POINTER) {
-//              n = (node *)(n->children[index]);
-//          } else if (n->types[index] == CONTAINER_POINTER) {
-//              c = (container *)(n->children[index]);
-//          }
-//          ++s;
-//      } else {
-//          // The trie has no path in this direction.
-//          p = pair<void *, int>(n, NODE_POINTER);
-//          return false;
-//      }
-//  }
-//  if (c) {
-//      p = pair<void *, int>(c, CONTAINER_POINTER);
-//      return c->contains(s);
-//  } else {
-//      p = pair<void *, int>(n, NODE_POINTER);
-//      return n->types[
-//  }
-
     // Search for a s in the tree.
     if (type == CONTAINER_POINTER) {
         container *htc = (container *)root;
@@ -449,6 +416,7 @@ search(const char *& s, pair<void *, int>& p) {
                 return false;
             }
         }
+
         // If we get here, no container was found that could have held
         // s, meaning node n represents s in the trie. Return true if
         // the end of word flag in n is set.
@@ -476,8 +444,8 @@ burst(container *htc) {
     node *result = new node(htc->ch);
     result->set_word(htc->word);
 
-    // Make a set of containers for the data in the old container and add them
-    // to the new node.
+    // Make a set of containers for the data in the old container and
+    // add them to the new node.
     // TODO container::store_type::iterator it;
     array_hash::iterator it;
     for (it = htc->store.begin(); it != htc->store.end(); ++it) {

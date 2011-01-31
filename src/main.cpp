@@ -16,7 +16,6 @@ int indexof(char ch) {
         return ch - 'a';
     }
     if (ch == '\'') return 26;
-    cout << "UNINDEXED CHAR: " << ch << endl;
     return -1;
 }
 
@@ -89,7 +88,10 @@ int main() {
     set<string> s;
     array_hash ah;
     while (cin >> reader) {
-        ht.insert(reader);
+        reader = trim(reader);
+        if (reader.length() > 0) {
+            ht.insert(reader);
+        }
         //s.insert(reader);
         //ah.insert(reader.c_str());
     }
