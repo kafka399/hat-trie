@@ -240,7 +240,7 @@ int array_hash::hash(const char *str, length_type length, int seed) const {
         h = h ^ ((h << 5) + (h >> 2) + str[i]);
     }
     return h & (SLOT_COUNT - 1);  // same as h % SLOT_COUNT if SLOT_COUNT
-                                  // is a power of 2
+    // is a power of 2
 }
 
 // --------------------

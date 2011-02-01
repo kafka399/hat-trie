@@ -4,7 +4,7 @@
 #include <vector>
 #include <time.h>
 #include <unistd.h>  // for sleep()
-
+#include <iomanip>
 #include "array-hash.h"
 #include "hat-trie.h"
 
@@ -75,7 +75,7 @@ void timeStop() {
 }
 double timeReport() {
 	double res =  (STOP_TIME - START_TIME)/1000.0;
-	cout << "Timer logged " << res << " ms."  << endl;
+	cout << "Timer logged " << setprecision(20) << res << " ms."  << endl;
 	return res;
 }
 
@@ -86,14 +86,15 @@ int main() {
     string reader;
     vector<string> v;
     set<string> s;
-    while (cin >> reader) {
-        ah.insert(reader.c_str(), reader.length());
-        //s.insert(reader);
-	//v.push_back(reader);
-    }
 	timeStart();
-    print(ah);
+    while (cin >> reader) {
+        //ah.insert(reader.c_str(), reader.length());
+    	s.insert(reader);
+		//v.push_back(reader);
+    }
 	timeStop();
+	timeReport();
+    //print(ah);
     //array_hash::iterator it;
     //int i = 0;
     //for (it = ah.begin(); it != ah.end(); ++it) {
