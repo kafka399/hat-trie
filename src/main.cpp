@@ -34,7 +34,7 @@ bool test(const string& s, hat_trie<27, indexof>& ht, const set<string>& st) {
     cout << "TESTING " << s << ": " << flush;
     bool a;
     try { a = ht.search(s); }
-    catch (bad_index e) { a = false; }
+    catch (bad_index) { a = false; }
     bool b = st.find(s) != st.end();
     cout << a << " " << b << endl;
     return a == b;
@@ -51,6 +51,7 @@ template <class T>
 void print(T& t) {
     typename T::iterator it;
     for (it = t.begin(); it != t.end(); ++it) {
+        //print(*it);
         cout << *it << endl;
     }
 }
@@ -65,6 +66,7 @@ bool compare(const A& a, const set<string>& s) {
     }
     return s.size() == a.size();
 }
+
 //timer code
 clock_t START_TIME = 1, STOP_TIME = 1;
 void timeStart() {
@@ -79,13 +81,12 @@ double timeReport() {
 	return res;
 }
 
-
 int main() {
-    std::ios_base::sync_with_stdio(false);
-    array_hash ah;
+    std::ios_base::sync_with_stdio(false);  // speed up reading from stdin
+    hat_trie<27, indexof> ht;
     string reader;
-    vector<string> v;
     set<string> s;
+<<<<<<< HEAD
 	timeStart();
     while (cin >> reader) {
         //ah.insert(reader.c_str(), reader.length());
@@ -102,6 +103,17 @@ int main() {
     //}
     //assert(compare(ah, s));
     //sleep(10);
+=======
+    array_hash ah;
+    while (cin >> reader) {
+        reader = trim(reader);
+        if (reader.length() > 0) {
+            ht.insert(reader);
+        }
+        //s.insert(reader);
+        //ah.insert(reader.c_str());
+    }
+>>>>>>> b5b76eb99721bb00a79cf7fe0afaac8601fcd0ae
 
     return 0;
 }
