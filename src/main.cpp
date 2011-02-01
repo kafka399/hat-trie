@@ -86,24 +86,6 @@ int main() {
     hat_trie<27, indexof> ht;
     string reader;
     set<string> s;
-<<<<<<< HEAD
-	timeStart();
-    while (cin >> reader) {
-        //ah.insert(reader.c_str(), reader.length());
-    	s.insert(reader);
-		//v.push_back(reader);
-    }
-	timeStop();
-	timeReport();
-    //print(ah);
-    //array_hash::iterator it;
-    //int i = 0;
-    //for (it = ah.begin(); it != ah.end(); ++it) {
-        //if (*it) i = 1;
-    //}
-    //assert(compare(ah, s));
-    //sleep(10);
-=======
     array_hash ah;
     while (cin >> reader) {
         reader = trim(reader);
@@ -113,8 +95,6 @@ int main() {
         //s.insert(reader);
         //ah.insert(reader.c_str());
     }
->>>>>>> b5b76eb99721bb00a79cf7fe0afaac8601fcd0ae
-
     return 0;
 }
 
