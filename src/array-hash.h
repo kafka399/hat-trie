@@ -242,7 +242,7 @@ int array_hash::hash(const char *str, length_type& length, int seed) const {
     }
     ++length;  // include space for the NULL terminator
     return h & (SLOT_COUNT - 1);  // same as h % SLOT_COUNT if SLOT_COUNT
-                                  // is a power of 2
+    // is a power of 2
 }
 
 // --------------------
