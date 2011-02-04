@@ -26,9 +26,9 @@ class hat_trie;
 /**
  * Exception class for unindexed characters.
  *
- * This exception is thrown when a hat_trie encounters an
- * unindexed character. The indexof() function returns -1 for
- * unindexed characters.
+ * This exception is thrown when a hat_trie encounters an unindexed
+ * character. indexof() returns a value out of range (less than 0 or
+ * greater than @a alphabet_size) for unindexed characters.
  */
 class unindexed_character : public exception {
     virtual const char *what() const throw() {
@@ -131,7 +131,7 @@ class hat_trie {
     virtual ~hat_trie();
 
     // accessors
-    bool search(const string& s);
+    bool contains(const string& s);
     size_t size() const;
 
     // modifiers
@@ -273,6 +273,9 @@ namespace stx {
 // hat_trie implementation
 // -----------------------
 
+/**
+ * Default constructor.
+ */
 template <int alphabet_size, int (*indexof)(char)>
 hat_trie<alphabet_size, indexof>::hat_trie() {
     init();
@@ -286,11 +289,40 @@ hat_trie<alphabet_size, indexof>::~hat_trie() {
 }
 
 /**
- * Inserts a word into the tree.
+ * Searches for a word in the trie.
+ *
+ * @param s  word to search for
+ *
+ * @return  true if @a s is in the trie, false otherwise.
+ * @throws unindexed_character  if a character in @a s is not indexed
+ *                              by @a indexof()
+ */
+template <int alphabet_size, int (*indexof)(char)>
+bool hat_trie<alphabet_size, indexof>::
+contains(const string& s) {
+    const char *ps = s.c_str();
+    pair<void *, int> p;
+    return search(ps, p);
+}
+
+/**
+ * Gets the number of distinct elements in the trie.
+ *
+ * @return  size of the trie
+ */
+template <int alphabet_size, int (*indexof)(char)>
+size_t hat_trie<alphabet_size, indexof>::size() const {
+    return _size;
+}
+
+/**
+ * Inserts a word into the trie.
  *
  * @param s  word to insert
  *
  * @return  false if @a s is already in the trie, true otherwise
+ * @throws unindexed_character  if a character in @a s is not indexed
+ *                              by @a indexof()
  */
 template <int alphabet_size, int (*indexof)(char)>
 bool hat_trie<alphabet_size, indexof>::
@@ -338,23 +370,13 @@ insert(const string& s) {
             }
         }
     }
-    // unreachable code
-    return false;
+    return false; // unreachable code
 }
 
-template <int alphabet_size, int (*indexof)(char)>
-bool hat_trie<alphabet_size, indexof>::
-search(const string& s) {
-    const char *ps = s.c_str();
-    pair<void *, int> p;
-    return search(ps, p);
-}
-
-template <int alphabet_size, int (*indexof)(char)>
-size_t hat_trie<alphabet_size, indexof>::size() const {
-    return _size;
-}
-
+/**
+ * Initializes all the fields in a hat_trie as if it had just been
+ * created.
+ */
 template <int alphabet_size, int (*indexof)(char)>
 void hat_trie<alphabet_size, indexof>::init() {
     _size = 0;
@@ -362,6 +384,14 @@ void hat_trie<alphabet_size, indexof>::init() {
     type = CONTAINER_POINTER;
 }
 
+/**
+ * Gets the index of a character.
+ *
+ * @param ch  character to index
+ *
+ * @return  index of @a ch
+ * @throws unindexed_character  if @a ch is not indexed by @a indexof()
+ */
 template <int alphabet_size, int (*indexof)(char)>
 int hat_trie<alphabet_size, indexof>::
 get_index(char ch) throw(unindexed_character) {
@@ -387,7 +417,7 @@ get_index(char ch) throw(unindexed_character) {
 template <int alphabet_size, int (*indexof)(char)>
 bool hat_trie<alphabet_size, indexof>::
 search(const char *& s, pair<void *, int>& p) {
-    // Search for a s in the tree.
+    // Search for a s in the trie.
     if (type == CONTAINER_POINTER) {
         container *htc = (container *)root;
         p = pair<void *, int>(root, CONTAINER_POINTER);
@@ -466,7 +496,7 @@ burst(container *htc) {
         }
     }
 
-    // Position the new node in the tree.
+    // Position the new node in the trie.
     node *parent = htc->parent;
     result->parent = parent;
     if (parent) {

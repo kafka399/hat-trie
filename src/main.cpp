@@ -31,7 +31,7 @@ string trim(string s) {
 bool test(const string& s, hat_trie<27, indexof>& ht, const set<string>& st) {
     cout << "TESTING " << s << ": " << flush;
     bool a;
-    try { a = ht.search(s); }
+    try { a = ht.contains(s); }
     catch (unindexed_character) { a = false; }
     bool b = st.find(s) != st.end();
     cout << a << " " << b << endl;
@@ -86,10 +86,10 @@ int main() {
     set<string> s;
     array_hash ah;
     while (cin >> reader) {
-        reader = trim(reader);
-        if (reader.length() > 0) {
+        //reader = trim(reader);
+        //if (reader.length() > 0) {
             ht.insert(reader);
-        }
+        //}
         //s.insert(reader);
         //ah.insert(reader.c_str());
     }
