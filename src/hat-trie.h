@@ -126,6 +126,7 @@ namespace stx {
 template <int alphabet_size = DEFAULT_ALPHABET_SIZE,
           int (*indexof)(char) = alphabet_index>
 class hat_trie {
+
   private:
     typedef hat_trie_node<alphabet_size, indexof> node;
     typedef hat_trie_container<alphabet_size, indexof> container;
@@ -139,7 +140,7 @@ class hat_trie {
     size_t size() const;
 
     // modifiers
-    void insert(const string& s);
+    bool insert(const string& s);
 
     void print() {
         print(root, type);
@@ -189,7 +190,7 @@ class hat_trie {
     void init();
     int get_index(char ch) throw(unindexed_character);
     bool search(const char *& s, pair<void *, int> &p);
-    void insert(container *htc, const char *s);
+    bool insert(container *htc, const char *s);
     void burst(container *htc);
 };
 
@@ -289,13 +290,20 @@ hat_trie<alphabet_size, indexof>::~hat_trie() {
     root = NULL;
 }
 
+/**
+ * Inserts a word into the tree.
+ *
+ * @param s  word to insert
+ *
+ * @return  false if @a s is already in the trie, true otherwise
+ */
 template <int alphabet_size, int (*indexof)(char)>
-void hat_trie<alphabet_size, indexof>::
+bool hat_trie<alphabet_size, indexof>::
 insert(const string& s) {
     if (type == CONTAINER_POINTER) {
         // Insert into the container root points to.
         //container *htc = (container *)root;
-        insert((container *)root, s.c_str());
+        return insert((container *)root, s.c_str());
 
     } else if (type == NODE_POINTER) {
         // Search for s in the trie.
@@ -322,9 +330,6 @@ insert(const string& s) {
                     //cout << 1 << endl;
                     int index = get_index(*pos);
                     c = new container(*pos);
-                    for (int i = 0; i < 2; ++i) {
-                        assert(c->store.data[i] == NULL);
-                    }
                     c->parent = n;
                     n->children[index] = c;
                     n->types[index] = CONTAINER_POINTER;
@@ -334,10 +339,12 @@ insert(const string& s) {
                 }
 
                 // Insert s into the container.
-                insert(c, pos);
+                return insert(c, pos);
             }
         }
     }
+    // unreachable code
+    return false;
 }
 
 template <int alphabet_size, int (*indexof)(char)>
@@ -427,14 +434,16 @@ search(const char *& s, pair<void *, int>& p) {
 }
 
 template <int alphabet_size, int (*indexof)(char)>
-void hat_trie<alphabet_size, indexof>::
+bool hat_trie<alphabet_size, indexof>::
 insert(container *htc, const char *s) {
     if (htc->insert(s)) {
         ++_size;
         if (htc->size() > BURST_THRESHOLD) {
             burst(htc);
         }
+        return true;
     }
+    return false;
 }
 
 template <int alphabet_size, int (*indexof)(char)>

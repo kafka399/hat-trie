@@ -34,7 +34,7 @@ bool test(const string& s, hat_trie<27, indexof>& ht, const set<string>& st) {
     cout << "TESTING " << s << ": " << flush;
     bool a;
     try { a = ht.search(s); }
-    catch (bad_index) { a = false; }
+    catch (unindexed_character) { a = false; }
     bool b = st.find(s) != st.end();
     cout << a << " " << b << endl;
     return a == b;
