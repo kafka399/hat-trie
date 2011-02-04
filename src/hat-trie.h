@@ -218,7 +218,7 @@ insert(const string& s) {
             }
         }
     }
-    return false; // unreachable code
+    return false;  // s was found in the trie
 }
 
 /**

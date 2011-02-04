@@ -1,3 +1,5 @@
+// TODO exclude these classes / this file from Doxygen
+
 #ifndef HAT_TRIE_NODE_H
 #define HAT_TRIE_NODE_H
 
@@ -21,14 +23,12 @@ class hat_trie_node_base {
     typedef hat_trie_container<alphabet_size, indexof> container;
 
   public:
-    hat_trie_node_base(char ch = '\0') : _ch(ch), parent(NULL) {
-        // TODO set_word(false);
-    }
+    hat_trie_node_base(char ch = '\0') : _ch(ch), parent(NULL) { }
     virtual ~hat_trie_node_base() { }
 
     // accessors
-    virtual bool word() const = 0;
     char ch() const { return _ch; }
+    virtual bool word() const = 0;
 
     // modifiers
     virtual void set_word(bool b) = 0;
