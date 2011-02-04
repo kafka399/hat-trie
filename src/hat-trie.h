@@ -300,7 +300,7 @@ search(const char *& s, pair<void *, int>& p) {
         // s, meaning node n represents s in the trie. Return true if
         // the end of word flag in n is set.
         p = pair<void *, int>(n, NODE_POINTER);
-        return n->is_word();
+        return n->word();
     }
     return false;
 }
