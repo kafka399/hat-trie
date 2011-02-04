@@ -52,6 +52,7 @@ class hat_trie {
   private:
     typedef hat_trie_node<alphabet_size, indexof> node;
     typedef hat_trie_container<alphabet_size, indexof> container;
+    typedef hat_trie_node_base<alphabet_size, indexof> node_base;
 
   public:
     hat_trie();
@@ -101,9 +102,9 @@ class hat_trie {
 
 
   private:
-    size_t _size;  // number of distinct elements in the trie
-    void *root;    // root of the trie
-    char type;     // pointer type of root
+    size_t _size;     // number of distinct elements in the trie
+    node_base *root;  // root of the trie
+    char type;        // pointer type of root
 
     // constant values for the hat trie
     enum { CONTAINER_POINTER, NODE_POINTER };
@@ -111,7 +112,7 @@ class hat_trie {
 
     void init();
     int get_index(char ch) throw(unindexed_character);
-    bool search(const char *& s, pair<void *, int> &p);
+    bool search(const char *& s, pair<node_base *, int> &p);
     bool insert(container *htc, const char *s);
     void burst(container *htc);
 };
@@ -130,8 +131,7 @@ hat_trie<alphabet_size, indexof>::hat_trie() {
 
 template <int alphabet_size, int (*indexof)(char)>
 hat_trie<alphabet_size, indexof>::~hat_trie() {
-    if (type == CONTAINER_POINTER) { delete (container *)root; }
-    else if (type == NODE_POINTER) { delete (node *)root; }
+    delete root;
     root = NULL;
 }
 
@@ -148,7 +148,7 @@ template <int alphabet_size, int (*indexof)(char)>
 bool hat_trie<alphabet_size, indexof>::
 contains(const string& s) {
     const char *ps = s.c_str();
-    pair<void *, int> p;
+    pair<node_base *, int> p;
     return search(ps, p);
 }
 
@@ -181,17 +181,18 @@ insert(const string& s) {
     } else if (type == NODE_POINTER) {
         // Search for s in the trie.
         const char *pos = s.c_str();
-        pair<void *, int> p;
+        pair<node_base *, int> p;
         if (search(pos, p) == false) {
             // Was s found in the structure of the trie?
             if (*pos == '\0') {
                 // s was found in the trie's structure. Mark its location
                 // as the end of a word.
-                if (p.second == NODE_POINTER) {
-                    ((node *)(p.first))->set_word(true);
-                } else if (p.second == CONTAINER_POINTER) {
-                    ((container *)(p.first))->set_word(true);
-                }
+                p.first->set_word(true);
+              //if (p.second == NODE_POINTER) {
+              //    ((node *)(p.first))->set_word(true);
+              //} else if (p.second == CONTAINER_POINTER) {
+              //    ((container *)(p.first))->set_word(true);
+              //}
             } else {
                 // s was not found in the trie's structure. Either make a
                 // new container for it or insert it into an already
@@ -263,11 +264,11 @@ get_index(char ch) throw(unindexed_character) {
  */
 template <int alphabet_size, int (*indexof)(char)>
 bool hat_trie<alphabet_size, indexof>::
-search(const char *& s, pair<void *, int>& p) {
+search(const char *& s, pair<node_base *, int>& p) {
     // Search for a s in the trie.
     if (type == CONTAINER_POINTER) {
         container *htc = (container *)root;
-        p = pair<void *, int>(root, CONTAINER_POINTER);
+        p = pair<node_base *, int>(root, CONTAINER_POINTER);
         bool b = htc->contains(s);
         return b;
 
@@ -275,7 +276,7 @@ search(const char *& s, pair<void *, int>& p) {
         // Traverse the trie until either a s is used up, a is is found
         // in the trie, or s cannot be in the trie.
         node *n = (node *)root;
-        void *v = NULL;
+        node_base *v = NULL;
         while (*s) {
             int index = get_index(*s);
             v = n->children[index];
@@ -287,11 +288,11 @@ search(const char *& s, pair<void *, int>& p) {
                 } else if (n->types[index] == CONTAINER_POINTER) {
                     // s should appear in the container v. If it
                     // doesn't, it's not in the trie.
-                    p = pair<void *, int>(v, CONTAINER_POINTER);
+                    p = pair<node_base *, int>(v, CONTAINER_POINTER);
                     return ((container *)v)->contains(s);
                 }
             } else {
-                p = pair<void *, int>(n, NODE_POINTER);
+                p = pair<node_base *, int>(n, NODE_POINTER);
                 return false;
             }
         }
@@ -299,7 +300,7 @@ search(const char *& s, pair<void *, int>& p) {
         // If we get here, no container was found that could have held
         // s, meaning node n represents s in the trie. Return true if
         // the end of word flag in n is set.
-        p = pair<void *, int>(n, NODE_POINTER);
+        p = pair<node_base *, int>(n, NODE_POINTER);
         return n->word();
     }
     return false;

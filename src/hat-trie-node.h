@@ -70,6 +70,9 @@ template <int alphabet_size, int (*indexof)(char)>
 class hat_trie_node : public hat_trie_node_base<alphabet_size, indexof> {
     friend class hat_trie<alphabet_size, indexof>;
 
+  private:
+    typedef hat_trie_node_base<alphabet_size, indexof> node_base;
+
   public:
     hat_trie_node(char ch = '\0');
     ~hat_trie_node() { }
@@ -82,7 +85,7 @@ class hat_trie_node : public hat_trie_node_base<alphabet_size, indexof> {
 
   private:
     std::bitset<alphabet_size + 1> types;  // extra bit is an end of word flag
-    void *children[alphabet_size];  // untyped pointers to children
+    node_base *children[alphabet_size];  // untyped pointers to children
 };
 
 // ---------------------------------
