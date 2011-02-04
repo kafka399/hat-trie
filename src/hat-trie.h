@@ -15,13 +15,11 @@
 #include <utility>
 
 #include "array-hash.h"
+#include "hat-trie-node.h"
 
 using namespace std;
 
 namespace stx {
-
-template <int alphabet_size, int (*indexof)(char)>
-class hat_trie;
 
 /**
  * Exception class for unindexed characters.
@@ -36,10 +34,6 @@ class unindexed_character : public exception {
     }
 };
 
-}
-
-namespace {
-
 /// default value for hat_trie alphabet size
 const int DEFAULT_ALPHABET_SIZE = 26;
 
@@ -47,73 +41,6 @@ const int DEFAULT_ALPHABET_SIZE = 26;
 inline int alphabet_index(char ch) {
     return ch - 'a';
 }
-
-// -----------------------
-// hat trie helper classes
-// -----------------------
-
-template <int alphabet_size, int (*indexof)(char)>
-class hat_trie_container;
-
-template <int alphabet_size, int (*indexof)(char)>
-class hat_trie_node;
-
-template <int alphabet_size, int (*indexof)(char)>
-class hat_trie_container {
-    friend class stx::hat_trie<alphabet_size, indexof>;
-
-  private:
-    typedef hat_trie_node<alphabet_size, indexof> node;
-
-  public:
-    typedef stx::array_hash store_type;
-
-    hat_trie_container(char ch = '\0');
-    virtual ~hat_trie_container();
-
-    // accessors
-    bool contains(const char *p) const;
-    size_t size() const;
-
-    // modifiers
-    bool insert(const char *p);
-
-  private:
-    char ch;
-    bool word;
-    node *parent;
-    stx::array_hash store;
-};
-
-template <int alphabet_size, int (*indexof)(char)>
-class hat_trie_node {
-    friend class stx::hat_trie<alphabet_size, indexof>;
-
-  private:
-    typedef hat_trie_container<alphabet_size, indexof> container;
-    typedef hat_trie_node<alphabet_size, indexof> node;
-
-  public:
-    hat_trie_node(char ch = '\0');
-    ~hat_trie_node();
-
-    // accessors
-    bool is_word() const;
-
-    // modifiers
-    void set_word(bool b);
-
-  public:
-    char ch;
-    void *children[alphabet_size];  // untyped pointers to children
-    // To keep track of pointer types. The extra bit is an end-of-string flag.
-    std::bitset<alphabet_size + 1> types;
-    node *parent;
-};
-
-}  // unnamed namespace
-
-namespace stx {
 
 /**
  * Trie-based data structure for managing sorted strings.
@@ -145,9 +72,9 @@ class hat_trie {
             container *c = (container *)p;
             // TODO
             array_hash::iterator it;
-            if (c->ch != '\0') {
-                cout << space << c->ch;
-                if (c->word) {
+            if (c->ch() != '\0') {
+                cout << space << c->ch();
+                if (c->word()) {
                     cout << " ~";
                 }
                 cout << endl;
@@ -157,8 +84,8 @@ class hat_trie {
             }
         } else if (type == NODE_POINTER) {
             node *n = (node *)p;
-            if (n->ch != '\0') {
-                cout << space << n->ch;
+            if (n->ch() != '\0') {
+                cout << space << n->ch();
                 if (n->types[alphabet_size]) {
                     cout << " ~";
                 }
@@ -188,86 +115,6 @@ class hat_trie {
     bool insert(container *htc, const char *s);
     void burst(container *htc);
 };
-
-}  // namespace stx
-
-namespace {
-
-// ---------------------------------
-// hat_trie_container implementation
-// ---------------------------------
-
-template <int alphabet_size, int (*indexof)(char)>
-hat_trie_container<alphabet_size, indexof>::
-hat_trie_container(char ch) : ch(ch), word(false), parent(NULL) {
-
-}
-
-template <int alphabet_size, int (*indexof)(char)>
-hat_trie_container<alphabet_size, indexof>::
-~hat_trie_container() {
-
-}
-
-template <int alphabet_size, int (*indexof)(char)>
-bool hat_trie_container<alphabet_size, indexof>::
-contains(const char *p) const {
-    if (*p == '\0') {
-        return word;
-    }
-    return store.find(p);
-}
-
-template <int alphabet_size, int (*indexof)(char)>
-bool hat_trie_container<alphabet_size, indexof>::
-insert(const char *p) {
-    if (*p == '\0') {
-        bool b = word;
-        word = true;
-        return !b;
-    }
-    return store.insert(p);
-}
-
-template <int alphabet_size, int (*indexof)(char)>
-size_t hat_trie_container<alphabet_size, indexof>::
-size() const {
-    return store.size();
-}
-
-// ----------------------------
-// hat_trie_node implementation
-// ----------------------------
-
-template <int alphabet_size, int (*indexof)(char)>
-hat_trie_node<alphabet_size, indexof>::
-hat_trie_node(char ch) : ch(ch), parent(NULL) {
-    for (int i = 0; i < alphabet_size; ++i) {
-        children[i] = NULL;
-    }
-}
-
-template <int alphabet_size, int (*indexof)(char)>
-hat_trie_node<alphabet_size, indexof>::
-~hat_trie_node() {
-
-}
-
-template <int alphabet_size, int (*indexof)(char)>
-bool hat_trie_node<alphabet_size, indexof>::
-is_word() const {
-    return types[alphabet_size];
-}
-
-template <int alphabet_size, int (*indexof)(char)>
-void hat_trie_node<alphabet_size, indexof>::
-set_word(bool val) {
-    types[alphabet_size] = val;
-}
-
-}  // anonymous namespace
-
-namespace stx {
 
 // -----------------------
 // hat_trie implementation
@@ -343,7 +190,7 @@ insert(const string& s) {
                 if (p.second == NODE_POINTER) {
                     ((node *)(p.first))->set_word(true);
                 } else if (p.second == CONTAINER_POINTER) {
-                    ((container *)(p.first))->word = true;
+                    ((container *)(p.first))->set_word(true);
                 }
             } else {
                 // s was not found in the trie's structure. Either make a
@@ -475,8 +322,8 @@ template <int alphabet_size, int (*indexof)(char)>
 void hat_trie<alphabet_size, indexof>::
 burst(container *htc) {
     // Construct new node.
-    node *result = new node(htc->ch);
-    result->set_word(htc->word);
+    node *result = new node(htc->ch());
+    result->set_word(htc->word());
 
     // Make a set of containers for the data in the old container and
     // add them to the new node.
@@ -486,7 +333,7 @@ burst(container *htc) {
         int index = get_index((*it)[0]);
         if (result->children[index] == NULL) {
             container *insertion = new container((*it)[0]);
-            insertion->word = ((*it)[1] == '\0');
+            insertion->set_word(((*it)[1] == '\0'));
             insertion->parent = result;
             result->children[index] = insertion;
             result->types[index] = CONTAINER_POINTER;
@@ -500,7 +347,7 @@ burst(container *htc) {
     node *parent = htc->parent;
     result->parent = parent;
     if (parent) {
-        int index = get_index(htc->ch);
+        int index = get_index(htc->ch());
         parent->children[index] = result;
         parent->types[index] = NODE_POINTER;
     } else {
