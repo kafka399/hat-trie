@@ -12,18 +12,16 @@ using namespace std;
 using namespace stx;
 
 int indexof(char ch) {
-    if (ch - 'a' < 26 && ch - 'a' >= 0) {
-        return ch - 'a';
-    }
     if (ch == '\'') return 26;
-    return -1;
+    return ch - 'a';
 }
 
 string trim(string s) {
     string result;
     for (size_t i = 0; i < s.length(); ++i) {
         s[i] = tolower(s[i]);
-        if (indexof(s[i]) != -1) {
+        int n = indexof(s[i]);
+        if (n >= 0 && n < 27) {
             result += s[i];
         }
     }

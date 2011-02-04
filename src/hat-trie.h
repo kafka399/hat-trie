@@ -40,22 +40,17 @@ class unindexed_character : public exception {
 
 namespace {
 
-// default value for hat_trie alphabet size
+/// default value for hat_trie alphabet size
 const int DEFAULT_ALPHABET_SIZE = 26;
 
-/**
- * Default indexof function for hat_tries.
- */
+/// default indexof function for hat_tries
 inline int alphabet_index(char ch) {
-    if (ch >= 'a' && ch <= 'z') {
-        return ch - 'a';
-    }
-    return -1;
+    return ch - 'a';
 }
 
-// --------------------------
-// hat trie helper structures
-// --------------------------
+// -----------------------
+// hat trie helper classes
+// -----------------------
 
 template <int alphabet_size, int (*indexof)(char)>
 class hat_trie_container;
@@ -302,7 +297,6 @@ bool hat_trie<alphabet_size, indexof>::
 insert(const string& s) {
     if (type == CONTAINER_POINTER) {
         // Insert into the container root points to.
-        //container *htc = (container *)root;
         return insert((container *)root, s.c_str());
 
     } else if (type == NODE_POINTER) {
@@ -327,9 +321,10 @@ insert(const string& s) {
                 if (p.second == NODE_POINTER) {
                     // Make a new container for s.
                     node *n = (node *)p.first;
-                    //cout << 1 << endl;
                     int index = get_index(*pos);
                     c = new container(*pos);
+
+                    // Insert the new container into the trie structure.
                     c->parent = n;
                     n->children[index] = c;
                     n->types[index] = CONTAINER_POINTER;
@@ -458,9 +453,7 @@ burst(container *htc) {
     // TODO container::store_type::iterator it;
     array_hash::iterator it;
     for (it = htc->store.begin(); it != htc->store.end(); ++it) {
-        //int index = get_index(it.first[0]);
         int index = get_index((*it)[0]);
-        assert(strlen(*it) > 0);
         if (result->children[index] == NULL) {
             container *insertion = new container((*it)[0]);
             insertion->word = ((*it)[1] == '\0');
