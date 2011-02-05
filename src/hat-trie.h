@@ -59,7 +59,7 @@ class hat_trie {
     virtual ~hat_trie();
 
     // accessors
-    bool contains(const string& s);
+    bool contains(const string& s) const;
     size_t size() const;
 
     // modifiers
@@ -104,15 +104,15 @@ class hat_trie {
   private:
     size_t _size;     // number of distinct elements in the trie
     node_base *root;  // root of the trie
-    char type;        // pointer type of root
+    unsigned char type;  // pointer type of root
 
     // constant values for the hat trie
     enum { CONTAINER_POINTER, NODE_POINTER };
     enum { BURST_THRESHOLD = 1024 };
 
     void init();
-    int get_index(char ch) throw(unindexed_character);
-    bool search(const char *& s, pair<node_base *, int> &p);
+    int get_index(char ch) const throw(unindexed_character);
+    bool search(const char *& s, pair<node_base *, int> &p) const;
     bool insert(container *htc, const char *s);
     void burst(container *htc);
 };
@@ -146,7 +146,7 @@ hat_trie<alphabet_size, indexof>::~hat_trie() {
  */
 template <int alphabet_size, int (*indexof)(char)>
 bool hat_trie<alphabet_size, indexof>::
-contains(const string& s) {
+contains(const string& s) const {
     const char *ps = s.c_str();
     pair<node_base *, int> p;
     return search(ps, p);
@@ -242,7 +242,7 @@ void hat_trie<alphabet_size, indexof>::init() {
  */
 template <int alphabet_size, int (*indexof)(char)>
 int hat_trie<alphabet_size, indexof>::
-get_index(char ch) throw(unindexed_character) {
+get_index(char ch) const throw(unindexed_character) {
     int result = indexof(ch);
     if (result < 0 || result >= alphabet_size) {
         throw unindexed_character();
@@ -264,7 +264,7 @@ get_index(char ch) throw(unindexed_character) {
  */
 template <int alphabet_size, int (*indexof)(char)>
 bool hat_trie<alphabet_size, indexof>::
-search(const char *& s, pair<node_base *, int>& p) {
+search(const char *& s, pair<node_base *, int>& p) const {
     // Search for a s in the trie.
     if (type == CONTAINER_POINTER) {
         container *htc = (container *)root;
