@@ -55,6 +55,7 @@ class hat_trie {
     typedef hat_trie_node_base<alphabet_size, indexof> node_base;
 
   public:
+    // constructors and destructors
     hat_trie();
     virtual ~hat_trie();
 
@@ -106,13 +107,19 @@ class hat_trie {
     node_base *root;  // root of the trie
     unsigned char type;  // pointer type of root
 
-    // constant values for the hat trie
-    enum { CONTAINER_POINTER, NODE_POINTER };
+    // types node_base * values could point to
+    enum { CONTAINER_POINTER = 0, NODE_POINTER = 1 };
+
+    // containers are burst after their size crosses this threshold
     enum { BURST_THRESHOLD = 1024 };
 
     void init();
+
+    // accessors
     int get_index(char ch) const throw(unindexed_character);
     bool search(const char *& s, pair<node_base *, int> &p) const;
+
+    // modifiers
     bool insert(container *htc, const char *s);
     void burst(container *htc);
 };
@@ -188,11 +195,6 @@ insert(const string& s) {
                 // s was found in the trie's structure. Mark its location
                 // as the end of a word.
                 p.first->set_word(true);
-              //if (p.second == NODE_POINTER) {
-              //    ((node *)(p.first))->set_word(true);
-              //} else if (p.second == CONTAINER_POINTER) {
-              //    ((container *)(p.first))->set_word(true);
-              //}
             } else {
                 // s was not found in the trie's structure. Either make a
                 // new container for it or insert it into an already
