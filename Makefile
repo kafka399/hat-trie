@@ -16,6 +16,9 @@ all: main
 main: $(OBJECTS)
 	$(CXX) $(OFLAGS) $(OBJECTS) -o $(EXECUTABLE) $(LDFLAGS)
 
+test: all
+	./$(EXECUTABLE)
+
 obj/%.o: src/%.cpp
 	$(COMPILE.cpp) -o $@ $<
 

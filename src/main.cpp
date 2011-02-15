@@ -93,6 +93,7 @@ int main() {
         //s.insert(reader);
         //ah.insert(reader.c_str());
     }
+	ht.print();
     return 0;
 }
 
