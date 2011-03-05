@@ -1,3 +1,22 @@
+/*
+ * Copyright 2010-2011 Chris Vaszauskas and Tyler Richard
+ *
+ * This file is part of a HAT-trie implementation.
+ *
+ * This library is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #ifndef ARRAY_HASH_H
 #define ARRAY_HASH_H
 
@@ -52,11 +71,11 @@ class array_hash {
         char **data;
     };
 
-    // TODO
-    char **data;
   private:
     enum { SLOT_COUNT = 512 };  // MUST be a power of 2
     size_t _size;
+    // TODO
+    char **data;
 
     int hash(const char *str, length_type& length, int seed = 23) const;
     char *search(const char *str, length_type length, char *p) const;

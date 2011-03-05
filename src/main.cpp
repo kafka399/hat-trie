@@ -1,4 +1,5 @@
 #include <cassert>
+#include <map>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -86,12 +87,7 @@ int main() {
     set<string> s;
     array_hash ah;
     while (cin >> reader) {
-        //reader = trim(reader);
-        //if (reader.length() > 0) {
-            ht.insert(reader);
-        //}
-        //s.insert(reader);
-        //ah.insert(reader.c_str());
+        ht.insert(reader);
     }
     return 0;
 }
