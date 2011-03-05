@@ -89,6 +89,7 @@ int main() {
     while (cin >> reader) {
         ht.insert(reader);
     }
+	ht.print();
     return 0;
 }
 

@@ -119,7 +119,23 @@ class hat_trie {
             }
         }
     }
+	//iterators
+	class iterator;
+	iterator begin() {
+		if(type == CONTAINER_POINTER) {
 
+		}else if(type == NODE_POINTER) {
+		}else{
+			assert(false);
+		}
+		//TODO:this
+		return NULL;
+	}
+	iterator end() {
+		container *c = (container*)root;
+		return NULL;
+	}
+	
 
   private:
     size_t _size;     // number of distinct elements in the trie
@@ -141,6 +157,25 @@ class hat_trie {
     // modifiers
     bool insert(container *htc, const char *s);
     void burst(container *htc);
+  public:
+	class iterator {
+		/** TODO:
+		 *  - incriment iterator
+		 *  - decrement iterator
+		 *  - get value at this iterator (via dereference)
+		 *  - invalidate iteratior
+		 *  	use a 'version number'?
+		 *  - begining iterator
+		 *  - ending iterator
+		 */
+		public:
+			void operator++() {
+
+			}
+			void operator--() {
+
+			}
+	};
 };
 
 // -----------------------
