@@ -66,7 +66,7 @@ class hat_trie_container : public hat_trie_node_base<alphabet_size, indexof> {
     friend class hat_trie<alphabet_size, indexof>;
 
   public:
-    typedef array_hash store_type;
+    typedef array_hash<alphabet_size, indexof> store_type;
 
     hat_trie_container(char ch = '\0');
     virtual ~hat_trie_container() { }
@@ -83,7 +83,7 @@ class hat_trie_container : public hat_trie_node_base<alphabet_size, indexof> {
 
   private:
     bool word;
-    array_hash store;
+    store_type store;
 };
 
 template <int alphabet_size, int (*indexof)(char)>

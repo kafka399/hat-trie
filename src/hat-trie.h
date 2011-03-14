@@ -23,6 +23,9 @@
 // insert into this container) is acceptable. No container will have more
 // values in it than BURST_THRESHOLD + 1.
 //   NO! it accumulates!
+// TODO how to make sure every character is indexable? (even the ones that
+//      go into containers?) should this be general enough to allow for a
+//      different container type than array_hash?
 
 #ifndef HAT_TRIE_H
 #define HAT_TRIE_H
@@ -33,6 +36,7 @@
 #include <string>
 #include <utility>
 
+#include "hat-trie-common.h"
 #include "array-hash.h"
 #include "hat-trie-node.h"
 
@@ -41,31 +45,10 @@ using namespace std;
 namespace stx {
 
 /**
- * Exception class for unindexed characters.
- *
- * This exception is thrown when a hat_trie encounters an unindexed
- * character. indexof() returns a value out of range (less than 0 or
- * greater than @a alphabet_size) for unindexed characters.
- */
-class unindexed_character : public exception {
-    virtual const char *what() const throw() {
-        return "hat_trie: found unindexed character.";
-    }
-};
-
-/// default value for hat_trie alphabet size
-const int DEFAULT_ALPHABET_SIZE = 26;
-
-/// default indexof function for hat_tries
-inline int alphabet_index(char ch) {
-    return ch - 'a';
-}
-
-/**
  * Trie-based data structure for managing sorted strings.
  */
-template <int alphabet_size = DEFAULT_ALPHABET_SIZE,
-          int (*indexof)(char) = alphabet_index>
+template <int alphabet_size = HT_DEFAULT_ALPHABET_SIZE,
+          int (*indexof)(char) = ht_alphabet_index>
 class hat_trie {
 
   private:
@@ -75,10 +58,10 @@ class hat_trie {
 
     struct node_pointer {
         unsigned char type;
-        node_base *p;
+        node_base *pointer;
 
-        node_pointer(unsigned char type = 0, node_base *p = NULL) :
-                type(type), p(p) {
+        node_pointer(unsigned char type = 0, node_base *pointer = NULL) :
+                type(type), pointer(pointer) {
 
         }
     };
@@ -141,7 +124,6 @@ class hat_trie {
     void init();
 
     // accessors
-    int get_index(char ch) const throw(unindexed_character);
     bool search(const char * &s, node_pointer &n) const;
     void print(const node_pointer &n, const string &space = "") const;
     static node_pointer next_word(node_pointer);
@@ -166,8 +148,8 @@ hat_trie<alphabet_size, indexof>::hat_trie() {
 
 template <int alphabet_size, int (*indexof)(char)>
 hat_trie<alphabet_size, indexof>::~hat_trie() {
-    delete root.p;
-    root.p = NULL;
+    delete root.pointer;
+    root.pointer = NULL;
 }
 
 /**
@@ -211,7 +193,7 @@ bool hat_trie<alphabet_size, indexof>::
 insert(const string &s) {
     if (root.type == CONTAINER_POINTER) {
         // Insert into the container root points to.
-        return insert((container *)root.p, s.c_str());
+        return insert((container *)root.pointer, s.c_str());
 
     } else if (root.type == NODE_POINTER) {
         // Search for s in the trie.
@@ -222,7 +204,7 @@ insert(const string &s) {
             if (*pos == '\0') {
                 // s was found in the trie's structure. Mark its location
                 // as the end of a word.
-                n.p->set_word(true);
+                n.pointer->set_word(true);
             } else {
                 // s was not found in the trie's structure. Either make a
                 // new container for it or insert it into an already
@@ -230,8 +212,8 @@ insert(const string &s) {
                 container *c = NULL;
                 if (n.type == NODE_POINTER) {
                     // Make a new container for s.
-                    node *p = (node *)n.p;
-                    int index = get_index(*pos);
+                    node *p = (node *)n.pointer;
+                    int index = ht_get_index<alphabet_size, indexof>(*pos);
                     c = new container(*pos);
 
                     // Insert the new container into the trie structure.
@@ -240,7 +222,7 @@ insert(const string &s) {
                     p->types[index] = CONTAINER_POINTER;
                     ++pos;
                 } else if (n.type == CONTAINER_POINTER) {
-                    c = (container *)n.p;
+                    c = (container *)n.pointer;
                 }
 
                 // Insert s into the container.
@@ -264,26 +246,8 @@ hat_trie<alphabet_size, indexof>::begin() const {
 template <int alphabet_size, int (*indexof)(char)>
 void hat_trie<alphabet_size, indexof>::init() {
     _size = 0;
-    root.p = new container();
+    root.pointer = new container();
     root.type = CONTAINER_POINTER;
-}
-
-/**
- * Gets the index of a character.
- *
- * @param ch  character to index
- *
- * @return  index of @a ch
- * @throws unindexed_character  if @a ch is not indexed by @a indexof()
- */
-template <int alphabet_size, int (*indexof)(char)>
-int hat_trie<alphabet_size, indexof>::
-get_index(char ch) const throw(unindexed_character) {
-    int result = indexof(ch);
-    if (result < 0 || result >= alphabet_size) {
-        throw unindexed_character();
-    }
-    return result;
 }
 
 /**
@@ -303,18 +267,19 @@ bool hat_trie<alphabet_size, indexof>::
 search(const char * &s, node_pointer &n) const {
     // Search for a s in the trie.
     if (root.type == CONTAINER_POINTER) {
-        container *htc = (container *)root.p;
+        container *htc = (container *)root.pointer;
         n = root;
         bool b = htc->contains(s);
+        cout << "after htc->contains" << endl;
         return b;
 
     } else if (root.type == NODE_POINTER) {
         // Traverse the trie until either a s is used up, a is is found
         // in the trie, or s cannot be in the trie.
-        node *p = (node *)root.p;
+        node *p = (node *)root.pointer;
         node_base *v = NULL;
         while (*s) {
-            int index = get_index(*s);
+            int index = ht_get_index<alphabet_size, indexof>(*s);
             v = p->children[index];
             if (v) {
                 ++s;
@@ -345,6 +310,11 @@ search(const char * &s, node_pointer &n) const {
 template <int alphabet_size, int (*indexof)(char)>
 bool hat_trie<alphabet_size, indexof>::
 insert(container *htc, const char *s) {
+    // Make sure the characters in this string are valid.
+    for (int i = 0; s[i] != '\0'; ++i) {
+        ht_get_index<alphabet_size, indexof>(s[i]);
+    }
+
     if (htc->insert(s)) {
         ++_size;
         if (htc->size() > BURST_THRESHOLD) {
@@ -365,9 +335,9 @@ burst(container *htc) {
     // Make a set of containers for the data in the old container and
     // add them to the new node.
     // TODO container::store_type::iterator it;
-    array_hash::iterator it;
+    typename container::store_type::iterator it;
     for (it = htc->store.begin(); it != htc->store.end(); ++it) {
-        int index = get_index((*it)[0]);
+        int index = ht_get_index<alphabet_size, indexof>((*it)[0]);
         if (result->children[index] == NULL) {
             container *insertion = new container((*it)[0]);
             insertion->set_word(((*it)[1] == '\0'));
@@ -384,11 +354,11 @@ burst(container *htc) {
     node *parent = htc->parent;
     result->parent = parent;
     if (parent) {
-        int index = get_index(htc->ch());
+        int index = ht_get_index<alphabet_size, indexof>(htc->ch());
         parent->children[index] = result;
         parent->types[index] = NODE_POINTER;
     } else {
-        root.p = result;
+        root.pointer = result;
         root.type = NODE_POINTER;
     }
     delete htc;
@@ -398,9 +368,9 @@ template <int alphabet_size, int (*indexof)(char)>
 void hat_trie<alphabet_size, indexof>::
 print(const node_pointer &n, const string &space) const {
     if (root.type == CONTAINER_POINTER) {
-        container *c = (container *)n.p;
+        container *c = (container *)n.pointer;
         // TODO
-        array_hash::iterator it;
+        typename container::store_type::iterator it;
         if (c->ch() != '\0') {
             cout << space << c->ch();
             if (c->is_word()) {
@@ -412,7 +382,7 @@ print(const node_pointer &n, const string &space) const {
             cout << space + "  " << *it << " ~" << endl;
         }
     } else if (root.type == NODE_POINTER) {
-        node *p = (node *)n.p;
+        node *p = (node *)n.pointer;
         if (p->ch() != '\0') {
             cout << space << p->ch();
             if (p->types[alphabet_size]) {
@@ -432,7 +402,7 @@ template <int alphabet_size, int (*indexof)(char)>
 typename hat_trie<alphabet_size, indexof>::node_pointer
 hat_trie<alphabet_size, indexof>::
 next_word(node_pointer n) {
-    if (n.p->parent == NULL) {
+    if (n.pointer->parent == NULL) {
         // n is the root.
         if (n.type == CONTAINER_POINTER) {
             return node_pointer();
