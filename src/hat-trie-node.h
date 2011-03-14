@@ -47,7 +47,7 @@ class hat_trie_node_base {
 
     // accessors
     char ch() const { return _ch; }
-    virtual bool word() const = 0;
+    virtual bool is_word() const = 0;
 
     // modifiers
     virtual void set_word(bool b) = 0;
@@ -74,14 +74,15 @@ class hat_trie_container : public hat_trie_node_base<alphabet_size, indexof> {
     // accessors
     bool contains(const char *p) const;
     size_t size() const { return store.size(); }
-    bool word() const { return _word; }
+    bool is_word() const { return word; }
+    store_type::iterator begin() const { return store.begin(); }
 
     // modifiers
     bool insert(const char *p);
-    void set_word(bool b) { _word = b; }
+    void set_word(bool b) { word = b; }
 
   private:
-    bool _word;
+    bool word;
     array_hash store;
 };
 
@@ -97,7 +98,7 @@ class hat_trie_node : public hat_trie_node_base<alphabet_size, indexof> {
     ~hat_trie_node() { }
 
     // accessors
-    bool word() const { return types[alphabet_size]; }
+    bool is_word() const { return types[alphabet_size]; }
 
     // modifiers
     void set_word(bool b) { types[alphabet_size] = b; }
@@ -122,7 +123,7 @@ template <int alphabet_size, int (*indexof)(char)>
 bool hat_trie_container<alphabet_size, indexof>::
 contains(const char *p) const {
     if (*p == '\0') {
-        return word();
+        return is_word();
     }
     return store.find(p);
 }
@@ -131,7 +132,7 @@ template <int alphabet_size, int (*indexof)(char)>
 bool hat_trie_container<alphabet_size, indexof>::
 insert(const char *p) {
     if (*p == '\0') {
-        bool b = word();
+        bool b = is_word();
         set_word(true);
         return !b;
     }
