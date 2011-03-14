@@ -45,7 +45,6 @@ class array_hash {
     array_hash();
     ~array_hash();
 
-
     // accessors
     bool find(const char *str) const;
     size_t size() const;
@@ -56,7 +55,7 @@ class array_hash {
     iterator begin() const;
     iterator end() const;
 
-    class iterator {
+    class iterator : std::iterator<bidirectional_iterator_tag, const char *> {
         friend class array_hash;
 
       public:
