@@ -119,7 +119,7 @@ class hat_trie {
     enum { CONTAINER_POINTER = 1, NODE_POINTER = 2 };
 
     // containers are burst after their size crosses this threshold
-    enum { BURST_THRESHOLD = 1024 };
+    enum { BURST_THRESHOLD = 2 };
 
     void init();
 
@@ -367,7 +367,7 @@ burst(container *htc) {
 template <int alphabet_size, int (*indexof)(char)>
 void hat_trie<alphabet_size, indexof>::
 print(const node_pointer &n, const string &space) const {
-    if (root.type == CONTAINER_POINTER) {
+    if (n.type == CONTAINER_POINTER) {
         container *c = (container *)n.pointer;
         // TODO
         typename container::store_type::iterator it;
@@ -381,7 +381,7 @@ print(const node_pointer &n, const string &space) const {
         for (it = c->store.begin(); it != c->store.end(); ++it) {
             cout << space + "  " << *it << " ~" << endl;
         }
-    } else if (root.type == NODE_POINTER) {
+    } else if (n.type == NODE_POINTER) {
         node *p = (node *)n.pointer;
         if (p->ch() != '\0') {
             cout << space << p->ch();
