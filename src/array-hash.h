@@ -17,6 +17,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// TODO delete
+
 #ifndef ARRAY_HASH_H
 #define ARRAY_HASH_H
 
@@ -43,9 +45,13 @@ class array_hash {
     array_hash();
     ~array_hash();
 
-    bool insert(const char *str);
+
+    // accessors
     bool find(const char *str) const;
     size_t size() const;
+
+    // modifiers
+    bool insert(const char *str);
 
     iterator begin() const;
     iterator end() const;
@@ -351,9 +357,11 @@ bool array_hash::iterator::operator!=(const iterator& rhs) {
  * Standard assignment operator.
  */
 array_hash::iterator& array_hash::iterator::operator=(const iterator& rhs) {
-    data = rhs.data;
-    p = rhs.p;
-    slot = rhs.slot;
+    if (this != &rhs) {
+        data = rhs.data;
+        p = rhs.p;
+        slot = rhs.slot;
+    }
     return *this;
 }
 
