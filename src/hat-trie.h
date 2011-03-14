@@ -91,12 +91,12 @@ class hat_trie {
     virtual ~hat_trie();
 
     // accessors
-    bool contains(const string& s) const;
+    bool contains(const string &s) const;
     size_t size() const;
     void print() const { print(root); }
 
     // modifiers
-    bool insert(const string& s);
+    bool insert(const string &s);
 
     // iterators
     iterator begin() const;
@@ -107,22 +107,24 @@ class hat_trie {
 
       public:
         iterator();
-        iterator(const iterator& rhs);
+        iterator(const iterator &rhs);
 
         iterator operator++(int);
-        iterator& operator++();
+        iterator &operator++();
         iterator operator--(int);
-        iterator& operator--();
+        iterator &operator--();
 
         string operator*() const;
-        bool operator==(const iterator& rhs);
-        bool operator!=(const iterator& rhs);
-        iterator& operator=(const iterator &rhs);
+        bool operator==(const iterator &rhs);
+        bool operator!=(const iterator &rhs);
+        iterator &operator=(const iterator &rhs);
 
       private:
         // current location and node type of that location
         node_pointer n;
         typename container::store_type::iterator it;
+
+        iterator(const node_pointer &n) : n(n) {}
 
     };
 
@@ -131,7 +133,7 @@ class hat_trie {
     size_t _size;     // number of distinct elements in the trie
 
     // types node_base * values could point to
-    enum { CONTAINER_POINTER = 0, NODE_POINTER = 1 };
+    enum { CONTAINER_POINTER = 1, NODE_POINTER = 2 };
 
     // containers are burst after their size crosses this threshold
     enum { BURST_THRESHOLD = 1024 };
@@ -140,8 +142,9 @@ class hat_trie {
 
     // accessors
     int get_index(char ch) const throw(unindexed_character);
-    bool search(const char *& s, node_pointer &n) const;
-    void print(const node_pointer &n, const string& space = "") const;
+    bool search(const char * &s, node_pointer &n) const;
+    void print(const node_pointer &n, const string &space = "") const;
+    static node_pointer next_word(node_pointer);
 
     // modifiers
     bool insert(container *htc, const char *s);
@@ -178,7 +181,7 @@ hat_trie<alphabet_size, indexof>::~hat_trie() {
  */
 template <int alphabet_size, int (*indexof)(char)>
 bool hat_trie<alphabet_size, indexof>::
-contains(const string& s) const {
+contains(const string &s) const {
     const char *ps = s.c_str();
     node_pointer n;
     return search(ps, n);
@@ -205,7 +208,7 @@ size_t hat_trie<alphabet_size, indexof>::size() const {
  */
 template <int alphabet_size, int (*indexof)(char)>
 bool hat_trie<alphabet_size, indexof>::
-insert(const string& s) {
+insert(const string &s) {
     if (root.type == CONTAINER_POINTER) {
         // Insert into the container root points to.
         return insert((container *)root.p, s.c_str());
@@ -251,7 +254,7 @@ insert(const string& s) {
 template <int alphabet_size, int (*indexof)(char)>
 typename hat_trie<alphabet_size, indexof>::iterator
 hat_trie<alphabet_size, indexof>::begin() const {
-
+    return iterator(next_word(root));
 }
 
 /**
@@ -297,7 +300,7 @@ get_index(char ch) const throw(unindexed_character) {
  */
 template <int alphabet_size, int (*indexof)(char)>
 bool hat_trie<alphabet_size, indexof>::
-search(const char *& s, node_pointer &n) const {
+search(const char * &s, node_pointer &n) const {
     // Search for a s in the trie.
     if (root.type == CONTAINER_POINTER) {
         container *htc = (container *)root.p;
@@ -393,7 +396,7 @@ burst(container *htc) {
 
 template <int alphabet_size, int (*indexof)(char)>
 void hat_trie<alphabet_size, indexof>::
-print(const node_pointer &n, const string& space) const {
+print(const node_pointer &n, const string &space) const {
     if (root.type == CONTAINER_POINTER) {
         container *c = (container *)n.p;
         // TODO
@@ -425,6 +428,24 @@ print(const node_pointer &n, const string& space) const {
     }
 }
 
+template <int alphabet_size, int (*indexof)(char)>
+typename hat_trie<alphabet_size, indexof>::node_pointer
+hat_trie<alphabet_size, indexof>::
+next_word(node_pointer n) {
+    if (n.p->parent == NULL) {
+        // n is the root.
+        if (n.type == CONTAINER_POINTER) {
+            return node_pointer();
+        }
+    } else {
+
+    }
+    return node_pointer();
+}
+
+// ---------
+// iterators
+// ---------
 
 template <int alphabet_size, int (*indexof)(char)>
 hat_trie<alphabet_size, indexof>::
@@ -456,7 +477,6 @@ iterator::operator*() const {
         return *it;
     }
 }
-
 
 }  // namespace stx
 
