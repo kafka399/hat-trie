@@ -60,9 +60,7 @@ class hat_trie {
         node_base *pointer;
 
         node_pointer(unsigned char type = 0, node_base *pointer = NULL) :
-                type(type), pointer(pointer) {
-
-        }
+                type(type), pointer(pointer) { }
     };
 
   public:
@@ -106,7 +104,7 @@ class hat_trie {
         node_pointer n;
         typename container::store_type::iterator it;
 
-        iterator(const node_pointer &n) : n(n) {}
+        iterator(const node_pointer &n) : n(n) { }
 
     };
 
@@ -118,7 +116,7 @@ class hat_trie {
     enum { CONTAINER_POINTER = 1, NODE_POINTER = 2 };
 
     // containers are burst after their size crosses this threshold
-    enum { BURST_THRESHOLD = 2 };
+    enum { BURST_THRESHOLD = 1 };
 
     void init();
 
@@ -326,18 +324,22 @@ insert(container *htc, const char *s) {
 template <int alphabet_size, int (*indexof)(char)>
 void hat_trie<alphabet_size, indexof>::
 burst(container *htc) {
-    std::cout << "BURSTING" << std::endl;
+    using namespace std;
+
+    cout << "BURSTING" << endl;
+
     // Construct new node.
     node *result = new node(htc->ch());
+    cout << "new node's address: " << result << endl;
     result->set_word(htc->is_word());
 
     // Make a set of containers for the data in the old container and
     // add them to the new node.
-    // TODO container::store_type::iterator it;
     typename container::store_type::iterator it;
     for (it = htc->store.begin(); it != htc->store.end(); ++it) {
         int index = ht_get_index<alphabet_size, indexof>((*it)[0]);
         if (result->children[index] == NULL) {
+            cout << "made new container for " << (*it)[0] << endl;
             container *insertion = new container((*it)[0]);
             insertion->set_word(((*it)[1] == '\0'));
             insertion->parent = result;
@@ -346,6 +348,7 @@ burst(container *htc) {
         }
         if ((*it)[1] != '\0') {  // then the length is > 1
             ((container *)result->children[index])->insert((*it) + 1);
+            cout << "inserted " << (*it) + 1 << " into container" << endl;
         }
     }
 
@@ -367,11 +370,11 @@ template <int alphabet_size, int (*indexof)(char)>
 void hat_trie<alphabet_size, indexof>::
 print(const node_pointer &n, const std::string &space) const {
     using namespace std;
+    cout << "new call" << endl;
 
     if (n.type == CONTAINER_POINTER) {
+        cout << "container pointer" << endl;
         container *c = (container *)n.pointer;
-        // TODO
-        typename container::store_type::iterator it;
         if (c->ch() != '\0') {
             cout << space << c->ch();
             if (c->is_word()) {
@@ -379,18 +382,29 @@ print(const node_pointer &n, const std::string &space) const {
             }
             cout << endl;
         }
+
+        cout << 1 << endl;
+        typename container::store_type::iterator it;
+        cout << 2 << endl;
+        it = c->store.begin();
+        cout << 3 << endl;
         for (it = c->store.begin(); it != c->store.end(); ++it) {
             cout << space + "  " << *it << " ~" << endl;
         }
+
     } else if (n.type == NODE_POINTER) {
+        cout << "node pointer address " << n.pointer << endl;
         node *p = (node *)n.pointer;
+        cout << 1 << endl;
         if (p->ch() != '\0') {
+            cout << 2 << endl;
             cout << space << p->ch();
             if (p->types[alphabet_size]) {
                 cout << " ~";
             }
             cout << endl;
         }
+        cout << 3 << endl;
         for (int i = 0; i < alphabet_size; ++i) {
             if (p->children[i]) {
                 print(node_pointer(p->types[i], p->children[i]), space + " ");

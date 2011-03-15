@@ -54,7 +54,7 @@ int ht_get_index(char ch) throw(unindexed_character) {
     return result;
 }
 
-}
+}  // namespace stx
 
 #endif
 

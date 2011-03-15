@@ -22,6 +22,7 @@
 #ifndef ht_array_hash_H
 #define ht_array_hash_H
 
+#include <cassert>
 #include <iostream>
 #include <stdint.h>
 #include <cstring>
@@ -171,6 +172,7 @@ insert(const char *str) {
             // str is already in the table. Nothing needs to be done.
             return false;
         }
+
         // Append the new string to the end of this slot.
         size_type old_size = *((size_type *)(p));
         size_type new_size = old_size + sizeof(length_type) + length;
@@ -179,6 +181,7 @@ insert(const char *str) {
         *((size_type *)(data[slot])) = new_size;
         delete [] p;
         p = data[slot] + old_size - sizeof(length_type);
+
     } else {
         // Make a new slot for this string.
         size_type size = sizeof(size_type) + 2 * sizeof(length_type) + length;
@@ -235,16 +238,24 @@ size() const {
  * Gets an iterator to the first element in the table.
  */
 template <int alphabet_size, int (*indexof)(char)>
-typename ht_array_hash<alphabet_size, indexof>::iterator ht_array_hash<alphabet_size, indexof>::
+typename ht_array_hash<alphabet_size, indexof>::iterator
+ht_array_hash<alphabet_size, indexof>::
 begin() const {
+    using namespace std;
+
+    cout << "begin()" << endl;
+
     iterator result;
-    if (_size == 0) {
+    if (size() == 0) {
         result = end();
     } else {
+        cout << "else" << endl;
         result.slot = 0;
         result.data = data;
         result.p = NULL;
-        while (result.data[result.slot] == NULL) {
+        cout << 1 << endl;
+        cout << "data: " << data << endl;
+        while (result.slot < SLOT_COUNT && result.data[result.slot] == NULL) {
             ++result.slot;
         }
         result.p = result.data[result.slot] + sizeof(size_type);
@@ -256,7 +267,8 @@ begin() const {
  * Gets an iterator to one past the last element in the hash table.
  */
 template <int alphabet_size, int (*indexof)(char)>
-typename ht_array_hash<alphabet_size, indexof>::iterator ht_array_hash<alphabet_size, indexof>::
+typename ht_array_hash<alphabet_size, indexof>::iterator
+ht_array_hash<alphabet_size, indexof>::
 end() const {
     iterator result;
     result.slot = SLOT_COUNT;
