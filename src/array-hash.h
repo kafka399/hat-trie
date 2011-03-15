@@ -241,21 +241,14 @@ template <int alphabet_size, int (*indexof)(char)>
 typename ht_array_hash<alphabet_size, indexof>::iterator
 ht_array_hash<alphabet_size, indexof>::
 begin() const {
-    using namespace std;
-
-    cout << "begin()" << endl;
-
     iterator result;
     if (size() == 0) {
         result = end();
     } else {
-        cout << "else" << endl;
         result.slot = 0;
         result.data = data;
         result.p = NULL;
-        cout << 1 << endl;
-        cout << "data: " << data << endl;
-        while (result.slot < SLOT_COUNT && result.data[result.slot] == NULL) {
+        while (result.data[result.slot] == NULL) {
             ++result.slot;
         }
         result.p = result.data[result.slot] + sizeof(size_type);

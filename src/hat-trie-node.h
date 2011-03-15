@@ -95,7 +95,7 @@ class hat_trie_node : public hat_trie_node_base<alphabet_size, indexof> {
 
   public:
     hat_trie_node(char ch = '\0');
-    ~hat_trie_node() { }
+    virtual ~hat_trie_node() { }
 
     // accessors
     bool is_word() const { return types[alphabet_size]; }
