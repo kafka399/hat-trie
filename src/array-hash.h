@@ -29,8 +29,6 @@
 
 #include "hat-trie-common.h"
 
-using namespace std;
-
 namespace stx {
 
 /**
@@ -58,7 +56,7 @@ class array_hash {
     iterator begin() const;
     iterator end() const;
 
-    class iterator : std::iterator<bidirectional_iterator_tag, const char *> {
+    class iterator : std::iterator<std::bidirectional_iterator_tag, const char *> {
         friend class array_hash;
 
       public:

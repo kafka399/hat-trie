@@ -72,18 +72,18 @@ class hat_trie {
     virtual ~hat_trie();
 
     // accessors
-    bool contains(const string &s) const;
+    bool contains(const std::string &s) const;
     size_t size() const;
     void print() const { print(root); }
 
     // modifiers
-    bool insert(const string &s);
+    bool insert(const std::string &s);
 
     // iterators
     iterator begin() const;
     iterator end() const;
 
-    class iterator : std::iterator<bidirectional_iterator_tag, node_base> {
+    class iterator : std::iterator<std::bidirectional_iterator_tag, node_base> {
         friend class hat_trie;
 
       public:
@@ -95,7 +95,7 @@ class hat_trie {
         iterator operator--(int);
         iterator &operator--();
 
-        string operator*() const;
+        std::string operator*() const;
         bool operator==(const iterator &rhs);
         bool operator!=(const iterator &rhs);
         iterator &operator=(const iterator &rhs);
@@ -123,7 +123,7 @@ class hat_trie {
 
     // accessors
     bool search(const char * &s, node_pointer &n) const;
-    void print(const node_pointer &n, const string &space = "") const;
+    void print(const node_pointer &n, const std::string &space = "") const;
     static node_pointer next_word(node_pointer);
 
     // modifiers
@@ -161,7 +161,7 @@ hat_trie<alphabet_size, indexof>::~hat_trie() {
  */
 template <int alphabet_size, int (*indexof)(char)>
 bool hat_trie<alphabet_size, indexof>::
-contains(const string &s) const {
+contains(const std::string &s) const {
     const char *ps = s.c_str();
     node_pointer n;
     return search(ps, n);
@@ -188,7 +188,7 @@ size_t hat_trie<alphabet_size, indexof>::size() const {
  */
 template <int alphabet_size, int (*indexof)(char)>
 bool hat_trie<alphabet_size, indexof>::
-insert(const string &s) {
+insert(const std::string &s) {
     if (root.type == CONTAINER_POINTER) {
         // Insert into the container root points to.
         return insert((container *)root.pointer, s.c_str());
@@ -325,7 +325,7 @@ insert(container *htc, const char *s) {
 template <int alphabet_size, int (*indexof)(char)>
 void hat_trie<alphabet_size, indexof>::
 burst(container *htc) {
-    cout << "BURSTING" << endl;
+    std::cout << "BURSTING" << std::endl;
     // Construct new node.
     node *result = new node(htc->ch());
     result->set_word(htc->is_word());
@@ -364,7 +364,9 @@ burst(container *htc) {
 
 template <int alphabet_size, int (*indexof)(char)>
 void hat_trie<alphabet_size, indexof>::
-print(const node_pointer &n, const string &space) const {
+print(const node_pointer &n, const std::string &space) const {
+    using namespace std;
+
     if (n.type == CONTAINER_POINTER) {
         container *c = (container *)n.pointer;
         // TODO
@@ -436,7 +438,7 @@ iterator::operator--() {
 }
 
 template <int alphabet_size, int (*indexof)(char)>
-string hat_trie<alphabet_size, indexof>::
+std::string hat_trie<alphabet_size, indexof>::
 iterator::operator*() const {
     return *it;
     if (n.type == CONTAINER_POINTER) {
