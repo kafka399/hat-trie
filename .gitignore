@@ -1,1 +1,7 @@
 run
+.gitignore
+kjv
+simple
+out
+src/main.cpp
+Makefile

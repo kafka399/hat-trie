@@ -110,7 +110,8 @@ class hat_trie {
     node_pointer root;  // pointer to the root of the trie
     size_t _size;     // number of distinct elements in the trie
 
-    // types node_base * values could point to
+    // types node_base values could point to. This is stored in
+    // one bit, so the only valid values are 0 and 1
     enum { CONTAINER_POINTER = 0, NODE_POINTER = 1 };
 
     // containers are burst after their size crosses this threshold
