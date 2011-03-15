@@ -40,8 +40,6 @@
 #include "array-hash.h"
 #include "hat-trie-node.h"
 
-using namespace std;
-
 namespace stx {
 
 /**
@@ -270,7 +268,6 @@ search(const char * &s, node_pointer &n) const {
         container *htc = (container *)root.pointer;
         n = root;
         bool b = htc->contains(s);
-        cout << "after htc->contains" << endl;
         return b;
 
     } else if (root.type == NODE_POINTER) {
@@ -328,6 +325,7 @@ insert(container *htc, const char *s) {
 template <int alphabet_size, int (*indexof)(char)>
 void hat_trie<alphabet_size, indexof>::
 burst(container *htc) {
+    cout << "BURSTING" << endl;
     // Construct new node.
     node *result = new node(htc->ch());
     result->set_word(htc->is_word());
