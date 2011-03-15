@@ -25,7 +25,8 @@
 //   NO! it accumulates!
 // TODO how to make sure every character is indexable? (even the ones that
 //      go into containers?) should this be general enough to allow for a
-//      different container type than array_hash?
+//      different container type than ht_array_hash?
+// TODO make it really hard to use a container that isn't an array hash
 
 #ifndef HAT_TRIE_H
 #define HAT_TRIE_H

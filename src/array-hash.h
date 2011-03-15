@@ -19,8 +19,8 @@
 
 // TODO delete
 
-#ifndef ARRAY_HASH_H
-#define ARRAY_HASH_H
+#ifndef ht_array_hash_H
+#define ht_array_hash_H
 
 #include <iostream>
 #include <stdint.h>
@@ -35,7 +35,7 @@ namespace stx {
  * Hash table container for unsorted strings.
  */
 template <int alphabet_size, int (*indexof)(char) = ht_alphabet_index>
-class array_hash {
+class ht_array_hash {
   private:
     typedef uint16_t length_type;
     typedef uint32_t size_type;
@@ -43,8 +43,8 @@ class array_hash {
   public:
     class iterator;
 
-    array_hash();
-    ~array_hash();
+    ht_array_hash();
+    ~ht_array_hash();
 
     // accessors
     bool find(const char *str) const;
@@ -57,7 +57,7 @@ class array_hash {
     iterator end() const;
 
     class iterator : std::iterator<std::bidirectional_iterator_tag, const char *> {
-        friend class array_hash;
+        friend class ht_array_hash;
 
       public:
         iterator();
@@ -88,7 +88,7 @@ class array_hash {
 };
 
 // ----------
-// array_hash
+// ht_array_hash
 // ----------
 
 /**
@@ -97,8 +97,8 @@ class array_hash {
  * Creates a NULL-constructed table of slots.
  */
 template <int alphabet_size, int (*indexof)(char)>
-array_hash<alphabet_size, indexof>::
-array_hash() {
+ht_array_hash<alphabet_size, indexof>::
+ht_array_hash() {
     data = new char *[SLOT_COUNT];
     for (int i = 0; i < SLOT_COUNT; ++i) {
         data[i] = NULL;
@@ -110,8 +110,8 @@ array_hash() {
  * Standard destructor.
  */
 template <int alphabet_size, int (*indexof)(char)>
-array_hash<alphabet_size, indexof>::
-~array_hash() {
+ht_array_hash<alphabet_size, indexof>::
+~ht_array_hash() {
     for (int i = 0; i < SLOT_COUNT; ++i) {
         delete data[i];
     }
@@ -129,7 +129,7 @@ array_hash<alphabet_size, indexof>::
  *          and its corresponding length. If not, returns NULL.
  */
 template <int alphabet_size, int (*indexof)(char)>
-char *array_hash<alphabet_size, indexof>::
+char *ht_array_hash<alphabet_size, indexof>::
 search(const char *str, length_type length, char *p) const {
     // Search for str in the slot p points to.
     p += sizeof(size_type);  // skip past size at beginning of slot
@@ -159,7 +159,7 @@ search(const char *str, length_type length, char *p) const {
  *          appears in the table
  */
 template <int alphabet_size, int (*indexof)(char)>
-bool array_hash<alphabet_size, indexof>::
+bool ht_array_hash<alphabet_size, indexof>::
 insert(const char *str) {
     length_type length;
     int slot = hash(str, length);
@@ -212,7 +212,7 @@ insert(const char *str) {
  * @return  true if @a str is in the table, false otherwise
  */
 template <int alphabet_size, int (*indexof)(char)>
-bool array_hash<alphabet_size, indexof>::
+bool ht_array_hash<alphabet_size, indexof>::
 find(const char *str) const {
     length_type length;
     char *p = data[hash(str, length)];
@@ -226,7 +226,7 @@ find(const char *str) const {
  * Gets the number of elements in the table.
  */
 template <int alphabet_size, int (*indexof)(char)>
-size_t array_hash<alphabet_size, indexof>::
+size_t ht_array_hash<alphabet_size, indexof>::
 size() const {
     return _size;
 }
@@ -235,7 +235,7 @@ size() const {
  * Gets an iterator to the first element in the table.
  */
 template <int alphabet_size, int (*indexof)(char)>
-typename array_hash<alphabet_size, indexof>::iterator array_hash<alphabet_size, indexof>::
+typename ht_array_hash<alphabet_size, indexof>::iterator ht_array_hash<alphabet_size, indexof>::
 begin() const {
     iterator result;
     if (_size == 0) {
@@ -256,7 +256,7 @@ begin() const {
  * Gets an iterator to one past the last element in the hash table.
  */
 template <int alphabet_size, int (*indexof)(char)>
-typename array_hash<alphabet_size, indexof>::iterator array_hash<alphabet_size, indexof>::
+typename ht_array_hash<alphabet_size, indexof>::iterator ht_array_hash<alphabet_size, indexof>::
 end() const {
     iterator result;
     result.slot = SLOT_COUNT;
@@ -276,7 +276,7 @@ end() const {
  * @return  hashed value of @a str, its slot in the table
  */
 template <int alphabet_size, int (*indexof)(char)>
-int array_hash<alphabet_size, indexof>::
+int ht_array_hash<alphabet_size, indexof>::
 hash(const char *str, length_type& length, int seed) const {
     int h = seed;
     length = 0;
@@ -296,14 +296,14 @@ hash(const char *str, length_type& length, int seed) const {
 }
 
 // --------------------
-// array_hash::iterator
+// ht_array_hash::iterator
 // --------------------
 
 /**
  * Standard default constructor.
  */
 template <int alphabet_size, int (*indexof)(char)>
-array_hash<alphabet_size, indexof>::
+ht_array_hash<alphabet_size, indexof>::
 iterator::iterator() :
         slot(0), p(NULL), data(NULL) {
 
@@ -313,7 +313,7 @@ iterator::iterator() :
  * Standard copy constructor.
  */
 template <int alphabet_size, int (*indexof)(char)>
-array_hash<alphabet_size, indexof>::
+ht_array_hash<alphabet_size, indexof>::
 iterator::iterator(const iterator& rhs) {
     *this = rhs;
 }
@@ -324,8 +324,8 @@ iterator::iterator(const iterator& rhs) {
  * @return  self-reference
  */
 template <int alphabet_size, int (*indexof)(char)>
-typename array_hash<alphabet_size, indexof>::iterator&
-array_hash<alphabet_size, indexof>::
+typename ht_array_hash<alphabet_size, indexof>::iterator&
+ht_array_hash<alphabet_size, indexof>::
 iterator::operator++() {
     // Move p to the next string in this slot.
     p += *((length_type *)p) + sizeof(length_type);
@@ -345,8 +345,8 @@ iterator::operator++() {
 }
 
 template <int alphabet_size, int (*indexof)(char)>
-typename array_hash<alphabet_size, indexof>::iterator&
-array_hash<alphabet_size, indexof>::
+typename ht_array_hash<alphabet_size, indexof>::iterator&
+ht_array_hash<alphabet_size, indexof>::
 iterator::operator--() {
     // TODO
     return *this;
@@ -359,7 +359,7 @@ iterator::operator--() {
  *          string, and @a second is the length of the string
  */
 /*
-pair<const char *, uint16_t> array_hash<alphabet_size, indexof>::iterator::operator*() {
+pair<const char *, uint16_t> ht_array_hash<alphabet_size, indexof>::iterator::operator*() {
     pair<const char *, uint16_t> result;
     if (p) {
         result.first = p + sizeof(length_type);
@@ -369,7 +369,7 @@ pair<const char *, uint16_t> array_hash<alphabet_size, indexof>::iterator::opera
 }
 */
 template <int alphabet_size, int (*indexof)(char)>
-const char *array_hash<alphabet_size, indexof>::
+const char *ht_array_hash<alphabet_size, indexof>::
 iterator::operator*() const {
     if (p) {
         return p + sizeof(length_type);
@@ -381,7 +381,7 @@ iterator::operator*() const {
  * Standard equality operator.
  */
 template <int alphabet_size, int (*indexof)(char)>
-bool array_hash<alphabet_size, indexof>::
+bool ht_array_hash<alphabet_size, indexof>::
 iterator::operator==(const iterator& rhs) {
     return p == rhs.p;
 }
@@ -390,7 +390,7 @@ iterator::operator==(const iterator& rhs) {
  * Standard inequality operator.
  */
 template <int alphabet_size, int (*indexof)(char)>
-bool array_hash<alphabet_size, indexof>::
+bool ht_array_hash<alphabet_size, indexof>::
 iterator::operator!=(const iterator& rhs) {
     return !(*this == rhs);
 }
@@ -399,8 +399,8 @@ iterator::operator!=(const iterator& rhs) {
  * Standard assignment operator.
  */
 template <int alphabet_size, int (*indexof)(char)>
-typename array_hash<alphabet_size, indexof>::iterator&
-array_hash<alphabet_size, indexof>::
+typename ht_array_hash<alphabet_size, indexof>::iterator&
+ht_array_hash<alphabet_size, indexof>::
 iterator::operator=(const iterator& rhs) {
     if (this != &rhs) {
         data = rhs.data;
