@@ -38,10 +38,15 @@ class unindexed_character : public std::exception {
 };
 
 /// default value for hat_trie alphabet size
-const size_t HT_DEFAULT_ALPHABET_SIZE = 26;
+const size_t HT_DEFAULT_ALPHABET_SIZE = 62;
 
 /// default indexof function for hat_tries
-inline int ht_alphabet_index(char ch) {
+inline int ht_alphanumeric_index(char ch) {
+    if (ch >= '0' && ch <= '9') {
+        return ch - '0';
+    } else if (ch >= 'A' && ch <= 'Z') {
+        return ch - 'A';
+    }
     return ch - 'a';
 }
 

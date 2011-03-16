@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <set>
 #include <time.h>
 #include <unistd.h>  // for sleep()
 #include <iomanip>
@@ -82,14 +83,19 @@ double timeReport() {
 
 int main() {
     std::ios_base::sync_with_stdio(false);  // speed up reading from stdin
-    hat_trie<27, indexof> ht;
+    hat_trie<> ht;
     string reader;
     set<string> s;
-    array_hash ah;
+    ht_array_hash<> ah;
+    vector<string> v;
+
     while (cin >> reader) {
         ht.insert(reader);
     }
-	ht.print();
+	//ht.print();
+
+    sleep(100000);
+
     return 0;
 }
 

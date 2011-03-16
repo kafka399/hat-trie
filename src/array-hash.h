@@ -35,7 +35,8 @@ namespace stx {
 /**
  * Hash table container for unsorted strings.
  */
-template <int alphabet_size, int (*indexof)(char) = ht_alphabet_index>
+template <int alphabet_size = HT_DEFAULT_ALPHABET_SIZE,
+          int (*indexof)(char) = ht_alphanumeric_index>
 class ht_array_hash {
   private:
     typedef uint16_t length_type;

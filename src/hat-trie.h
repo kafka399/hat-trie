@@ -27,6 +27,7 @@
 //      go into containers?) should this be general enough to allow for a
 //      different container type than ht_array_hash?
 // TODO make it really hard to use a container that isn't an array hash
+// TODO documentation that limits string length to 65k characters
 
 #ifndef HAT_TRIE_H
 #define HAT_TRIE_H
@@ -45,7 +46,7 @@ namespace stx {
  * Trie-based data structure for managing sorted strings.
  */
 template <int alphabet_size = HT_DEFAULT_ALPHABET_SIZE,
-          int (*indexof)(char) = ht_alphabet_index>
+          int (*indexof)(char) = ht_alphanumeric_index>
 class hat_trie {
 
   private:
@@ -124,7 +125,7 @@ class hat_trie {
     enum { CONTAINER_POINTER = 0, NODE_POINTER = 1 };
 
     // containers are burst after their size crosses this threshold
-    enum { BURST_THRESHOLD = 512 };
+    enum { BURST_THRESHOLD = 16384 };
 
     void init();
 
