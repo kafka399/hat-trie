@@ -53,12 +53,23 @@ class hat_trie {
     typedef hat_trie_container<alphabet_size, indexof> container;
     typedef hat_trie_node_base<alphabet_size, indexof> node_base;
 
-    struct node_pointer {
+    // pairs node_base pointers with their type (whether they point to
+    // nodes or containers)
+    class node_pointer {
+
+      public:
         unsigned char type;
         node_base *pointer;
 
         node_pointer(unsigned char type = 0, node_base *pointer = NULL) :
                 type(type), pointer(pointer) { }
+
+        bool operator==(const node_pointer &rhs) {
+            return pointer == rhs.pointer;
+        }
+        bool operator!=(const node_pointer &rhs) {
+            return !operator==(rhs);
+        }
     };
 
   public:
@@ -84,7 +95,7 @@ class hat_trie {
         friend class hat_trie;
 
       public:
-        iterator();
+        iterator(const node_pointer &n = node_pointer()) : n(n) { }
         iterator(const iterator &rhs);
 
         iterator operator++(int);
@@ -101,8 +112,6 @@ class hat_trie {
         // current location and node type of that location
         node_pointer n;
         typename container::store_type::iterator it;
-
-        iterator(const node_pointer &n) : n(n) { }
 
     };
 
@@ -224,10 +233,34 @@ insert(const std::string &s) {
     return false;  // s was found in the trie
 }
 
+/**
+ * Gets an iterator to the first element in the trie.
+ *
+ * If there are no elements in the trie, the iterator pointing to
+ * trie.end() is returned.
+ *
+ * @return iterator to the first element in the trie
+ */
 template <int alphabet_size, int (*indexof)(char)>
 typename hat_trie<alphabet_size, indexof>::iterator
-hat_trie<alphabet_size, indexof>::begin() const {
+hat_trie<alphabet_size, indexof>::
+begin() const {
+    if (size() == 0) {
+        return end();
+    }
     return iterator(next_word(root));
+}
+
+/**
+ * Gets an iterator to one past the last element in the trie.
+ *
+ * @return iterator to one past the last element in the trie.
+ */
+template <int alphabet_size, int (*indexof)(char)>
+typename hat_trie<alphabet_size, indexof>::iterator
+hat_trie<alphabet_size, indexof>::
+end() const {
+    return iterator();
 }
 
 /**
@@ -399,12 +432,6 @@ next_word(node_pointer n) {
 // ---------
 // iterators
 // ---------
-
-template <int alphabet_size, int (*indexof)(char)>
-hat_trie<alphabet_size, indexof>::
-iterator::iterator() {
-
-}
 
 template <int alphabet_size, int (*indexof)(char)>
 typename hat_trie<alphabet_size, indexof>::iterator&
