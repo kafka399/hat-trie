@@ -5,7 +5,7 @@ EXECUTABLE = bin/main
 
 # make variables
 OFLAGS   = -O2
-CXX      = g++
+CXX      = clang++
 CXXFLAGS = -Wall -c $(OFLAGS)
 LDFLAGS  =
 
