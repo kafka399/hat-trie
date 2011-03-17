@@ -81,8 +81,7 @@ class ht_array_hash {
 
   private:
     enum { SLOT_COUNT = 512 };  // MUST be a power of 2
-    size_t _size;
-    // TODO
+    uint16_t _size;  // size can be no larger than 32768
     char **data;
 
     int hash(const char *str, length_type& length, int seed = 23) const;
@@ -94,9 +93,7 @@ class ht_array_hash {
 // ----------
 
 /**
- * Standard default constructor.
- *
- * Creates a NULL-constructed table of slots.
+ * Default constructor.
  */
 template <int alphabet_size, int (*indexof)(char)>
 ht_array_hash<alphabet_size, indexof>::
