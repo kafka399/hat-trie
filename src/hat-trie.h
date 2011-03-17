@@ -23,11 +23,12 @@
 // insert into this container) is acceptable. No container will have more
 // values in it than BURST_THRESHOLD + 1.
 //   NO! it accumulates!
-// TODO how to make sure every character is indexable? (even the ones that
-//      go into containers?) should this be general enough to allow for a
-//      different container type than ht_array_hash?
 // TODO make it really hard to use a container that isn't an array hash
 // TODO documentation that limits string length to 65k characters
+// TODO store the empty string at root
+// TODO visual studio compatibility
+// TODO make array_hash find function return an iterator
+// TODO is unindexed_character really necessary?
 
 #ifndef HAT_TRIE_H
 #define HAT_TRIE_H
@@ -65,6 +66,7 @@ class hat_trie {
         node_pointer(unsigned char type = 0, node_base *pointer = NULL) :
                 type(type), pointer(pointer) { }
 
+        // comparison operators
         bool operator==(const node_pointer &rhs) {
             return pointer == rhs.pointer;
         }
@@ -125,7 +127,7 @@ class hat_trie {
     enum { CONTAINER_POINTER = 0, NODE_POINTER = 1 };
 
     // containers are burst after their size crosses this threshold
-    enum { BURST_THRESHOLD = 16384 };
+    enum { BURST_THRESHOLD = 8192 };
 
     void init();
 
@@ -277,6 +279,8 @@ void hat_trie<alphabet_size, indexof>::init() {
 /**
  * Searches for @a s in the trie, returning statistics about its position.
  *
+ * TODO change these parameter descriptions
+ *
  * @param s  string to search for. If @a *s = \0, @a s is in the trie
  *           part of this data structure. If not, @a s is in a
  *           container.
@@ -324,14 +328,12 @@ search(const char * &s, node_pointer &n) const {
 template <int alphabet_size, int (*indexof)(char)>
 bool hat_trie<alphabet_size, indexof>::
 insert(container *htc, const char *s) {
-    // Make sure the characters in this string are valid.
-    for (int i = 0; s[i] != '\0'; ++i) {
-        ht_get_index<alphabet_size, indexof>(s[i]);
-    }
-
+    // Try to insert s into the container.
     if (htc->insert(s)) {
         ++_size;
         if (htc->size() > BURST_THRESHOLD) {
+            // The container has too many strings in it; burst the
+            // container into a node.
             burst(htc);
         }
         return true;
