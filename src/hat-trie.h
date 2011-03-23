@@ -1,7 +1,9 @@
 /*
  * Copyright 2010-2011 Chris Vaszauskas and Tyler Richard
  *
- * This file is part of a HAT-trie implementation.
+ * This file is part of a HAT-trie implementation following the paper
+ * entitled "HAT-trie: A Cache-concious Trie-based Data Structure for
+ * Strings" by Nikolas Askitis and Ranjan Sinha.
  *
  * This library is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
