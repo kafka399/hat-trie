@@ -36,8 +36,8 @@
 #include <bitset>
 #include <string>
 #include <utility>
+#include <vector>
 
-#include "hat-trie-common.h"
 #include "array-hash.h"
 #include "hat-trie-node.h"
 
@@ -45,6 +45,20 @@ namespace stx {
 
 /**
  * Trie-based data structure for managing sorted strings.
+ *
+ * In the context of this data structure, "alphabet" refers to the
+ * set of characters that can appear in a word. This data structure
+ * requires that this alphabet is well-defined, meaning you must know
+ * exactly what characters your strings can contain beforehand.
+ *
+ * // TODO describe why this limitation is necessary.
+ *
+ * @param alphabet_size
+ *      number of distinct characters in the alphabet
+ * @param indexof
+ *      indexer function that maps characters to their position in
+ *      the alphabet. By default, this function accepts alphanumeric
+ *      characters
  */
 template <int alphabet_size = HT_DEFAULT_ALPHABET_SIZE,
           int (*indexof)(char) = ht_alphanumeric_index>
@@ -114,7 +128,15 @@ class hat_trie {
       private:
         // current location and node type of that location
         node_pointer n;
+
+        // iterator over the elements in the current container
         typename container::store_type::iterator it;
+
+        // caches the word as we travel down the trie
+        std::string word;
+
+        // caches our location in the hierarchy of the trie
+        std::vector<int> pos;
 
     };
 
@@ -127,6 +149,7 @@ class hat_trie {
     enum { CONTAINER_POINTER = 0, NODE_POINTER = 1 };
 
     // containers are burst after their size crosses this threshold
+    // MUST be <= 32,768
     enum { BURST_THRESHOLD = 8192 };
 
     void init();
@@ -166,8 +189,8 @@ hat_trie<alphabet_size, indexof>::~hat_trie() {
  * @param s  word to search for
  *
  * @return  true if @a s is in the trie, false otherwise.
- * @throws unindexed_character  if a character in @a s is not indexed
- *                              by @a indexof()
+ * @throws unindexed_character
+ *      if a character in @a s is not indexed by @a indexof()
  */
 template <int alphabet_size, int (*indexof)(char)>
 bool hat_trie<alphabet_size, indexof>::
@@ -183,7 +206,8 @@ contains(const std::string &s) const {
  * @return  size of the trie
  */
 template <int alphabet_size, int (*indexof)(char)>
-size_t hat_trie<alphabet_size, indexof>::size() const {
+size_t hat_trie<alphabet_size, indexof>::
+size() const {
     return _size;
 }
 
@@ -193,8 +217,8 @@ size_t hat_trie<alphabet_size, indexof>::size() const {
  * @param s  word to insert
  *
  * @return  false if @a s is already in the trie, true otherwise
- * @throws unindexed_character  if a character in @a s is not indexed
- *                              by @a indexof()
+ * @throws unindexed_character
+ *      if a character in @a s is not indexed by @a indexof()
  */
 template <int alphabet_size, int (*indexof)(char)>
 bool hat_trie<alphabet_size, indexof>::
@@ -208,6 +232,7 @@ insert(const std::string &s) {
             // s was found in the trie's structure. Mark its location
             // as the end of a word.
             n.pointer->set_word(true);
+
         } else {
             // s was not found in the trie's structure. Either make a
             // new container for it or insert it into an already
@@ -242,7 +267,7 @@ insert(const std::string &s) {
  * If there are no elements in the trie, the iterator pointing to
  * trie.end() is returned.
  *
- * @return iterator to the first element in the trie
+ * @return  iterator to the first element in the trie
  */
 template <int alphabet_size, int (*indexof)(char)>
 typename hat_trie<alphabet_size, indexof>::iterator
@@ -279,20 +304,18 @@ void hat_trie<alphabet_size, indexof>::init() {
 /**
  * Searches for @a s in the trie, returning statistics about its position.
  *
- * TODO change these parameter descriptions
+ * @param s  string to search for. After this function completes, if
+ *           <code>*s = '\0'</code>, @a s is in the trie part of this
+ *           data structure. If not, @a s is either completed in a
+ *           container or is not in the trie at all.
+ * @param p  after this function completes, @a p stores a pointer to
+ *           either the node or container for @a s
  *
- * @param s  string to search for. If @a *s = \0, @a s is in the trie
- *           part of this data structure. If not, @a s is in a
- *           container.
- * @param p  stores the position of @a s. @a first is a pointer to the
- *           node or container for @a s, and @a second is the pointer
- *           type
- *
- * @return  true if @a s is found in the trie, false otherwise
+ * @return  true if @a s is found, false otherwise
  */
 template <int alphabet_size, int (*indexof)(char)>
 bool hat_trie<alphabet_size, indexof>::
-search(const char * &s, node_pointer &n) const {
+search(const char *&s, node_pointer &n) const {
     // Search for a s in the trie.
     // Traverse the trie until either a s is used up, a is is found
     // in the trie, or s cannot be in the trie.
@@ -325,6 +348,19 @@ search(const char * &s, node_pointer &n) const {
     return p->is_word();
 }
 
+/**
+ * Inserts a word into a container.
+ *
+ * If the insertion overflows the burst threshold, the container
+ * is burst.
+ *
+ * @param htc  container to insert into
+ * @param s    word to insert
+ *
+ * @return
+ *      true if @a s is successfully inserted into @a htc, false
+ *      otherwise
+ */
 template <int alphabet_size, int (*indexof)(char)>
 bool hat_trie<alphabet_size, indexof>::
 insert(container *htc, const char *s) {
@@ -341,10 +377,37 @@ insert(container *htc, const char *s) {
     return false;
 }
 
+/**
+ * Bursts a container into a node with containers underneath it.
+ *
+ * If this container contains the words tan, tree, and trust, it
+ * will be split into a node with two containers underneath it. The
+ * structure will look like this:
+ *
+ *   BEFORE
+ *   t (container - top letter = t)
+ *     an ~ (word in the container)
+ *     ree ~ (word in the container)
+ *     rust ~ (word in the container)
+ *
+ *   AFTER
+ *   t (node)
+ *     a (container - top letter = a)
+ *       n ~ (word in the container)
+ *     r (container - top letter = r)
+ *       ee ~ (word in the container)
+ *       ust ~ (word in the container)
+ *
+ * The burst operation is described in detail by the paper that
+ * originally described burst tries, freely available on the Internet.
+ * (The HAT-trie is a derivation of a burst-trie.)
+ *
+ * @param htc  container to burst
+ */
 template <int alphabet_size, int (*indexof)(char)>
 void hat_trie<alphabet_size, indexof>::
 burst(container *htc) {
-    // Construct new node.
+    // Construct a new node.
     node *result = new node(htc->ch());
     result->set_word(htc->is_word());
 
@@ -363,8 +426,8 @@ burst(container *htc) {
             // Set the new container's word field.
             insertion->set_word(((*it)[1] == '\0'));
         }
-        if ((*it)[1] != '\0') {  // then the length is > 1
-            // Insert the rest of the word into the appropriate
+        if ((*it)[1] != '\0') {  // then the word length is > 1
+            // Insert the rest of the word into the respective
             // container.
             ((container *)result->children[index])->insert((*it) + 1);
         }
@@ -421,21 +484,37 @@ template <int alphabet_size, int (*indexof)(char)>
 typename hat_trie<alphabet_size, indexof>::node_pointer
 hat_trie<alphabet_size, indexof>::
 next_word(node_pointer n) {
-    if (n.pointer->parent == NULL) {
-        // n is the root.
-        if (n.type == CONTAINER_POINTER) {
-            return node_pointer();
-        }
-    } else {
-
+    if (n.pointer == NULL) {
+        return node_pointer();
     }
-    return node_pointer();
+
+    node_pointer result;
+    if (n.type == NODE_POINTER) {
+        // Scan through n's children and go down the first available path.
+        node *p = (node *) result.pointer;
+        for (int i = 0; i < alphabet_size; ++i) {
+            if (p->children[i]) {
+
+            }
+        }
+
+    } else {
+        // Until you can move to the right, move up.
+    }
+
+    // Find the lexicographically least word from the current position.
+    return least(result);
 }
 
 // ---------
 // iterators
 // ---------
 
+/**
+ * Moves the iterator forward.
+ *
+ * @return  self-reference
+ */
 template <int alphabet_size, int (*indexof)(char)>
 typename hat_trie<alphabet_size, indexof>::iterator&
 hat_trie<alphabet_size, indexof>::
@@ -443,6 +522,11 @@ iterator::operator++() {
 
 }
 
+/**
+ * Moves the iterator backward.
+ *
+ * @return  self-reference
+ */
 template <int alphabet_size, int (*indexof)(char)>
 typename hat_trie<alphabet_size, indexof>::iterator&
 hat_trie<alphabet_size, indexof>::
@@ -450,6 +534,11 @@ iterator::operator--() {
 
 }
 
+/**
+ * Iterator dereference operator.
+ *
+ * @return  string this iterator points to
+ */
 template <int alphabet_size, int (*indexof)(char)>
 std::string hat_trie<alphabet_size, indexof>::
 iterator::operator*() const {
