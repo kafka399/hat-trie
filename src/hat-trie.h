@@ -146,21 +146,17 @@ class hat_trie {
         bool operator!=(const iterator &rhs);
 
       private:
-        // current location and node type of that location
+        // Current location in the trie
         node_pointer n;
 
-        // iterator over the elements in the current container
+        // Internal iterator across container types
         typename container::store_type::iterator container_iterator;
 
-        // caches the word as we travel down the trie
-        std::string word;
+        // Caches the word as we move up and down the trie
+        std::string cached_word;
 
-        // caches our location in the hierarchy of the trie
-        std::stack<int> pos;
-
-        // Moves the container_iterator variable back to the beginning
-        // of the container
-        void reset_container_iterator();
+        // Caches our specific location in the hierarchy of the trie
+        std::stack<int> cached_position;
 
         // Special-purpose constructor and assignment operator. If
         // an iterator is assigned to a container, it automatically
@@ -315,7 +311,7 @@ begin() const {
     // is pretty ugly. See the doc comment for the iterator class
     // for a description of why.
     iterator result;
-    result = least(root, result.word, result.pos);
+    result = least(root, result.cached_word, result.cached_position);
     return result;
 }
 
@@ -561,11 +557,6 @@ least(node_pointer n, std::string &word, std::stack<int> &index) {
 // iterators
 // ---------
 
-//template <int alphabet_size, int (*indexof)(char)>
-//hat_trie<alphabet_size, indexof>::
-//iterator::iterator(const iterator &rhs) {
-//}
-
 /**
  * Moves the iterator forward.
  *
@@ -601,10 +592,10 @@ iterator::operator*() const {
     cerr << "in operator*" << endl;
     if (n.type == CONTAINER_POINTER) {
         cerr << "found a CONTAINER_POINTER" << endl;
-        return word + *container_iterator;
+        return cached_word + *container_iterator;
     } else if (n.type == NODE_POINTER) {
         cerr << "found a NODE_POINTER" << endl;
-        return word;
+        return cached_word;
     }
     return "";
 }
