@@ -119,7 +119,7 @@ class hat_trie {
         friend class hat_trie;
 
       public:
-        iterator(const node_pointer &n = node_pointer()) : n(n) { }
+        iterator(const node_pointer &n = node_pointer());
         //iterator(const iterator &rhs);
 
         iterator operator++(int);
@@ -286,8 +286,11 @@ begin() const {
         return end();
     }
 
-    iterator result;
-    result.n = least(root, result.word, result.pos);
+    string word;
+    stack<int> st;
+    iterator result = iterator(least(root, word, st));
+    result.word = word;
+    result.pos = st;
     return result;
 }
 
@@ -538,6 +541,17 @@ least(node_pointer n, std::string &word, std::stack<int> &index) {
 //iterator::iterator(const iterator &rhs) {
 //}
 
+
+template <int alphabet_size, int (*indexof)(char)>
+hat_trie<alphabet_size, indexof>::
+iterator::iterator(const node_pointer &np) : n(np) {
+    if (n.type == CONTAINER_POINTER) {
+        // Initialize the iterator.
+        container *p = (container *) n.pointer;
+        container_iterator = p->begin();
+    }
+}
+
 /**
  * Moves the iterator forward.
  *
@@ -573,7 +587,7 @@ iterator::operator*() const {
     cerr << "in operator*" << endl;
     if (n.type == CONTAINER_POINTER) {
         cerr << "found a CONTAINER_POINTER" << endl;
-        return *container_iterator;
+        return word + *container_iterator;
     } else if (n.type == NODE_POINTER) {
         cerr << "found a NODE_POINTER" << endl;
         return word;
