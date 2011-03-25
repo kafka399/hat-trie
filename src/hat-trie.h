@@ -85,15 +85,14 @@ class hat_trie {
         node_pointer(unsigned char type = 0, node_base *pointer = NULL) :
                 type(type), pointer(pointer) { }
 
+        // Conversion constructor from node * to node_pointer type
         node_pointer(node *n) : type(NODE_POINTER), pointer(n) { }
 
         // comparison operators
-        bool operator==(const node_pointer &rhs) {
-            return pointer == rhs.pointer;
-        }
-        bool operator!=(const node_pointer &rhs) {
-            return !operator==(rhs);
-        }
+        bool operator==(const node_pointer &rhs)
+        { return pointer == rhs.pointer; }
+        bool operator!=(const node_pointer &rhs)
+        { return !operator==(rhs); }
     };
 
   public:
@@ -115,12 +114,12 @@ class hat_trie {
     iterator begin() const;
     iterator end() const;
 
+    // TODO explain all the state an iterator maintains
     class iterator : std::iterator<std::bidirectional_iterator_tag, node_base> {
         friend class hat_trie;
 
       public:
-        iterator(const node_pointer &n = node_pointer());
-        //iterator(const iterator &rhs);
+        iterator() { }
 
         iterator operator++(int);
         iterator &operator++();
@@ -130,7 +129,8 @@ class hat_trie {
         std::string operator*() const;
         bool operator==(const iterator &rhs);
         bool operator!=(const iterator &rhs);
-        iterator &operator=(const iterator &rhs);
+
+        iterator &operator=(node_pointer);
 
       private:
         // current location and node type of that location
@@ -144,6 +144,10 @@ class hat_trie {
 
         // caches our location in the hierarchy of the trie
         std::stack<int> pos;
+
+        // Moves the container_iterator variable back to the beginning
+        // of the container
+        void reset_container_iterator();
 
     };
 
@@ -286,12 +290,18 @@ begin() const {
         return end();
     }
 
-    string word;
-    stack<int> st;
-    iterator result = iterator(least(root, word, st));
-    result.word = word;
-    result.pos = st;
+    iterator result;
+    result.n = least(root, result.word, result.pos);
+    result.reset_container_iterator();
     return result;
+
+
+//  string word;
+//  stack<int> st;
+//  iterator result = iterator(least(root, word, st));
+//  result.word = word;
+//  result.pos = st;
+//  return result;
 }
 
 /**
@@ -546,7 +556,9 @@ template <int alphabet_size, int (*indexof)(char)>
 hat_trie<alphabet_size, indexof>::
 iterator::iterator(const node_pointer &np) : n(np) {
     if (n.type == CONTAINER_POINTER) {
-        // Initialize the iterator.
+        // This iterator will start by iterating over the elements in
+        // a container using an internal iterator into the container
+        // type. Initialize this internal iterator.
         container *p = (container *) n.pointer;
         container_iterator = p->begin();
     }
@@ -593,6 +605,13 @@ iterator::operator*() const {
         return word;
     }
     return "";
+}
+
+template <int alphabet_size, int (*indexof)(char)>
+void hat_trie<alphabet_size, indexof>::
+iterator::reset_container_iterator() {
+    assert(n.type == CONTAINER_POINTER);
+    container_iterator = ((container *) n.pointer)->begin();
 }
 
 }  // namespace stx
