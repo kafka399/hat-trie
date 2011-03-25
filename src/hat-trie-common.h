@@ -47,9 +47,9 @@ inline int ht_alphanumeric_index(char ch) {
     if (ch >= '0' && ch <= '9') {
         return ch - '0';
     } else if (ch >= 'A' && ch <= 'Z') {
-        return ch - 'A';
+        return ch - 'A' + 10;
     }
-    return ch - 'a';
+    return ch - 'a' + 36;
 }
 
 template <int alphabet_size, int (*indexof)(char)>
