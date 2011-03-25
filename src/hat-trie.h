@@ -115,6 +115,21 @@ class hat_trie {
     iterator end() const;
 
     // TODO explain all the state an iterator maintains
+    //     TODO is this the best way to solve this problem?
+    //      pros - done automatically so programmer won't forget
+    //             simple code
+    //      cons - not intuitive because assigning to a position in
+    //             the trie would intuitively affect all the state
+    //             in the iterator
+    // TODO what happens when you -- from begin() or ++ from end()?
+    /**
+     * Iterates over the elements in a HAT-trie.
+     *
+     * A HAT-trie iterator has to maintain a lot of state to determine
+     * its current position. The code to construct iterators is pretty
+     * ugly, but they have to be constructed incrementally because of
+     * the large amount of state they maintain.
+     */
     class iterator : std::iterator<std::bidirectional_iterator_tag, node_base> {
         friend class hat_trie;
 
@@ -129,8 +144,6 @@ class hat_trie {
         std::string operator*() const;
         bool operator==(const iterator &rhs);
         bool operator!=(const iterator &rhs);
-
-        iterator &operator=(node_pointer);
 
       private:
         // current location and node type of that location
@@ -148,6 +161,13 @@ class hat_trie {
         // Moves the container_iterator variable back to the beginning
         // of the container
         void reset_container_iterator();
+
+        // Special-purpose constructor and assignment operator. If
+        // an iterator is assigned to a container, it automatically
+        // initializes its internal iterator to the first element
+        // in that container.
+        iterator(node_pointer);
+        iterator &operator=(node_pointer);
 
     };
 
@@ -286,22 +306,17 @@ template <int alphabet_size, int (*indexof)(char)>
 typename hat_trie<alphabet_size, indexof>::iterator
 hat_trie<alphabet_size, indexof>::
 begin() const {
+    // Stop early if there are no elements in the trie.
     if (size() == 0) {
         return end();
     }
 
+    // Incrementally construct the iterator to return. This code
+    // is pretty ugly. See the doc comment for the iterator class
+    // for a description of why.
     iterator result;
-    result.n = least(root, result.word, result.pos);
-    result.reset_container_iterator();
+    result = least(root, result.word, result.pos);
     return result;
-
-
-//  string word;
-//  stack<int> st;
-//  iterator result = iterator(least(root, word, st));
-//  result.word = word;
-//  result.pos = st;
-//  return result;
 }
 
 /**
@@ -551,19 +566,6 @@ least(node_pointer n, std::string &word, std::stack<int> &index) {
 //iterator::iterator(const iterator &rhs) {
 //}
 
-
-template <int alphabet_size, int (*indexof)(char)>
-hat_trie<alphabet_size, indexof>::
-iterator::iterator(const node_pointer &np) : n(np) {
-    if (n.type == CONTAINER_POINTER) {
-        // This iterator will start by iterating over the elements in
-        // a container using an internal iterator into the container
-        // type. Initialize this internal iterator.
-        container *p = (container *) n.pointer;
-        container_iterator = p->begin();
-    }
-}
-
 /**
  * Moves the iterator forward.
  *
@@ -607,11 +609,34 @@ iterator::operator*() const {
     return "";
 }
 
+/**
+ * Special-purpose conversion constructor.
+ *
+ * If an iterator is constructed from a container pointer,
+ * this function ensures that the iterator's internal iterator
+ * across the elements in the container is properly initialized.
+ */
 template <int alphabet_size, int (*indexof)(char)>
-void hat_trie<alphabet_size, indexof>::
-iterator::reset_container_iterator() {
-    assert(n.type == CONTAINER_POINTER);
-    container_iterator = ((container *) n.pointer)->begin();
+hat_trie<alphabet_size, indexof>::
+iterator::iterator(node_pointer n) {
+    operator=(n);
+}
+
+/**
+ * Special-purpose assignment operator.
+ *
+ * If an iterator is assigned to a container pointer, this
+ * function ensures that the iterator's internal iterator across
+ * the elements in the container is properly initialized.
+ */
+template <int alphabet_size, int (*indexof)(char)>
+typename hat_trie<alphabet_size, indexof>::iterator &
+hat_trie<alphabet_size, indexof>::
+iterator::operator=(node_pointer n) {
+    if (n.type == CONTAINER_POINTER) {
+        container_iterator = ((container *) n.pointer)->begin();
+    }
+    return *this;
 }
 
 }  // namespace stx
