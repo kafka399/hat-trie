@@ -431,8 +431,8 @@ insert(container *htc, const char *s) {
  *     a (container - top letter = a)
  *       n ~ (word in the container)
  *     r (container - top letter = r)
- *       ee ~ (word in the container)
  *       ust ~ (word in the container)
+ *       ee ~ (word in the container)
  *
  * The burst operation is described in detail by the paper that
  * originally described burst tries, freely available on the Internet.
