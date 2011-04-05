@@ -597,6 +597,8 @@ iterator::operator*() const {
         cerr << "found a NODE_POINTER" << endl;
         return cached_word;
     }
+
+    // should never get here
     return "";
 }
 
@@ -624,6 +626,7 @@ template <int alphabet_size, int (*indexof)(char)>
 typename hat_trie<alphabet_size, indexof>::iterator &
 hat_trie<alphabet_size, indexof>::
 iterator::operator=(node_pointer n) {
+    this->n = n;
     if (n.type == CONTAINER_POINTER) {
         container_iterator = ((container *) n.pointer)->begin();
     }
