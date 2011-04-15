@@ -254,7 +254,7 @@ template <int alphabet_size, int (*indexof)(char)>
 bool hat_trie<alphabet_size, indexof>::
 insert(const std::string &s) {
     using namespace std;
-    cerr << "INSERTING " << s << endl;
+    //cerr << "INSERTING " << s << endl;
     // Search for s in the trie.
     const char *pos = s.c_str();
     node_pointer n;
@@ -466,10 +466,13 @@ burst(container *htc) {
             // Set the new container's word field.
             insertion->set_word(((*it)[1] == '\0'));
         }
-        if ((*it)[1] != '\0') {  // then the word length is > 1
+        if ((*it)[1] != '\0') {
             // Insert the rest of the word into the respective
             // container.
-            ((container *)result->children[index])->insert((*it) + 1);
+            ((container *) result->children[index])->insert((*it) + 1);
+        } else {
+            // This container represents a word.
+            ((container *) result->children[index])->set_word(true);
         }
     }
 
@@ -562,7 +565,7 @@ typename hat_trie<alphabet_size, indexof>::node_pointer
 hat_trie<alphabet_size, indexof>::
 next_word(node_pointer n, std::string &word, std::vector<int> &path) {
     using namespace std;
-    cerr << "in next_word" << endl;
+    //cerr << "in next_word" << endl;
     if (n.pointer == NULL) { return node_pointer(); }
 
     node_pointer result;
@@ -572,7 +575,7 @@ next_word(node_pointer n, std::string &word, std::vector<int> &path) {
     }
 
     if (result.pointer == NULL) {
-        cerr << "no children -- moving up" << endl;
+        //cerr << "no children -- moving up" << endl;
         // Node n has no children. Move up until you can move right.
 //      result = n;
 //      int pos = pop_back(word, path) + 1;
@@ -635,7 +638,7 @@ template <int alphabet_size, int (*indexof)(char)>
 typename hat_trie<alphabet_size, indexof>::node_pointer
 hat_trie<alphabet_size, indexof>::
 least(node_pointer n, std::string &word, std::vector<int> &path) {
-    //std::cerr << "top of least" << std::endl;
+    //std:://cerr << "top of least" << std::endl;
     while (n.pointer && n.pointer->is_word() == false && n.type == NODE_POINTER) {
         // Find the leftmost child of this node and move in that direction.
         n = next_child((node *) n.pointer, word, path);
@@ -649,8 +652,8 @@ pop_back(std::string &word, std::vector<int> &path) {
     using namespace std;
     int result = path.back();
     path.pop_back();
-    cerr << "path.pop_back() == " << result << endl;
-    cerr << "erasing " << word << " " << word.size() << endl;
+    //cerr << "path.pop_back() == " << result << endl;
+    //cerr << "erasing " << word << " " << word.size() << endl;
     word.erase(word.size() - 1);
     return result;
 }
@@ -705,17 +708,17 @@ template <int alphabet_size, int (*indexof)(char)>
 std::string hat_trie<alphabet_size, indexof>::
 iterator::operator*() const {
     using namespace std;
-    cerr << "in operator*" << endl;
+    //cerr << "in operator*" << endl;
     for (size_t i = 0; i < cached_path.size(); ++i) {
-        cerr << cached_path[i] << " ";
+        //cerr << cached_path[i] << " ";
     }
-    cerr << endl;
+    //cerr << endl;
     if (word || n.type == NODE_POINTER) {
-        //cerr << "found a NODE_POINTER" << endl;
+        ////cerr << "found a NODE_POINTER" << endl;
         return cached_word;
     } else if (n.type == CONTAINER_POINTER) {
-        //cerr << "found a CONTAINER_POINTER" << endl;
-        //cerr << "cached_word: " << cached_word << endl;
+        ////cerr << "found a CONTAINER_POINTER" << endl;
+        ////cerr << "cached_word: " << cached_word << endl;
         return cached_word + *container_iterator;
     }
 
@@ -774,7 +777,7 @@ typename hat_trie<alphabet_size, indexof>::iterator &
 hat_trie<alphabet_size, indexof>::
 iterator::operator=(node_pointer n) {
     using namespace std;
-    cerr << "top of operator=" << endl;
+    //cerr << "top of operator=" << endl;
     this->n = n;
     if (n.type == CONTAINER_POINTER) {
         container_iterator = ((container *) n.pointer)->store.begin();

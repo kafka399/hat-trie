@@ -21,28 +21,42 @@ int main() {
     ht_array_hash<> ah;
     vector<string> v;
 
-    ht.insert("a");
-    ht.insert("the");
-    ht.insert("there");
-    ht.insert("torn");
-    ht.insert("toward");
+//  ht.insert("a");
+//  ht.insert("the");
+//  ht.insert("there");
+//  ht.insert("torn");
+//  ht.insert("toward");
 
-    ht.print();
+//  ht.print();
+//  hat_trie<>::iterator it;
+//  for (it = ht.begin(); it != ht.end(); ++it) {
+//      cout << *it << endl;
+//  }
+//  return 0;
+
+    while (cin >> reader) {
+        ht.insert(reader);
+        s.insert(reader);
+    }
+    //ht.insert("Abel");
+    //ht.insert("Ada");
+    //ht.insert("Adam");
+    //ht.insert("Adana");
+    //ht.insert("Adelaide");
+    //ht.insert("Adenauer");
     hat_trie<>::iterator it;
     for (it = ht.begin(); it != ht.end(); ++it) {
         cout << *it << endl;
     }
-    return 0;
+    ht.print();
 
-    while (cin >> reader) {
-        ht.insert(reader);
-        ht.print();
-        hat_trie<>::iterator it;
-        cout << "here" << endl;
-        for (it = ht.begin(); it != ht.end(); ++it) {
-            cout << *it << endl;
-        }
-    }
+//  set<string>::iterator sit;
+//  for (sit = s.begin(); sit != s.end(); ++sit) {
+//      if (ht.contains(*sit) == false) {
+//          cout << "FAIL" << endl;
+//      }
+//  }
+//  cout << ht.size() << endl;
 
 	//ht.print();
 

@@ -245,9 +245,7 @@ begin() const {
     if (size() == 0) {
         result = end();
     } else {
-        result.slot = 0;
         result.data = data;
-        result.p = NULL;
         while (result.data[result.slot] == NULL) {
             ++result.slot;
         }
@@ -266,7 +264,6 @@ end() const {
     iterator result;
     result.slot = SLOT_COUNT;
     result.data = data;
-    result.p = NULL;
     return result;
 }
 
