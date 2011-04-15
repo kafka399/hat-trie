@@ -571,14 +571,27 @@ next_word(node_pointer n, std::string &word, std::vector<int> &path) {
     if (result.pointer == NULL) {
         cerr << "no children -- moving up" << endl;
         // Node n has no children. Move up until you can move right.
-        result = n;
-        int pos = pop_back(word, path);
+//      result = n;
+//      int pos = pop_back(word, path) + 1;
 
-        node_pointer w = next_child(result.pointer->parent, word, path, pos);
-        while (w.pointer == NULL && result.pointer) {
-            result = result.pointer->parent;
-            pos = pop_back(word, path);
+//      node_pointer w = next_child(result.pointer->parent, word, path, pos);
+//      result = result.pointer->parent;
+//      while (w.pointer == NULL && result.pointer->parent) {
+//          pos = pop_back(word, path) + 1;
+//          w = next_child(result.pointer->parent, word, path, pos);
+//          result = result.pointer->parent;
+//      }
+//      result = w;
+
+        node_pointer w = n;
+        node_pointer next;
+        int pos;
+        while (w.pointer->parent && next.pointer == NULL) {
+            pos = pop_back(word, path) + 1;
+            next = next_child(w.pointer->parent, word, path, pos);
+            w = w.pointer->parent;
         }
+        result = next;
     }
 
     return least(result, word, path);
@@ -619,6 +632,7 @@ template <int alphabet_size, int (*indexof)(char)>
 typename hat_trie<alphabet_size, indexof>::node_pointer
 hat_trie<alphabet_size, indexof>::
 least(node_pointer n, std::string &word, std::vector<int> &path) {
+    std::cerr << "top of least" << std::endl;
     while (n.pointer && n.pointer->is_word() == false && n.type == NODE_POINTER) {
         // Find the leftmost child of this node and move in that direction.
         n = next_child((node *) n.pointer, word, path);
@@ -629,8 +643,11 @@ least(node_pointer n, std::string &word, std::vector<int> &path) {
 template <int alphabet_size, int (*indexof)(char)>
 int hat_trie<alphabet_size, indexof>::
 pop_back(std::string &word, std::vector<int> &path) {
+    using namespace std;
     int result = path.back();
     path.pop_back();
+    cerr << "path.pop_back() == " << result << endl;
+    cerr << "erasing " << word << " " << word.size() << endl;
     word.erase(word.size() - 1);
     return result;
 }
@@ -657,8 +674,10 @@ iterator::operator++() {
     }
 
     n = hat_trie::next_word(n, cached_word, cached_path);
-    if (n.type == CONTAINER_POINTER) {
+    if (n.pointer && n.type == CONTAINER_POINTER) {
+        cerr << "moved to a container" << endl;
         container_iterator = ((container *) n.pointer)->store.begin();
+        cerr << "*container_iterator = " << *container_iterator << endl;
     }
     return *this;
 }
@@ -685,12 +704,13 @@ std::string hat_trie<alphabet_size, indexof>::
 iterator::operator*() const {
     using namespace std;
     cerr << "in operator*" << endl;
-    for (int i = 0; i < cached_path.size(); ++i) {
+    for (size_t i = 0; i < cached_path.size(); ++i) {
         cerr << cached_path[i] << " ";
     }
     cerr << endl;
     if (n.type == CONTAINER_POINTER) {
         cerr << "found a CONTAINER_POINTER" << endl;
+        cerr << "cached_word: " << cached_word << endl;
         return cached_word + *container_iterator;
     } else if (n.type == NODE_POINTER) {
         cerr << "found a NODE_POINTER" << endl;
@@ -699,6 +719,32 @@ iterator::operator*() const {
 
     // should never get here
     return "";
+}
+
+/**
+ * Overloaded equivalence operator.
+ *
+ * @param rhs  iterator to compare against
+ * @return  true iff this iterator points to the same thing as
+ *          @a rhs
+ */
+template <int alphabet_size, int (*indexof)(char)>
+bool hat_trie<alphabet_size, indexof>::iterator::
+operator==(const iterator &rhs) {
+    // TODO does iterator comparison need to be on more than just pointer?
+    return n == rhs.n;
+}
+
+/**
+ * Overloaded not-equivalence operator.
+ *
+ * @param rhs  iterator to compare against
+ * @return  true iff this iterator is not equal to @a rhs
+ */
+template <int alphabet_size, int (*indexof)(char)>
+bool hat_trie<alphabet_size, indexof>::iterator::
+operator!=(const iterator &rhs) {
+    return !operator==(rhs);
 }
 
 /**

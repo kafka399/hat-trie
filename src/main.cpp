@@ -31,10 +31,10 @@ int main() {
     ht.insert("toward");
     ht.print();
 
-    hat_trie<>::iterator it = ht.begin();
-    for (int i = 0; i < 3; ++i) {
-        cout << *it << endl << endl;
-        ++it;
+    hat_trie<>::iterator it;
+    for (it = ht.begin(); it != ht.end(); ++it) {
+        cout << *it << endl;
+        cout << endl;
     }
 
 
