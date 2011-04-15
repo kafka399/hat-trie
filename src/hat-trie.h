@@ -44,8 +44,6 @@
 #include "array-hash.h"
 #include "hat-trie-node.h"
 
-using namespace std;  // TODO remove me
-
 namespace stx {
 
 /**
@@ -177,7 +175,7 @@ class hat_trie {
 
     // containers are burst after their size crosses this threshold
     // MUST be <= 32,768
-    enum { BURST_THRESHOLD = 2 };
+    enum { BURST_THRESHOLD = 8192 };
 
     void init();
 
@@ -279,10 +277,11 @@ insert(const std::string &s) {
                 p->types[index] = CONTAINER_POINTER;
                 ++pos;
             } else if (n.type == CONTAINER_POINTER) {
+                // The container for s already exists.
                 c = (container *)n.pointer;
             }
 
-            // Insert s into the container.
+            // Insert s into the container we found.
             return insert(c, pos);
         }
     }
@@ -520,6 +519,7 @@ template <int alphabet_size, int (*indexof)(char)>
 typename hat_trie<alphabet_size, indexof>::node_pointer
 hat_trie<alphabet_size, indexof>::
 least(node_pointer n, std::string &word, std::stack<int> &index) {
+    using namespace std;
     cerr << "top of least" << endl;
     while (n.pointer->is_word() == false && n.type == NODE_POINTER) {
         // Find the leftmost child of this node and move in that direction.
@@ -589,6 +589,7 @@ iterator::operator--() {
 template <int alphabet_size, int (*indexof)(char)>
 std::string hat_trie<alphabet_size, indexof>::
 iterator::operator*() const {
+    using namespace std;
     cerr << "in operator*" << endl;
     if (n.type == CONTAINER_POINTER) {
         cerr << "found a CONTAINER_POINTER" << endl;

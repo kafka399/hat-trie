@@ -5,3 +5,4 @@ simple
 out
 src/main.cpp
 Makefile
+doc
