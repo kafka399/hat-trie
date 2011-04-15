@@ -186,6 +186,7 @@ class hat_trie {
     static node_pointer next_child(node *, std::string &, std::vector<int> &, size_t pos = 0);
     static node_pointer next_word(node_pointer, std::string &, std::vector<int> &);
     static node_pointer least(node_pointer, std::string &, std::vector<int> &);
+    static int pop_back(std::string &, std::vector<int> &);
 
     // modifiers
     bool insert(container *htc, const char *s);
@@ -557,6 +558,8 @@ template <int alphabet_size, int (*indexof)(char)>
 typename hat_trie<alphabet_size, indexof>::node_pointer
 hat_trie<alphabet_size, indexof>::
 next_word(node_pointer n, std::string &word, std::vector<int> &path) {
+    using namespace std;
+    cerr << "in next_word" << endl;
     if (n.pointer == NULL) { return node_pointer(); }
 
     node_pointer result;
@@ -566,16 +569,15 @@ next_word(node_pointer n, std::string &word, std::vector<int> &path) {
     }
 
     if (result.pointer == NULL) {
+        cerr << "no children -- moving up" << endl;
         // Node n has no children. Move up until you can move right.
         result = n;
-        int pos = path.back();
-        path.pop_back();
+        int pos = pop_back(word, path);
 
         node_pointer w = next_child(result.pointer->parent, word, path, pos);
         while (w.pointer == NULL && result.pointer) {
             result = result.pointer->parent;
-            pos = path.back();
-            path.pop_back();
+            pos = pop_back(word, path);
         }
     }
 
@@ -624,6 +626,15 @@ least(node_pointer n, std::string &word, std::vector<int> &path) {
     return n;
 }
 
+template <int alphabet_size, int (*indexof)(char)>
+int hat_trie<alphabet_size, indexof>::
+pop_back(std::string &word, std::vector<int> &path) {
+    int result = path.back();
+    path.pop_back();
+    word.erase(word.size() - 1);
+    return result;
+}
+
 // ---------
 // iterators
 // ---------
@@ -637,16 +648,17 @@ template <int alphabet_size, int (*indexof)(char)>
 typename hat_trie<alphabet_size, indexof>::iterator&
 hat_trie<alphabet_size, indexof>::
 iterator::operator++() {
+    using namespace std;
     if (n.type == CONTAINER_POINTER) {
         container *c = (container *) n.pointer;
-        if (container_iterator != c->store.end()) {
-            ++container_iterator;
+        if (++container_iterator != c->store.end()) {
+            return *this;
         }
-    } else {
-        n = hat_trie::next_word(n, cached_word, cached_path);
-        if (n.type == CONTAINER_POINTER) {
-            container_iterator = ((container *) n.pointer)->store.begin();
-        }
+    }
+
+    n = hat_trie::next_word(n, cached_word, cached_path);
+    if (n.type == CONTAINER_POINTER) {
+        container_iterator = ((container *) n.pointer)->store.begin();
     }
     return *this;
 }

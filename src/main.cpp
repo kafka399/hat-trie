@@ -32,10 +32,11 @@ int main() {
     ht.print();
 
     hat_trie<>::iterator it = ht.begin();
-    for (int i = 0; i < 2; ++i) {
-        cout << *it << endl;
+    for (int i = 0; i < 3; ++i) {
+        cout << *it << endl << endl;
         ++it;
     }
+
 
     return 0;
 
