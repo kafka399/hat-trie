@@ -21,16 +21,23 @@ int main() {
     ht_array_hash<> ah;
     vector<string> v;
 
-//  ht.insert("able");
-//  ht.insert("aaron");
-//  ht.insert("arg");
-//  ht.insert("the");
-//  ht.insert("there");
-//  ht.insert("torn");
-//  ht.insert("toward");
-//  ht.print();
-//  cout << *(ht.begin()) << endl;
-//  return 0;
+    ht.insert("a");
+    ht.insert("able");
+    ht.insert("aaron");
+    ht.insert("arg");
+    ht.insert("the");
+    ht.insert("there");
+    ht.insert("torn");
+    ht.insert("toward");
+    ht.print();
+
+    hat_trie<>::iterator it = ht.begin();
+    for (int i = 0; i < 2; ++i) {
+        cout << *it << endl;
+        ++it;
+    }
+
+    return 0;
 
     while (cin >> reader) {
         ht.insert(reader);

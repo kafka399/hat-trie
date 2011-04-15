@@ -183,8 +183,8 @@ class hat_trie {
     bool search(const char * &s, node_pointer &n) const;
     void print(const node_pointer &n, const std::string &space = "") const;
 
-    static node_pointer leftmost_child(node *, std::string &, std::vector<int> &);
-    static node_pointer next(node_pointer, std::string &, std::vector<int> &);
+    static node_pointer next_child(node *, std::string &, std::vector<int> &, size_t pos = 0);
+    static node_pointer next_word(node_pointer, std::string &, std::vector<int> &);
     static node_pointer least(node_pointer, std::string &, std::vector<int> &);
 
     // modifiers
@@ -517,23 +517,26 @@ print(const node_pointer &n, const std::string &space) const {
 }
 
 /**
- * Finds the leftmost child under a node.
+ * Finds the next child under a node.
+ *
+ * This function finds the leftmost child by default.
  *
  * @param p  parent node to search under
  * @param word  cached word in the trie traversal
  * @param path  cached path in the trie traversal
+ * @param pos  starting position in the children array
  * @return  a pointer to the leftmost child under this node, or NULL
  *          if this node has no children
  */
 template <int alphabet_size, int (*indexof)(char)>
 typename hat_trie<alphabet_size, indexof>::node_pointer
 hat_trie<alphabet_size, indexof>::
-leftmost_child(node *p, std::string &word, std::vector<int> &path) {
+next_child(node *p, std::string &word, std::vector<int> &path, size_t pos) {
     node_pointer result;
     bool go = true;
 
     // Search for the leftmost child under this node.
-    for (size_t i = 0; i < alphabet_size && go; ++i) {
+    for (size_t i = pos; i < alphabet_size && go; ++i) {
         if (p->children[i]) {
             // Move in this direction.
             result.pointer = p->children[i];
@@ -553,21 +556,26 @@ leftmost_child(node *p, std::string &word, std::vector<int> &path) {
 template <int alphabet_size, int (*indexof)(char)>
 typename hat_trie<alphabet_size, indexof>::node_pointer
 hat_trie<alphabet_size, indexof>::
-next(node_pointer n, std::string &word, std::vector<int> &path) {
+next_word(node_pointer n, std::string &word, std::vector<int> &path) {
     if (n.pointer == NULL) { return node_pointer(); }
 
     node_pointer result;
     if (n.type == NODE_POINTER) {
         // Move to the leftmost child under this node.
-        result = leftmost_child((node *) n.pointer, word, path);
+        result = next_child((node *) n.pointer, word, path);
     }
 
     if (result.pointer == NULL) {
         // Node n has no children. Move up until you can move right.
         result = n;
-        bool right = false;
-        while (!right && n.pointer->parent != NULL) {
+        int pos = path.back();
+        path.pop_back();
 
+        node_pointer w = next_child(result.pointer->parent, word, path, pos);
+        while (w.pointer == NULL && result.pointer) {
+            result = result.pointer->parent;
+            pos = path.back();
+            path.pop_back();
         }
     }
 
@@ -611,7 +619,7 @@ hat_trie<alphabet_size, indexof>::
 least(node_pointer n, std::string &word, std::vector<int> &path) {
     while (n.pointer && n.pointer->is_word() == false && n.type == NODE_POINTER) {
         // Find the leftmost child of this node and move in that direction.
-        n = leftmost_child((node *) n.pointer, word, path);
+        n = next_child((node *) n.pointer, word, path);
     }
     return n;
 }
@@ -635,7 +643,10 @@ iterator::operator++() {
             ++container_iterator;
         }
     } else {
-        n = hat_trie::next(n, cached_word, cached_path);
+        n = hat_trie::next_word(n, cached_word, cached_path);
+        if (n.type == CONTAINER_POINTER) {
+            container_iterator = ((container *) n.pointer)->store.begin();
+        }
     }
     return *this;
 }
