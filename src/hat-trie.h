@@ -154,7 +154,7 @@ class hat_trie {
         std::string cached_word;
 
         // Caches our specific location in the hierarchy of the trie
-        std::stack<int> cached_position;
+        std::vector<int> cached_path;
 
         // Special-purpose constructor and assignment operator. If
         // an iterator is assigned to a container, it automatically
@@ -175,7 +175,7 @@ class hat_trie {
 
     // containers are burst after their size crosses this threshold
     // MUST be <= 32,768
-    enum { BURST_THRESHOLD = 8192 };
+    enum { BURST_THRESHOLD = 2 };  // TODO
 
     void init();
 
@@ -183,8 +183,9 @@ class hat_trie {
     bool search(const char * &s, node_pointer &n) const;
     void print(const node_pointer &n, const std::string &space = "") const;
 
-    static node_pointer next_word(node_pointer n, std::vector<int> &);
-    static node_pointer least(node_pointer, std::string &, std::stack<int> &);
+    static node_pointer leftmost_child(node *, std::string &, std::vector<int> &);
+    static node_pointer next(node_pointer, std::string &, std::vector<int> &);
+    static node_pointer least(node_pointer, std::string &, std::vector<int> &);
 
     // modifiers
     bool insert(container *htc, const char *s);
@@ -310,7 +311,7 @@ begin() const {
     // is pretty ugly. See the doc comment for the iterator class
     // for a description of why.
     iterator result;
-    result = least(root, result.cached_word, result.cached_position);
+    result = least(root, result.cached_word, result.cached_path);
     return result;
 }
 
@@ -515,31 +516,100 @@ print(const node_pointer &n, const std::string &space) const {
     }
 }
 
+/**
+ * Finds the leftmost child under a node.
+ *
+ * @param p  parent node to search under
+ * @param word  cached word in the trie traversal
+ * @param path  cached path in the trie traversal
+ * @return  a pointer to the leftmost child under this node, or NULL
+ *          if this node has no children
+ */
 template <int alphabet_size, int (*indexof)(char)>
 typename hat_trie<alphabet_size, indexof>::node_pointer
 hat_trie<alphabet_size, indexof>::
-least(node_pointer n, std::string &word, std::stack<int> &index) {
+leftmost_child(node *p, std::string &word, std::vector<int> &path) {
+    node_pointer result;
+    bool go = true;
+
+    // Search for the leftmost child under this node.
+    for (size_t i = 0; i < alphabet_size && go; ++i) {
+        if (p->children[i]) {
+            // Move in this direction.
+            result.pointer = p->children[i];
+            result.type = p->types[i];
+
+            // Add this motion to the word and path parameters.
+            path.push_back(i);
+            word += result.pointer->ch();
+
+            // Stop iterating through possible children.
+            go = false;
+        }
+    }
+    return result;
+}
+
+template <int alphabet_size, int (*indexof)(char)>
+typename hat_trie<alphabet_size, indexof>::node_pointer
+hat_trie<alphabet_size, indexof>::
+next(node_pointer n, std::string &word, std::vector<int> &path) {
+    if (n.pointer == NULL) { return node_pointer(); }
+
+    node_pointer result;
+    if (n.type == NODE_POINTER) {
+        // Move to the leftmost child under this node.
+        result = leftmost_child((node *) n.pointer, word, path);
+    }
+
+    if (result.pointer == NULL) {
+        // Node n has no children. Move up until you can move right.
+        result = n;
+    }
+
+    return least(result, word, path);
+
+    /*
+    if (cur == NULL) {
+        return NULL;
+    }
+
+    node *w;
+    if (cur->child) {
+        w = cur->child;
+    } else {
+        // Move up til you can move right.
+        w = cur;
+        while (w && w->next == NULL) {
+            w = w->parent;
+        }
+        if (w) w = w->next;
+    }
+
+    // Now move as left as possible until you find somewhere with a Val.
+    // One has to exist.
+    return least(w);
+    */
+}
+
+/**
+ * Finds the lexicographically least node starting from @a n.
+ *
+ * @param n  current position in the trie
+ * @param word  cached word in the trie traversal
+ * @param path  cached path in the trie traversal
+ * @return  lexicographically least node from @a n. This function
+ *          may return @a n itself
+ */
+template <int alphabet_size, int (*indexof)(char)>
+typename hat_trie<alphabet_size, indexof>::node_pointer
+hat_trie<alphabet_size, indexof>::
+least(node_pointer n, std::string &word, std::vector<int> &path) {
     using namespace std;
     cerr << "top of least" << endl;
     while (n.pointer->is_word() == false && n.type == NODE_POINTER) {
         // Find the leftmost child of this node and move in that direction.
-        node *p = (node *) n.pointer;
-        bool go = true;
-        for (size_t i = 0; i < alphabet_size && go; ++i) {
-            if (p->children[i]) {
-                cerr << "moved in direction " << i << endl;
-                // Move in this direction.
-                n.pointer = p->children[i];
-                n.type = p->types[i];
-
-                // Add this motion to the word and index parameters.
-                index.push(i);
-                word += n.pointer->ch();
-                cerr << "  word = " << word << endl;
-
-                go = false;
-            }
-        }
+        n = leftmost_child((node *) n.pointer, word, path);
     }
 
     cerr << "bottom of least" << endl;
@@ -547,11 +617,6 @@ least(node_pointer n, std::string &word, std::stack<int> &index) {
     if (n.type == CONTAINER_POINTER) { cerr << "  CONTAINER_POINTER" << endl; }
     return n;
 }
-
-//  while (cur && cur->value == 0) {
-//      cur = (cur->child ? cur->child : cur->next);
-//  }
-//  return cur;
 
 // ---------
 // iterators
@@ -566,7 +631,15 @@ template <int alphabet_size, int (*indexof)(char)>
 typename hat_trie<alphabet_size, indexof>::iterator&
 hat_trie<alphabet_size, indexof>::
 iterator::operator++() {
-
+    if (n.type == CONTAINER_POINTER) {
+        container *c = (container *) n.pointer;
+        if (container_iterator != c->store.end()) {
+            ++container_iterator;
+        }
+    } else {
+        n = hat_trie::next(n, cached_word, cached_path);
+    }
+    return *this;
 }
 
 /**
@@ -591,6 +664,10 @@ std::string hat_trie<alphabet_size, indexof>::
 iterator::operator*() const {
     using namespace std;
     cerr << "in operator*" << endl;
+    for (int i = 0; i < cached_path.size(); ++i) {
+        cerr << cached_path[i] << " ";
+    }
+    cerr << endl;
     if (n.type == CONTAINER_POINTER) {
         cerr << "found a CONTAINER_POINTER" << endl;
         return cached_word + *container_iterator;
