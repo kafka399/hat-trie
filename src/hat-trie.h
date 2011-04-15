@@ -149,6 +149,7 @@ class hat_trie {
 
         // Internal iterator across container types
         typename container::store_type::iterator container_iterator;
+        bool word;
 
         // Caches the word as we move up and down the trie
         std::string cached_word;
@@ -171,7 +172,7 @@ class hat_trie {
 
     // types node_base values could point to. This is stored in
     // one bit, so the only valid values are 0 and 1
-    enum { CONTAINER_POINTER = 0, NODE_POINTER = 1 };
+    enum { NODE_POINTER = 0, CONTAINER_POINTER = 1 };
 
     // containers are burst after their size crosses this threshold
     // MUST be <= 32,768
@@ -252,6 +253,8 @@ size() const {
 template <int alphabet_size, int (*indexof)(char)>
 bool hat_trie<alphabet_size, indexof>::
 insert(const std::string &s) {
+    using namespace std;
+    cerr << "INSERTING " << s << endl;
     // Search for s in the trie.
     const char *pos = s.c_str();
     node_pointer n;
@@ -632,7 +635,7 @@ template <int alphabet_size, int (*indexof)(char)>
 typename hat_trie<alphabet_size, indexof>::node_pointer
 hat_trie<alphabet_size, indexof>::
 least(node_pointer n, std::string &word, std::vector<int> &path) {
-    std::cerr << "top of least" << std::endl;
+    //std::cerr << "top of least" << std::endl;
     while (n.pointer && n.pointer->is_word() == false && n.type == NODE_POINTER) {
         // Find the leftmost child of this node and move in that direction.
         n = next_child((node *) n.pointer, word, path);
@@ -667,19 +670,18 @@ hat_trie<alphabet_size, indexof>::
 iterator::operator++() {
     using namespace std;
     if (n.type == CONTAINER_POINTER) {
-        container *c = (container *) n.pointer;
-        if (++container_iterator != c->store.end()) {
-            return *this;
+        if (word) {
+            word = false;
+        } else {
+            container *c = (container *) n.pointer;
+            if (++container_iterator != c->store.end()) {
+                return *this;
+            }
+            // TODO there has GOT to be a better way to do that.
         }
     }
 
-    n = hat_trie::next_word(n, cached_word, cached_path);
-    if (n.pointer && n.type == CONTAINER_POINTER) {
-        cerr << "moved to a container" << endl;
-        container_iterator = ((container *) n.pointer)->store.begin();
-        cerr << "*container_iterator = " << *container_iterator << endl;
-    }
-    return *this;
+    return (*this = hat_trie::next_word(n, cached_word, cached_path));
 }
 
 /**
@@ -708,13 +710,13 @@ iterator::operator*() const {
         cerr << cached_path[i] << " ";
     }
     cerr << endl;
-    if (n.type == CONTAINER_POINTER) {
-        cerr << "found a CONTAINER_POINTER" << endl;
-        cerr << "cached_word: " << cached_word << endl;
-        return cached_word + *container_iterator;
-    } else if (n.type == NODE_POINTER) {
-        cerr << "found a NODE_POINTER" << endl;
+    if (word || n.type == NODE_POINTER) {
+        //cerr << "found a NODE_POINTER" << endl;
         return cached_word;
+    } else if (n.type == CONTAINER_POINTER) {
+        //cerr << "found a CONTAINER_POINTER" << endl;
+        //cerr << "cached_word: " << cached_word << endl;
+        return cached_word + *container_iterator;
     }
 
     // should never get here
@@ -771,9 +773,12 @@ template <int alphabet_size, int (*indexof)(char)>
 typename hat_trie<alphabet_size, indexof>::iterator &
 hat_trie<alphabet_size, indexof>::
 iterator::operator=(node_pointer n) {
+    using namespace std;
+    cerr << "top of operator=" << endl;
     this->n = n;
     if (n.type == CONTAINER_POINTER) {
-        container_iterator = ((container *) n.pointer)->begin();
+        container_iterator = ((container *) n.pointer)->store.begin();
+        word = n.pointer->is_word();
     }
     return *this;
 }

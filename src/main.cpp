@@ -22,27 +22,28 @@ int main() {
     vector<string> v;
 
     ht.insert("a");
-    ht.insert("able");
-    ht.insert("aaron");
-    ht.insert("arg");
     ht.insert("the");
     ht.insert("there");
     ht.insert("torn");
     ht.insert("toward");
-    ht.print();
 
+    ht.print();
     hat_trie<>::iterator it;
     for (it = ht.begin(); it != ht.end(); ++it) {
         cout << *it << endl;
-        cout << endl;
     }
-
-
     return 0;
 
     while (cin >> reader) {
         ht.insert(reader);
+        ht.print();
+        hat_trie<>::iterator it;
+        cout << "here" << endl;
+        for (it = ht.begin(); it != ht.end(); ++it) {
+            cout << *it << endl;
+        }
     }
+
 	//ht.print();
 
 

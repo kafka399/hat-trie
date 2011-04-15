@@ -77,7 +77,6 @@ class hat_trie_container : public hat_trie_node_base<alphabet_size, indexof> {
     bool contains(const char *p) const;
     size_t size() const { return store.size(); }
     bool is_word() const { return word; }
-    typename store_type::iterator begin() const { return store.begin(); }
 
     // modifiers
     bool insert(const char *p);

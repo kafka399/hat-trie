@@ -333,17 +333,19 @@ typename ht_array_hash<alphabet_size, indexof>::iterator&
 ht_array_hash<alphabet_size, indexof>::
 iterator::operator++() {
     // Move p to the next string in this slot.
-    p += *((length_type *)p) + sizeof(length_type);
-    if (*((length_type *)p) == 0) {
-        // Move down to the next slot.
-        ++slot;
-        while (slot < SLOT_COUNT && data[slot] == NULL) {
+    if (p) {
+        p += *((length_type *)p) + sizeof(length_type);
+        if (*((length_type *)p) == 0) {
+            // Move down to the next slot.
             ++slot;
-        }
-        if (slot == SLOT_COUNT) {
-            p = NULL;
-        } else {
-            p = data[slot] + sizeof(size_type);
+            while (slot < SLOT_COUNT && data[slot] == NULL) {
+                ++slot;
+            }
+            if (slot == SLOT_COUNT) {
+                p = NULL;
+            } else {
+                p = data[slot] + sizeof(size_type);
+            }
         }
     }
     return *this;
