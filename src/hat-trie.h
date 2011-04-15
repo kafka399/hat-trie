@@ -565,6 +565,10 @@ next(node_pointer n, std::string &word, std::vector<int> &path) {
     if (result.pointer == NULL) {
         // Node n has no children. Move up until you can move right.
         result = n;
+        bool right = false;
+        while (!right && n.pointer->parent != NULL) {
+
+        }
     }
 
     return least(result, word, path);
@@ -605,16 +609,10 @@ template <int alphabet_size, int (*indexof)(char)>
 typename hat_trie<alphabet_size, indexof>::node_pointer
 hat_trie<alphabet_size, indexof>::
 least(node_pointer n, std::string &word, std::vector<int> &path) {
-    using namespace std;
-    cerr << "top of least" << endl;
-    while (n.pointer->is_word() == false && n.type == NODE_POINTER) {
+    while (n.pointer && n.pointer->is_word() == false && n.type == NODE_POINTER) {
         // Find the leftmost child of this node and move in that direction.
         n = leftmost_child((node *) n.pointer, word, path);
     }
-
-    cerr << "bottom of least" << endl;
-    if (n.pointer->is_word()) { cerr << "  is_word true" << endl; }
-    if (n.type == CONTAINER_POINTER) { cerr << "  CONTAINER_POINTER" << endl; }
     return n;
 }
 
