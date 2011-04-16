@@ -336,10 +336,22 @@ find(const std::string &s) const {
     node_pointer n;
 
     // Search for the word in the trie.
+    iterator result;
     if (search(ps, n)) {
-        return iterator(n);
+        // Initialize result to node n in the trie.
+        result = n;
+        result.cached_word = std::string(s.c_str(), ps);
+        if (*ps != '\0') {
+            // TODO initialize result.contanier_iterator too
+            result.word = false;
+            result.container_iterator = ((container *) n.pointer)->store.find(ps);
+        }
+
+    } else {
+        // The word wasn't found in the trie.
+        result = end();
     }
-    return end();
+    return result;
 }
 
 /**

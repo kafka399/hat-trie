@@ -20,6 +20,17 @@ int main() {
     set<string> s;
     ht_array_hash<> ah;
 
+//  ht.insert("hello");
+//  ht.insert("world");
+//  ht.insert("the");
+//  ht.insert("and");
+//  hat_trie<>::iterator hit;
+//  for (hit = ht.begin(); hit != ht.end(); ++hit) {
+//      cout << "find: " << *(ht.find(*hit)) << endl;
+//      cout << *hit << endl;
+//  }
+//  return 0;
+
     while (cin >> reader) {
         ht.insert(reader);
         s.insert(reader);
@@ -27,8 +38,7 @@ int main() {
 
     hat_trie<>::iterator it;
     for (it = ht.begin(); it != ht.end(); ++it) {
-        //cout << *(ht.find(*it)) << endl;
-        cout << *it << endl;
+        cout << *(ht.find(*it)) << endl;
     }
 
     return 0;

@@ -51,7 +51,8 @@ class ht_array_hash {
     ~ht_array_hash();
 
     // accessors
-    bool find(const char *str) const;
+    bool contains(const char *str) const;
+    iterator find(const char *str) const;
     size_t size() const;
 
     // modifiers
@@ -211,18 +212,46 @@ insert(const char *str) {
  * Searches for @a str in the table.
  *
  * @param str  string to search for
- *
- * @return  true if @a str is in the table, false otherwise
+ * @return  true iff @a str is in the table
  */
 template <int alphabet_size, int (*indexof)(char)>
 bool ht_array_hash<alphabet_size, indexof>::
-find(const char *str) const {
+contains(const char *str) const {
     length_type length;
     char *p = data[hash(str, length)];
     if (p == NULL) {
         return false;
     }
     return search(str, length, p) != NULL;
+}
+
+/**
+ * Searches for @a str in the table.
+ *
+ * @param str  string to search for
+ * @return  iterator to @a str in the table, or @a end() if @a str
+ *          is not in the table
+ */
+template <int alphabet_size, int (*indexof)(char)>
+typename ht_array_hash<alphabet_size, indexof>::iterator
+ht_array_hash<alphabet_size, indexof>::
+find(const char *str) const {
+    length_type length;
+    int slot = hash(str, length);
+    char *p = data[slot];
+    if (p == NULL) {
+        return end();
+    }
+
+    p = search(str, length, p);
+    if (p == NULL) {
+        return end();
+    }
+    iterator result;
+    result.slot = slot;
+    result.p = p;
+    result.data = data;
+    return result;
 }
 
 /**
@@ -362,16 +391,6 @@ iterator::operator--() {
  * @return  pair where @a first is a pointer to the (non-NULL terminated)
  *          string, and @a second is the length of the string
  */
-/*
-pair<const char *, uint16_t> ht_array_hash<alphabet_size, indexof>::iterator::operator*() {
-    pair<const char *, uint16_t> result;
-    if (p) {
-        result.first = p + sizeof(length_type);
-        result.second = *((length_type *)(p));
-    }
-    return result;
-}
-*/
 template <int alphabet_size, int (*indexof)(char)>
 const char *ht_array_hash<alphabet_size, indexof>::
 iterator::operator*() const {

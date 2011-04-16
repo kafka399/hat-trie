@@ -126,7 +126,7 @@ contains(const char *p) const {
     if (*p == '\0') {
         return is_word();
     }
-    return store.find(p);
+    return store.contains(p);
 }
 
 template <int alphabet_size, int (*indexof)(char)>
