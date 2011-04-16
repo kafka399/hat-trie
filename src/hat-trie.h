@@ -262,7 +262,10 @@ insert(const std::string &s) {
         if (*pos == '\0') {
             // s was found in the trie's structure. Mark its location
             // as the end of a word.
-            n.pointer->set_word(true);
+            if (n.pointer->is_word() == false) {
+                n.pointer->set_word(true);
+                ++_size;
+            }
 
         } else {
             // s was not found in the trie's structure. Either make a
@@ -282,7 +285,7 @@ insert(const std::string &s) {
                 ++pos;
             } else if (n.type == CONTAINER_POINTER) {
                 // The container for s already exists.
-                c = (container *)n.pointer;
+                c = (container *) n.pointer;
             }
 
             // Insert s into the container we found.
