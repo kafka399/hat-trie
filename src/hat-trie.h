@@ -95,6 +95,7 @@ class hat_trie {
 
   public:
 	class iterator;
+    typedef iterator const_iterator;
 
     // constructors and destructors
     hat_trie();
@@ -696,6 +697,20 @@ iterator::operator++() {
 }
 
 /**
+ * Moves the iterator forward.
+ *
+ * @return  copy of this iterator before it was moved
+ */
+template <int alphabet_size, int (*indexof)(char)>
+typename hat_trie<alphabet_size, indexof>::iterator
+hat_trie<alphabet_size, indexof>::
+iterator::operator++(int) {
+    iterator result = *this;
+    operator++();
+    return result;
+}
+
+/**
  * Moves the iterator backward.
  *
  * @return  self-reference
@@ -704,7 +719,21 @@ template <int alphabet_size, int (*indexof)(char)>
 typename hat_trie<alphabet_size, indexof>::iterator&
 hat_trie<alphabet_size, indexof>::
 iterator::operator--() {
+    return *this;
+}
 
+/**
+ * Moves the iterator backward.
+ *
+ * @return  copy of this iterator before it was moved
+ */
+template <int alphabet_size, int (*indexof)(char)>
+typename hat_trie<alphabet_size, indexof>::iterator
+hat_trie<alphabet_size, indexof>::
+iterator::operator--(int) {
+    iterator result = *this;
+    operator--();
+    return result;
 }
 
 /**
@@ -736,8 +765,8 @@ iterator::operator*() const {
  *          @a rhs
  */
 template <int alphabet_size, int (*indexof)(char)>
-bool hat_trie<alphabet_size, indexof>::iterator::
-operator==(const iterator &rhs) {
+bool hat_trie<alphabet_size, indexof>::
+iterator::operator==(const iterator &rhs) {
     // TODO does iterator comparison need to be on more than just pointer?
     return n == rhs.n;
 }
@@ -749,8 +778,8 @@ operator==(const iterator &rhs) {
  * @return  true iff this iterator is not equal to @a rhs
  */
 template <int alphabet_size, int (*indexof)(char)>
-bool hat_trie<alphabet_size, indexof>::iterator::
-operator!=(const iterator &rhs) {
+bool hat_trie<alphabet_size, indexof>::
+iterator::operator!=(const iterator &rhs) {
     return !operator==(rhs);
 }
 

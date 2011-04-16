@@ -31,7 +31,7 @@ int main() {
         s.insert(reader);
     }
 
-    hat_trie<>::iterator it;
+    hat_trie<>::const_iterator it;
     for (it = ht.begin(); it != ht.end(); ++it) {
         cout << *it << endl;
     }
