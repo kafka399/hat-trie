@@ -20,19 +20,14 @@ int main() {
     set<string> s;
     ht_array_hash<> ah;
 
-    ht.insert("");
-    for (hat_trie<>::iterator it = ht.begin(); it != ht.end(); ++it) {
-        cout << *it << endl;
-    }
-    return 0;
-
     while (cin >> reader) {
         ht.insert(reader);
         s.insert(reader);
     }
 
-    hat_trie<>::const_iterator it;
+    hat_trie<>::iterator it;
     for (it = ht.begin(); it != ht.end(); ++it) {
+        //cout << *(ht.find(*it)) << endl;
         cout << *it << endl;
     }
 

@@ -112,6 +112,7 @@ class hat_trie {
     // iterators
     iterator begin() const;
     iterator end() const;
+    iterator find(const std::string &s) const;
 
     // TODO explain all the state an iterator maintains
     //     TODO is this the best way to solve this problem?
@@ -152,11 +153,9 @@ class hat_trie {
         typename container::store_type::iterator container_iterator;
         bool word;
 
-        // Caches the word as we move up and down the trie
+        // Caches the word as we move up and down the trie and
+        // implicitly caches the path we followed as well
         std::string cached_word;
-
-        // Caches our specific location in the hierarchy of the trie
-        std::vector<int> cached_path;
 
         // Special-purpose constructor and assignment operator. If
         // an iterator is assigned to a container, it automatically
@@ -185,11 +184,11 @@ class hat_trie {
     bool search(const char * &s, node_pointer &n) const;
     void print(const node_pointer &n, const std::string &space = "") const;
 
-    static node_pointer next_child(node *, size_t, std::string &, std::vector<int> &);
-    static node_pointer least_child(node *, std::string &, std::vector<int> &);
-    static node_pointer next_word(node_pointer, std::string &, std::vector<int> &);
-    static node_pointer least(node_pointer, std::string &, std::vector<int> &);
-    static int pop_back(std::string &, std::vector<int> &);
+    static node_pointer next_child(node *, size_t, std::string &);
+    static node_pointer least_child(node *, std::string &);
+    static node_pointer next_word(node_pointer, std::string &);
+    static node_pointer least(node_pointer, std::string &);
+    static int pop_back(std::string &);
 
     // modifiers
     bool insert(container *htc, const char *s);
@@ -318,8 +317,29 @@ begin() const {
     // is pretty ugly. See the doc comment for the iterator class
     // for a description of why.
     iterator result;
-    result = least(root, result.cached_word, result.cached_path);
+    result = least(root, result.cached_word);
     return result;
+}
+
+/**
+ * Searches for @a s in the trie.
+ *
+ * @param s  word to search for
+ * @return  iterator to @a s in the trie. If @a s is not in the trie,
+ *          returns an iterator to one past the last element
+ */
+template <int alphabet_size, int (*indexof)(char)>
+typename hat_trie<alphabet_size, indexof>::iterator
+hat_trie<alphabet_size, indexof>::
+find(const std::string &s) const {
+    const char *ps = s.c_str();
+    node_pointer n;
+
+    // Search for the word in the trie.
+    if (search(ps, n)) {
+        return iterator(n);
+    }
+    return end();
 }
 
 /**
@@ -538,14 +558,13 @@ print(const node_pointer &n, const std::string &space) const {
  * @param p  parent node to search under
  * @param pos  starting position in the children array
  * @param word  cached word in the trie traversal
- * @param path  cached path in the trie traversal
  * @return  a pointer to the next child under this node starting from
  *          @a pos, or NULL if this node has no children
  */
 template <int alphabet_size, int (*indexof)(char)>
 typename hat_trie<alphabet_size, indexof>::node_pointer
 hat_trie<alphabet_size, indexof>::
-next_child(node *p, size_t pos, std::string &word, std::vector<int> &path) {
+next_child(node *p, size_t pos, std::string &word) {
     node_pointer result;
 
     // Search for the next child under this node starting at pos.
@@ -555,8 +574,7 @@ next_child(node *p, size_t pos, std::string &word, std::vector<int> &path) {
             result.pointer = p->children[i];
             result.type = p->types[i];
 
-            // Add this motion to the word and path parameters.
-            path.push_back(i);
+            // Add this motion to the word.
             word += result.pointer->ch();
         }
     }
@@ -569,15 +587,14 @@ next_child(node *p, size_t pos, std::string &word, std::vector<int> &path) {
  * @param p  parent node to search under
  * @param pos  starting position in the children array
  * @param word  cached word in the trie traversal
- * @param path  cached path in the trie traversal
  * @return  a pointer to the next child under this node starting from
  *          @a pos, or NULL if this node has no children
  */
 template <int alphabet_size, int (*indexof)(char)>
 typename hat_trie<alphabet_size, indexof>::node_pointer
 hat_trie<alphabet_size, indexof>::
-least_child(node *p, std::string &word, std::vector<int> &path) {
-    return next_child(p, 0, word, path);
+least_child(node *p, std::string &word) {
+    return next_child(p, 0, word);
 }
 
 /**
@@ -587,20 +604,19 @@ least_child(node *p, std::string &word, std::vector<int> &path) {
  *
  * @param n
  * @param word  cached word in the trie traversal
- * @param path  cached path in the trie traversal
  * @return  a pointer to the next node in the trie that marks a word
  */
 template <int alphabet_size, int (*indexof)(char)>
 typename hat_trie<alphabet_size, indexof>::node_pointer
 hat_trie<alphabet_size, indexof>::
-next_word(node_pointer n, std::string &word, std::vector<int> &path) {
+next_word(node_pointer n, std::string &word) {
     // Stop early if we get a NULL pointer.
     if (n.pointer == NULL) { return node_pointer(); }
 
     node_pointer result;
     if (n.type == NODE_POINTER) {
         // Move to the leftmost child under this node.
-        result = least_child((node *) n.pointer, word, path);
+        result = least_child((node *) n.pointer, word);
     }
 
     if (result.pointer == NULL) {
@@ -611,15 +627,15 @@ next_word(node_pointer n, std::string &word, std::vector<int> &path) {
         while (n.pointer->parent && next.pointer == NULL) {
             // Looks like we can't move to the right. Move up a level
             // in the trie and try again.
-            pos = pop_back(word, path) + 1;
-            next = next_child(n.pointer->parent, pos, word, path);
+            pos = pop_back(word) + 1;
+            next = next_child(n.pointer->parent, pos, word);
             n = n.pointer->parent;
         }
         result = next;
     }
 
     // Return the lexicographically least node underneath this one.
-    return least(result, word, path);
+    return least(result, word);
 }
 
 /**
@@ -627,36 +643,33 @@ next_word(node_pointer n, std::string &word, std::vector<int> &path) {
  *
  * @param n  current position in the trie
  * @param word  cached word in the trie traversal
- * @param path  cached path in the trie traversal
  * @return  lexicographically least node from @a n. This function
  *          may return @a n itself
  */
 template <int alphabet_size, int (*indexof)(char)>
 typename hat_trie<alphabet_size, indexof>::node_pointer
 hat_trie<alphabet_size, indexof>::
-least(node_pointer n, std::string &word, std::vector<int> &path) {
+least(node_pointer n, std::string &word) {
     while (n.pointer && n.pointer->is_word() == false && n.type == NODE_POINTER) {
         // Find the leftmost child of this node and move in that direction.
-        n = least_child((node *) n.pointer, word, path);
+        n = least_child((node *) n.pointer, word);
     }
     return n;
 }
 
 /**
- * Removes a record from the back of a word/path pair.
+ * Removes a record from the back of a word.
  *
- * This function assumes word and path are populated. The string class
- * will throw an exception if these preconditions aren't met.
+ * This function assumes word is populated. The string class
+ * will throw an exception if this precondition is not met.
  *
  * @param word  cached word in the trie traversal
- * @param path  cached path in the trie traversal
  * @return  integer that was formerly the most recent path taken
  */
 template <int alphabet_size, int (*indexof)(char)>
 int hat_trie<alphabet_size, indexof>::
-pop_back(std::string &word, std::vector<int> &path) {
-    int result = path.back();
-    path.pop_back();
+pop_back(std::string &word) {
+    int result = indexof(word[word.size() - 1]);
     word.erase(word.size() - 1);
     return result;
 }
@@ -693,7 +706,7 @@ iterator::operator++() {
     }
 
     // Move to the next node in the trie.
-    return (*this = hat_trie::next_word(n, cached_word, cached_path));
+    return (*this = hat_trie::next_word(n, cached_word));
 }
 
 /**
