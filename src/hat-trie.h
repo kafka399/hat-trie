@@ -454,6 +454,8 @@ burst(container *htc) {
     typename container::store_type::iterator it;
     for (it = htc->store.begin(); it != htc->store.end(); ++it) {
         int index = ht_get_index<alphabet_size, indexof>((*it)[0]);
+
+        // Do we need to make a new container?
         if (result->children[index] == NULL) {
             // Make a new container and position it under the new node.
             container *insertion = new container((*it)[0]);
@@ -464,12 +466,13 @@ burst(container *htc) {
             // Set the new container's word field.
             insertion->set_word(((*it)[1] == '\0'));
         }
+
+        // Insert the rest of the word into a container.
         if ((*it)[1] != '\0') {
-            // Insert the rest of the word into the respective
-            // container.
+            // Insert the rest of the word into the right container.
             ((container *) result->children[index])->insert((*it) + 1);
         } else {
-            // This container represents a word.
+            // Mark this container as a word.
             ((container *) result->children[index])->set_word(true);
         }
     }
@@ -483,6 +486,9 @@ burst(container *htc) {
     delete htc;
 }
 
+/**
+ * Recursively prints the contents of the trie.
+ */
 template <int alphabet_size, int (*indexof)(char)>
 void hat_trie<alphabet_size, indexof>::
 print(const node_pointer &n, const std::string &space) const {
@@ -539,10 +545,10 @@ hat_trie<alphabet_size, indexof>::
 next_child(node *p, std::string &word, std::vector<int> &path, size_t pos) {
     node_pointer result;
 
-    // Search for the leftmost child under this node.
+    // Search for the next child under this node starting at pos.
     for (size_t i = pos; i < alphabet_size && result.pointer == NULL; ++i) {
         if (p->children[i]) {
-            // Move in this direction.
+            // Found a child.
             result.pointer = p->children[i];
             result.type = p->types[i];
 
@@ -554,10 +560,21 @@ next_child(node *p, std::string &word, std::vector<int> &path, size_t pos) {
     return result;
 }
 
+/**
+ * Finds the next node that marks a word.
+ *
+ * This node may be either a node or a container.
+ *
+ * @param n
+ * @param word  cached word in the trie traversal
+ * @param path  cached path in the trie traversal
+ * @return  a pointer to the next node in the trie that marks a word
+ */
 template <int alphabet_size, int (*indexof)(char)>
 typename hat_trie<alphabet_size, indexof>::node_pointer
 hat_trie<alphabet_size, indexof>::
 next_word(node_pointer n, std::string &word, std::vector<int> &path) {
+    // Stop early if we get a NULL pointer.
     if (n.pointer == NULL) { return node_pointer(); }
 
     node_pointer result;
@@ -567,16 +584,21 @@ next_word(node_pointer n, std::string &word, std::vector<int> &path) {
     }
 
     if (result.pointer == NULL) {
-        node_pointer w = n;
+        // This node has no children. Move up in the trie until
+        // we can move right.
         node_pointer next;
         int pos;
-        while (w.pointer->parent && next.pointer == NULL) {
+        while (n.pointer->parent && next.pointer == NULL) {
+            // Looks like we can't move to the right. Move up a level
+            // in the trie and try again.
             pos = pop_back(word, path) + 1;
-            next = next_child(w.pointer->parent, word, path, pos);
-            w = w.pointer->parent;
+            next = next_child(n.pointer->parent, word, path, pos);
+            n = n.pointer->parent;
         }
         result = next;
     }
+
+    // Return the lexicographically least node underneath this one.
     return least(result, word, path);
 }
 
@@ -600,6 +622,16 @@ least(node_pointer n, std::string &word, std::vector<int> &path) {
     return n;
 }
 
+/**
+ * Removes a record from the back of a word/path pair.
+ *
+ * This function assumes word and path are populated. The string class
+ * will throw an exception if these preconditions aren't met.
+ *
+ * @param word  cached word in the trie traversal
+ * @param path  cached path in the trie traversal
+ * @return  integer that was formerly the most recent path taken
+ */
 template <int alphabet_size, int (*indexof)(char)>
 int hat_trie<alphabet_size, indexof>::
 pop_back(std::string &word, std::vector<int> &path) {
@@ -623,16 +655,24 @@ typename hat_trie<alphabet_size, indexof>::iterator&
 hat_trie<alphabet_size, indexof>::
 iterator::operator++() {
     if (n.type == CONTAINER_POINTER) {
+        // If word is set, then this container represents a word as
+        // well as storing words. The first iteration into the
+        // container is over the word represented by the container.
         if (word) {
+            // Move into the actual container by setting word to false.
             word = false;
         } else {
+            // Move the iterator over the container's elements forward.
             ++container_iterator;
         }
+
+        // If we aren't at the end of the container, stop here.
         if (container_iterator != ((container *) n.pointer)->store.end()) {
             return *this;
         }
     }
 
+    // Move to the next node in the trie.
     return (*this = hat_trie::next_word(n, cached_word, cached_path));
 }
 
@@ -657,8 +697,11 @@ template <int alphabet_size, int (*indexof)(char)>
 std::string hat_trie<alphabet_size, indexof>::
 iterator::operator*() const {
     if (word || n.type == NODE_POINTER) {
+        // Print the word that has been cached over the trie traversal.
         return cached_word;
+
     } else if (n.type == CONTAINER_POINTER) {
+        // Pull a word from the container.
         return cached_word + *container_iterator;
     }
 
