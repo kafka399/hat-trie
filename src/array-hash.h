@@ -70,16 +70,18 @@ class ht_array_hash {
 
         iterator& operator++();
         iterator& operator--();
-        //pair<const char *, uint16_t> operator*();
+
         const char *operator*() const;
         bool operator==(const iterator& rhs);
         bool operator!=(const iterator& rhs);
-        iterator& operator=(const iterator &rhs);
 
       private:
         int slot;
         char *p;
         char **data;
+
+        iterator(int slot, char *p, char **data) :
+                slot(slot), p(p), data(data) { }
     };
 
   private:
@@ -244,14 +246,7 @@ find(const char *str) const {
     }
 
     p = search(str, length, p);
-    if (p == NULL) {
-        return end();
-    }
-    iterator result;
-    result.slot = slot;
-    result.p = p;
-    result.data = data;
-    return result;
+    return iterator(slot, p, data);
 }
 
 /**
@@ -290,10 +285,7 @@ template <int alphabet_size, int (*indexof)(char)>
 typename ht_array_hash<alphabet_size, indexof>::iterator
 ht_array_hash<alphabet_size, indexof>::
 end() const {
-    iterator result;
-    result.slot = SLOT_COUNT;
-    result.data = data;
-    return result;
+    return iterator(SLOT_COUNT, NULL, data);
 }
 
 /**
@@ -416,21 +408,6 @@ template <int alphabet_size, int (*indexof)(char)>
 bool ht_array_hash<alphabet_size, indexof>::
 iterator::operator!=(const iterator& rhs) {
     return !(*this == rhs);
-}
-
-/**
- * Standard assignment operator.
- */
-template <int alphabet_size, int (*indexof)(char)>
-typename ht_array_hash<alphabet_size, indexof>::iterator&
-ht_array_hash<alphabet_size, indexof>::
-iterator::operator=(const iterator& rhs) {
-    if (this != &rhs) {
-        data = rhs.data;
-        p = rhs.p;
-        slot = rhs.slot;
-    }
-    return *this;
 }
 
 }  // namespace stx
