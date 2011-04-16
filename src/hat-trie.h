@@ -176,7 +176,7 @@ class hat_trie {
 
     // containers are burst after their size crosses this threshold
     // MUST be <= 32,768
-    enum { BURST_THRESHOLD = 2 };  // TODO
+    enum { BURST_THRESHOLD = 8192 };
 
     void init();
 
@@ -184,7 +184,8 @@ class hat_trie {
     bool search(const char * &s, node_pointer &n) const;
     void print(const node_pointer &n, const std::string &space = "") const;
 
-    static node_pointer next_child(node *, std::string &, std::vector<int> &, size_t pos = 0);
+    static node_pointer next_child(node *, size_t, std::string &, std::vector<int> &);
+    static node_pointer least_child(node *, std::string &, std::vector<int> &);
     static node_pointer next_word(node_pointer, std::string &, std::vector<int> &);
     static node_pointer least(node_pointer, std::string &, std::vector<int> &);
     static int pop_back(std::string &, std::vector<int> &);
@@ -530,19 +531,17 @@ print(const node_pointer &n, const std::string &space) const {
 /**
  * Finds the next child under a node.
  *
- * This function finds the leftmost child by default.
- *
  * @param p  parent node to search under
+ * @param pos  starting position in the children array
  * @param word  cached word in the trie traversal
  * @param path  cached path in the trie traversal
- * @param pos  starting position in the children array
- * @return  a pointer to the leftmost child under this node, or NULL
- *          if this node has no children
+ * @return  a pointer to the next child under this node starting from
+ *          @a pos, or NULL if this node has no children
  */
 template <int alphabet_size, int (*indexof)(char)>
 typename hat_trie<alphabet_size, indexof>::node_pointer
 hat_trie<alphabet_size, indexof>::
-next_child(node *p, std::string &word, std::vector<int> &path, size_t pos) {
+next_child(node *p, size_t pos, std::string &word, std::vector<int> &path) {
     node_pointer result;
 
     // Search for the next child under this node starting at pos.
@@ -558,6 +557,23 @@ next_child(node *p, std::string &word, std::vector<int> &path, size_t pos) {
         }
     }
     return result;
+}
+
+/**
+ * Finds the lexicographically least child under a node.
+ *
+ * @param p  parent node to search under
+ * @param pos  starting position in the children array
+ * @param word  cached word in the trie traversal
+ * @param path  cached path in the trie traversal
+ * @return  a pointer to the next child under this node starting from
+ *          @a pos, or NULL if this node has no children
+ */
+template <int alphabet_size, int (*indexof)(char)>
+typename hat_trie<alphabet_size, indexof>::node_pointer
+hat_trie<alphabet_size, indexof>::
+least_child(node *p, std::string &word, std::vector<int> &path) {
+    return next_child(p, 0, word, path);
 }
 
 /**
@@ -580,7 +596,7 @@ next_word(node_pointer n, std::string &word, std::vector<int> &path) {
     node_pointer result;
     if (n.type == NODE_POINTER) {
         // Move to the leftmost child under this node.
-        result = next_child((node *) n.pointer, word, path);
+        result = least_child((node *) n.pointer, word, path);
     }
 
     if (result.pointer == NULL) {
@@ -592,7 +608,7 @@ next_word(node_pointer n, std::string &word, std::vector<int> &path) {
             // Looks like we can't move to the right. Move up a level
             // in the trie and try again.
             pos = pop_back(word, path) + 1;
-            next = next_child(n.pointer->parent, word, path, pos);
+            next = next_child(n.pointer->parent, pos, word, path);
             n = n.pointer->parent;
         }
         result = next;
@@ -617,7 +633,7 @@ hat_trie<alphabet_size, indexof>::
 least(node_pointer n, std::string &word, std::vector<int> &path) {
     while (n.pointer && n.pointer->is_word() == false && n.type == NODE_POINTER) {
         // Find the leftmost child of this node and move in that direction.
-        n = next_child((node *) n.pointer, word, path);
+        n = least_child((node *) n.pointer, word, path);
     }
     return n;
 }
