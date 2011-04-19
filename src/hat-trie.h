@@ -104,6 +104,7 @@ class hat_trie {
 
     // accessors
     bool contains(const std::string &s) const;
+    bool empty() const;
     size_t size() const;
     void print() const { print(root); }
 
@@ -223,7 +224,7 @@ hat_trie<alphabet_size, indexof>::~hat_trie() {
  *
  * @param s  word to search for
  *
- * @return  true if @a s is in the trie, false otherwise.
+ * @return  true iff @a s is in the trie
  * @throws unindexed_character
  *      if a character in @a s is not indexed by @a indexof()
  */
@@ -233,6 +234,17 @@ contains(const std::string &s) const {
     const char *ps = s.c_str();
     node_pointer n;
     return search(ps, n);
+}
+
+/**
+ * Determines whether this container is empty.
+ *
+ * @return  true iff this container has no data
+ */
+template <int alphabet_size, int (*indexof)(char)>
+bool hat_trie<alphabet_size, indexof>::
+empty() const {
+    return size() == 0;
 }
 
 /**
@@ -367,8 +379,7 @@ find(const std::string &s) const {
  * @param rhs  hat_trie object to swap data with
  */
 template <int alphabet_size, int (*indexof)(char)>
-void
-hat_trie<alphabet_size, indexof>::
+void hat_trie<alphabet_size, indexof>::
 swap(self &rhs) {
     using std::swap;
     swap(root, rhs.root);

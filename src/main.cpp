@@ -28,11 +28,12 @@ int main() {
     set<string> s;
     ht_array_hash<> ah;
 
-    ht.insert("hello");
-    ht.insert("world");
-    ht.insert("the");
-    ht.insert("and");
+    //ht.insert("hello");
+    //ht.insert("world");
+    //ht.insert("the");
+    //ht.insert("and");
     print(ht);
+    cout << ht.empty() << endl;
     return 0;
 
     while (cin >> reader) {
