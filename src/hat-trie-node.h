@@ -20,6 +20,7 @@
  */
 
 // TODO exclude these classes / this file from Doxygen
+// TODO doc comments
 
 #ifndef HAT_TRIE_NODE_H
 #define HAT_TRIE_NODE_H
@@ -96,7 +97,7 @@ class hat_trie_node : public hat_trie_node_base<alphabet_size, indexof> {
 
   public:
     hat_trie_node(char ch = '\0');
-    virtual ~hat_trie_node() { }
+    virtual ~hat_trie_node();
 
     // accessors
     bool is_word() const { return types[alphabet_size]; }
@@ -150,6 +151,14 @@ hat_trie_node(char ch) :
         hat_trie_node_base<alphabet_size, indexof>(ch) {
     for (int i = 0; i < alphabet_size; ++i) {
         children[i] = NULL;
+    }
+}
+
+template <int alphabet_size, int (*indexof)(char)>
+hat_trie_node<alphabet_size, indexof>::
+~hat_trie_node() {
+    for (int i = 0; i < alphabet_size; ++i) {
+        delete children[i];
     }
 }
 

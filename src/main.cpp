@@ -7,6 +7,7 @@
 #include <time.h>
 #include <unistd.h>  // for sleep()
 #include <iomanip>
+
 #include "array-hash.h"
 #include "hat-trie.h"
 
@@ -28,22 +29,9 @@ int main() {
     set<string> s;
     ht_array_hash<> ah;
 
-    //ht.insert("hello");
-    //ht.insert("world");
-    //ht.insert("the");
-    //ht.insert("and");
-    print(ht);
-    cout << ht.empty() << endl;
-    return 0;
-
     while (cin >> reader) {
         ht.insert(reader);
         s.insert(reader);
-    }
-
-    hat_trie<>::iterator it;
-    for (it = ht.begin(); it != ht.end(); ++it) {
-        cout << *(ht.find(*it)) << endl;
     }
 
     return 0;
