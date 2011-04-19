@@ -13,6 +13,14 @@
 using namespace std;
 using namespace stx;
 
+template <class T>
+void print(const T &t) {
+    typename T::iterator it;
+    for (it = t.begin(); it != t.end(); ++it) {
+        cout << *it << endl;
+    }
+}
+
 int main() {
     std::ios_base::sync_with_stdio(false);  // speed up reading from stdin
     hat_trie<> ht;
@@ -20,16 +28,12 @@ int main() {
     set<string> s;
     ht_array_hash<> ah;
 
-//  ht.insert("hello");
-//  ht.insert("world");
-//  ht.insert("the");
-//  ht.insert("and");
-//  hat_trie<>::iterator hit;
-//  for (hit = ht.begin(); hit != ht.end(); ++hit) {
-//      cout << "find: " << *(ht.find(*hit)) << endl;
-//      cout << *hit << endl;
-//  }
-//  return 0;
+    ht.insert("hello");
+    ht.insert("world");
+    ht.insert("the");
+    ht.insert("and");
+    print(ht);
+    return 0;
 
     while (cin >> reader) {
         ht.insert(reader);

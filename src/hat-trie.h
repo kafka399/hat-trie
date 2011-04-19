@@ -68,6 +68,7 @@ template <int alphabet_size = HT_DEFAULT_ALPHABET_SIZE,
 class hat_trie {
 
   private:
+    typedef hat_trie<alphabet_size, indexof> self;
     typedef hat_trie_node<alphabet_size, indexof> node;
     typedef hat_trie_container<alphabet_size, indexof> container;
     typedef hat_trie_node_base<alphabet_size, indexof> node_base;
@@ -113,6 +114,9 @@ class hat_trie {
     iterator begin() const;
     iterator end() const;
     iterator find(const std::string &s) const;
+
+    // utilities
+    void swap(self &rhs);
 
     // TODO explain all the state an iterator maintains
     //     TODO is this the best way to solve this problem?
@@ -352,6 +356,23 @@ find(const std::string &s) const {
         result = end();
     }
     return result;
+}
+
+/**
+ * Swaps the data in two hat_trie objects.
+ *
+ * This function operates in constant time because all it needs to do
+ * is swap two primitive values.
+ *
+ * @param rhs  hat_trie object to swap data with
+ */
+template <int alphabet_size, int (*indexof)(char)>
+void
+hat_trie<alphabet_size, indexof>::
+swap(self &rhs) {
+    using std::swap;
+    swap(root, rhs.root);
+    swap(_size, rhs._size);
 }
 
 /**
@@ -841,6 +862,19 @@ iterator::operator=(node_pointer n) {
 }
 
 }  // namespace stx
+
+namespace std {
+
+/**
+ * Template specialization of std::swap for hat tries.
+ */
+template <int alphabet_size, int (*indexof)(char)>
+void swap(stx::hat_trie<alphabet_size, indexof> &lhs,
+          stx::hat_trie<alphabet_size, indexof> &rhs) {
+    lhs.swap(rhs);
+}
+
+}  // namespace std
 
 #endif  // HAT_TRIE_H
 
