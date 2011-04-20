@@ -19,15 +19,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// TODO delete
+// TODO erase function
 
-#ifndef ht_array_hash_H
-#define ht_array_hash_H
+#ifndef HT_ARRAY_HASH_H
+#define HT_ARRAY_HASH_H
 
-#include <cassert>
-#include <iostream>
-#include <stdint.h>
 #include <cstring>
+#include <stdint.h>
 #include <utility>
 
 #include "hat-trie-common.h"
@@ -158,7 +156,6 @@ search(const char *str, length_type length, char *p) const {
  * Inserts @a str into the table.
  *
  * @param str  string to insert
- *
  * @return  true if @a str is successfully inserted, false if @a str already
  *          appears in the table
  */
@@ -167,7 +164,6 @@ bool ht_array_hash<alphabet_size, indexof>::
 insert(const char *str) {
     length_type length;
     int slot = hash(str, length);
-    assert(length != 1);
     char *p = data[slot];
     if (p) {
         // Append the new string to the end of this slot.
@@ -202,11 +198,7 @@ insert(const char *str) {
     memcpy(p, &length, sizeof(length_type));
     ++_size;
 
-    // debug print code
-//  for (size_t i = 0; i < *((size_type *)(data[slot])); ++i) {
-//      cerr << int(data[slot][i]) << " ";
-//  }
-//  cerr << endl;
+    // We wrote str into the table, so return true.
     return true;
 }
 
@@ -219,8 +211,11 @@ insert(const char *str) {
 template <int alphabet_size, int (*indexof)(char)>
 bool ht_array_hash<alphabet_size, indexof>::
 contains(const char *str) const {
+    // Determine which slot in the table should contain str.
     length_type length;
     char *p = data[hash(str, length)];
+
+    // Return true if p is in that slot.
     if (p == NULL) {
         return false;
     }
@@ -238,13 +233,15 @@ template <int alphabet_size, int (*indexof)(char)>
 typename ht_array_hash<alphabet_size, indexof>::iterator
 ht_array_hash<alphabet_size, indexof>::
 find(const char *str) const {
+    // Determine which slot in the table should contain str.
     length_type length;
     int slot = hash(str, length);
     char *p = data[slot];
+
+    // Search for str in that slot.
     if (p == NULL) {
         return end();
     }
-
     p = search(str, length, p);
     return iterator(slot, p, data);
 }
@@ -292,8 +289,7 @@ end() const {
  * Hashes @a str to an integer, its slot in the hash table.
  *
  * @param str     string to hash
- * @param length  length of @a str. This function calculates this value as it
- *                runs.
+ * @param length  length of @a str. Calculated as this function runs
  * @param seed    seed for the hash function
  *
  * @return  hashed value of @a str, its slot in the table
@@ -359,9 +355,12 @@ iterator::operator++() {
             while (slot < SLOT_COUNT && data[slot] == NULL) {
                 ++slot;
             }
+
             if (slot == SLOT_COUNT) {
+                // We are at the end. Make this an end iterator
                 p = NULL;
             } else {
+                // Move to the first element in this slot.
                 p = data[slot] + sizeof(size_type);
             }
         }
@@ -380,8 +379,7 @@ iterator::operator--() {
 /**
  * Iterator dereference operator.
  *
- * @return  pair where @a first is a pointer to the (non-NULL terminated)
- *          string, and @a second is the length of the string
+ * @return  character pointer to the string this iterator points to
  */
 template <int alphabet_size, int (*indexof)(char)>
 const char *ht_array_hash<alphabet_size, indexof>::
@@ -407,10 +405,10 @@ iterator::operator==(const iterator& rhs) {
 template <int alphabet_size, int (*indexof)(char)>
 bool ht_array_hash<alphabet_size, indexof>::
 iterator::operator!=(const iterator& rhs) {
-    return !(*this == rhs);
+    return !operator==(rhs);
 }
 
 }  // namespace stx
 
-#endif
+#endif  // HT_ARRAY_HASH_H
 
