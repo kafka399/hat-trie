@@ -6,3 +6,4 @@ out
 src/main.cpp
 Makefile
 doc
+hat-trie*
