@@ -31,7 +31,6 @@ int main() {
 
     while (cin >> reader) {
         ht.insert(reader);
-        s.insert(reader);
     }
 
     return 0;

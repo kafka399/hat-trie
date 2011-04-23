@@ -95,7 +95,7 @@ class hat_trie {
     };
 
   public:
-	class iterator;
+        class iterator;
     typedef iterator const_iterator;
 
     // constructors and destructors
@@ -273,7 +273,8 @@ insert(const std::string &s) {
     // Search for s in the trie.
     const char *pos = s.c_str();
     node_pointer n;
-    if (search(pos, n) == false) {
+    bool found = search(pos, n);
+    if (!found) {
         // Was s found in the structure of the trie?
         if (*pos == '\0') {
             // s was found in the trie's structure. Mark its location
@@ -309,7 +310,7 @@ insert(const std::string &s) {
         }
     }
 
-    return false;  // s was found in the trie
+    return !found;
 }
 
 /**
