@@ -19,6 +19,67 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * \mainpage
+ *
+ * This project is intended to be a fully operational, standards compliant
+ * HAT-trie. It will eventually mirror the STL set interface, but for now,
+ * it is still VERY much a work in progress.
+ *
+ * \section Working
+ * Here is a list of all the major operations that are working:
+ *
+ * \li \c insert(string)
+ * \li \c contains(string)
+ * \li \c find(string)
+ * \li forward iteration and iterator dereferencing
+ *
+ * \section Usage
+ *
+ * \subsection Installation
+ * Copy all the headers into a directory in your PATH and include hat-trie.h
+ * in your project. It is designed to be a drop-in replacement for an STL set,
+ * with a few changes.
+ *
+ * Note: some of the headers require ``inttypes.h``, which isn't available by
+ * default on Windows platforms. You can find a compatible version of the
+ * header on Google.
+ *
+ * \subsection Declaration
+ * hat_trie objects take two template parameters:
+ *
+ * \li size of the alphabet (defined as the set of possible characters)
+ * \li \c indexof(char) function that indexes characters in the alphabet
+ *
+ * \c indexof()should return an integer in [0, \c alphabet_size) that is
+ * unique for each character in the alphabet.
+ *
+ * Here is an example \c indexof() function that indexes alphanumeric
+ * characters:
+ *
+ * \code
+ * int alphanumeric_index(char ch) {
+ *     if (ch >= '0' && ch <= '9') {
+ *         return ch - '0';
+ *     }
+ *     return ch - 'a' + 10;
+ * }
+ * \endcode
+ *
+ * In this case, the first 10 index values are the characters 0-9, and the
+ * next 26 index values are the characters a-z. Note that any value outside
+ * the range [0, \c alphabet_size) indicates an invalid character. If a
+ * hat_trie finds an invalid character, an \c unindexed_character exception
+ * is thrown.
+ *
+ * To declare a hat_trie that supports this alphabet:
+ *
+ * \code
+ * hat_trie<36, alphanumeric_index> ht;
+ * ht.insert(...);
+ * \endcode
+ */
+
 // TODO
 // what if bursting gives you a container that still has more elements than
 // BURST_THRESHOLD? I think bursting this one lazily (on the next time you
@@ -261,9 +322,21 @@ size() const {
 /**
  * Inserts a word into the trie.
  *
+ * According to the standard, this function should return a
+ * pair<iterator, bool> rather than just a bool. However, timing tests
+ * on both versions of this function showed significant slowdown on
+ * the pair-returning version -- several orders of magnitude. We believe
+ * deviating from the standard in the face of such significant slowdown
+ * is a worthy sacrifice for blazing fast insertion times. And besides,
+ * who uses the iterator return value anyway? =)
+ *
+ * Note: for a more in-depth discussion of rationale, see the HTML
+ * documentation.
+ *
  * @param s  word to insert
  *
- * @return  false if @a s is already in the trie, true otherwise
+ * @return  true if @a s is inserted into the trie, false if @a s
+ *          was already in the trie
  * @throws unindexed_character
  *      if a character in @a s is not indexed by @a indexof()
  */
@@ -390,7 +463,7 @@ swap(self &rhs) {
 /**
  * Gets an iterator to one past the last element in the trie.
  *
- * @return iterator to one past the last element in the trie.
+ * @return iterator to one past the last element in the trie
  */
 template <int alphabet_size, int (*indexof)(char)>
 typename hat_trie<alphabet_size, indexof>::iterator
@@ -819,7 +892,7 @@ iterator::operator*() const {
  * Overloaded equivalence operator.
  *
  * @param rhs  iterator to compare against
- * @return  true iff this iterator points to the same thing as
+ * @return  true iff this iterator points to the same location as
  *          @a rhs
  */
 template <int alphabet_size, int (*indexof)(char)>

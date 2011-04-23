@@ -1,22 +1,29 @@
 # Hat Trie
-This project is intended to be a fully operational hat-trie. It is still
-_VERY_ much a work in progress.
+This project is intended to be a fully operational, standards compliant
+HAT-trie. It will eventually mirror the STL set interface, but for now,
+it is still _VERY_ much a work in progress.
 
 ## Working
+Here is a list of the major operations that are working:
 
 * ``insert(string)``
 * ``contains(string)``
+* ``find(string)``
+* forward iteraton and iterator dereferencing
 
 ## Usage
-Copy *array-hash.h*, *hat-trie-node.h*, and *hat-trie.h* into any
-directory and include *hat-trie.h* in your project. It is designed to
-be a drop-in replacement for an STL set, with a few changes.
+
+### Installation
+Copy all the headers into a directory in your PATH and include *hat-trie.h* in
+your project. Note: some of the headers require ``inttypes.h``, which isn't
+available by default on Windows platforms. You can find a compatible version
+of the header on Google.
 
 ### Declaration
-hat\_tries take two template parameters:
+hat\_trie objects take two template parameters:
 
 * size of the alphabet (defined as the set of possible characters)
-* ``indexof(char)`` function that indexes characters
+* ``indexof(char)`` function that indexes characters in the alphabet
 
 ``indexof()`` should return an integer in [0, ``alphabet_size``) that is
 unique for each character in the alphabet. 
@@ -43,6 +50,12 @@ To declare a hat\_trie that supports this alphabet:
 
 
 ## Extensions
-There are a few non-standard extensions to the hat\_trie interface.
+There are a few non-standard extensions to the hat\_trie interface:
 
 * ``contains(string)`` -- returns true iff the string is in the trie
+
+## Deviations
+The hat\_trie interface differs from the standard in a few ways:
+
+* ``insert(string)`` -- returns a ``bool`` rather than a 
+  ``pair<iterator, bool>``

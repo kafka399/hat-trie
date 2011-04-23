@@ -1,0 +1,76 @@
+<h1>Hat Trie</h1>
+
+<p>This project is intended to be a fully operational, standards compliant
+HAT-trie. It will eventually mirror the STL set interface, but for now,
+it is still <em>VERY</em> much a work in progress.</p>
+
+<h2>Working</h2>
+
+<p>Here is a list of the major operations that are working:</p>
+
+<ul>
+<li><code>insert(string)</code></li>
+<li><code>contains(string)</code></li>
+<li><code>find(string)</code></li>
+<li>forward iteraton and iterator dereferencing</li>
+</ul>
+
+<h2>Usage</h2>
+
+<h3>Installation</h3>
+
+<p>Copy all the headers into a directory in your PATH and include <em>hat-trie.h</em> in
+your project. Note: some of the headers require <code>inttypes.h</code>, which isn't
+available by default on Windows platforms. You can find a compatible version
+of the header on Google.</p>
+
+<h3>Declaration</h3>
+
+<p>hat_trie objects take two template parameters:</p>
+
+<ul>
+<li>size of the alphabet (defined as the set of possible characters)</li>
+<li><code>indexof(char)</code> function that indexes characters in the alphabet</li>
+</ul>
+
+<p><code>indexof()</code> should return an integer in [0, <code>alphabet_size</code>) that is
+unique for each character in the alphabet. </p>
+
+<p>Here is an example <code>indexof()</code> function that indexes alphanumeric
+characters:</p>
+
+<pre><code>int alphanumeric_index(char ch) {
+    if (ch &gt;= '0' &amp;&amp; ch &lt;= '9') {
+        return ch - '0';
+    }
+    return ch - 'a' + 10;
+}
+</code></pre>
+
+<p>In this case, the first 10 index values are the characters 0-9, and the next
+26 index values are the characters a-z. Note that any value outside the range
+[0, <code>alphabet_size</code>) indicates an invalid character. If a hat_trie finds 
+an invalid character, an <code>unindexed_character</code> exception is thrown. </p>
+
+<p>To declare a hat_trie that supports this alphabet:</p>
+
+<pre><code>hat_trie&lt;36, alphanumeric_index&gt; ht;
+ht.insert(...);
+</code></pre>
+
+<h2>Extensions</h2>
+
+<p>There are a few non-standard extensions to the hat_trie interface:</p>
+
+<ul>
+<li><code>contains(string)</code> -- returns true iff the string is in the trie</li>
+</ul>
+
+<h2>Deviations</h2>
+
+<p>The hat_trie interface differs from the standard in a few ways:</p>
+
+<ul>
+<li><code>insert(string)</code> -- returns a <code>bool</code> rather than a 
+<code>pair&lt;iterator, bool&gt;</code></li>
+</ul>
