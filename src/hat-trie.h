@@ -156,11 +156,13 @@ class hat_trie {
     };
 
   public:
-        class iterator;
+    class iterator;
     typedef iterator const_iterator;
 
     // constructors and destructors
     hat_trie();
+    template <class input_iterator>
+    hat_trie(const input_iterator &first, const input_iterator &last);
     virtual ~hat_trie();
 
     // accessors
@@ -171,6 +173,9 @@ class hat_trie {
 
     // modifiers
     bool insert(const std::string &s);
+    template <class input_iterator>
+    void insert(input_iterator first, const input_iterator &last);
+    iterator insert(const iterator &position, const std::string &word);
 
     // iterators
     iterator begin() const;
@@ -270,12 +275,31 @@ class hat_trie {
  * Default constructor.
  */
 template <int alphabet_size, int (*indexof)(char)>
-hat_trie<alphabet_size, indexof>::hat_trie() {
+hat_trie<alphabet_size, indexof>::
+hat_trie() {
     init();
 }
 
+/**
+ * Iterator-based constructor.
+ *
+ * Builds a HAT-trie from the data between the two iterators.
+ *
+ * @param first, last  iterators specifying a range of elements
+ */
 template <int alphabet_size, int (*indexof)(char)>
-hat_trie<alphabet_size, indexof>::~hat_trie() {
+template <class input_iterator>
+hat_trie<alphabet_size, indexof>::
+hat_trie(const input_iterator &first, const input_iterator &last) {
+    init();
+
+    // Insert all the data between first and last into the trie.
+    insert(first, last);
+}
+
+template <int alphabet_size, int (*indexof)(char)>
+hat_trie<alphabet_size, indexof>::
+~hat_trie() {
     delete root;
     root = NULL;
 }
@@ -333,18 +357,18 @@ size() const {
  * Note: for a more in-depth discussion of rationale, see the HTML
  * documentation.
  *
- * @param s  word to insert
+ * @param word  word to insert
  *
- * @return  true if @a s is inserted into the trie, false if @a s
+ * @return  true if @a word is inserted into the trie, false if @a word
  *          was already in the trie
  * @throws unindexed_character
- *      if a character in @a s is not indexed by @a indexof()
+ *      if a character in @a word is not indexed by @a indexof()
  */
 template <int alphabet_size, int (*indexof)(char)>
 bool hat_trie<alphabet_size, indexof>::
-insert(const std::string &s) {
+insert(const std::string &word) {
     // Search for s in the trie.
-    const char *pos = s.c_str();
+    const char *pos = word.c_str();
     node_pointer n;
     bool found = search(pos, n);
     if (!found) {
@@ -384,6 +408,44 @@ insert(const std::string &s) {
     }
 
     return !found;
+}
+
+/**
+ * Inserts a word into the trie.
+ *
+ * In standard STL sets, this function can dramatically increase
+ * performance if @a position is set correctly. This performance
+ * gain is unachievable in a HAT-trie because the time required to
+ * verify that @a position points to the right place is just as
+ * expensive as a regular insert operation.
+ *
+ * @param position  unused
+ * @param word  word to insert
+ * @return iterator to @a word in the trie
+ */
+template <int alphabet_size, int (*indexof)(char)>
+typename hat_trie<alphabet_size, indexof>::iterator
+hat_trie<alphabet_size, indexof>::
+insert(const iterator &position, const std::string &word) {
+    insert(word);
+    return find(word);
+}
+
+/**
+ * Inserts several words into the trie.
+ *
+ * @param first, last  iterators specifying a range of words to add
+ *                     to the trie. All words in the range [first, last)
+ *                     are added
+ */
+template <int alphabet_size, int (*indexof)(char)>
+template <class input_iterator>
+void hat_trie<alphabet_size, indexof>::
+insert(input_iterator first, const input_iterator &last){
+    while (first != last) {
+        insert(*first);
+        ++first;
+    }
 }
 
 /**
@@ -477,7 +539,8 @@ end() const {
  * created.
  */
 template <int alphabet_size, int (*indexof)(char)>
-void hat_trie<alphabet_size, indexof>::init() {
+void hat_trie<alphabet_size, indexof>::
+init() {
     _size = 0;
     root = new node();
 }
