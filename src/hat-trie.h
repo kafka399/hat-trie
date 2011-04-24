@@ -41,7 +41,7 @@
  * in your project. It is designed to be a drop-in replacement for an STL set,
  * with a few changes.
  *
- * Note: some of the headers require ``inttypes.h``, which isn't available by
+ * Note: some of the headers require \c inttypes.h, which isn't available by
  * default on Windows platforms. You can find a compatible version of the
  * header on Google.
  *
@@ -172,6 +172,7 @@ class hat_trie {
     void print() const { print(root); }
 
     // modifiers
+    void clear();
     bool insert(const std::string &s);
     template <class input_iterator>
     void insert(input_iterator first, const input_iterator &last);
@@ -341,6 +342,16 @@ template <int alphabet_size, int (*indexof)(char)>
 size_t hat_trie<alphabet_size, indexof>::
 size() const {
     return _size;
+}
+
+/**
+ * Removes all the elements in the trie.
+ */
+template <int alphabet_size, int (*indexof)(char)>
+void hat_trie<alphabet_size, indexof>::
+clear() {
+    delete root;
+    init();
 }
 
 /**
