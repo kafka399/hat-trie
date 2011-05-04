@@ -1,3 +1,4 @@
+#include <cstdio>
 #include <cassert>
 #include <map>
 #include <iostream>
@@ -7,6 +8,8 @@
 #include <time.h>
 #include <unistd.h>  // for sleep()
 #include <iomanip>
+
+#include <google/profiler.h>
 
 #include "array-hash.h"
 #include "hat-trie.h"
@@ -24,15 +27,32 @@ void print(const T &t) {
 
 int main() {
     std::ios_base::sync_with_stdio(false);  // speed up reading from stdin
-    hat_trie<> ht;
-    string reader;
-    set<string> s;
-    ht_array_hash<> ah;
 
-    while (cin >> reader) {
-        ht.insert(reader);
+    hat_trie<> ht;
+
+//    string reader;
+//    while (cin >> reader) {
+//        ht.insert(reader);
+//    }
+
+    // read entire file into main memory
+    FILE *f = fopen("kjv", "r");
+    fseek(f, 0, SEEK_END);
+    int size = ftell(f);
+    char *data = new char[size];
+    fseek(f, 0, SEEK_SET);
+    fread(data, 1, size, f);
+    fclose(f);
+    char *start = data;
+    for (int i = 0; i < size; ++i) {
+        if (data[i] == '\n') {
+            data[i] = '\0';
+            ht.insert(start);
+            start = data + i + 1;
+        }
     }
+
+    print(ht);
 
     return 0;
 }
-
