@@ -1,6 +1,6 @@
 # List objects in order of DEPENDENCY. For example, if obj/main.o depends on
 # obj/matrix.o, list obj/matrix.o first.
-OBJECTS = obj/main.o
+OBJECTS = obj/array-hash.o obj/hat-trie-node.o obj/hat-trie.o obj/main.o
 EXECUTABLE = bin/main
 
 # make variables
@@ -35,6 +35,4 @@ gen: src/generator.cpp
 # works perfectly for this section.
 # Ex:
 #   obj/main.o: src/main.* src/matrix.*
-obj/main.o: src/main.cpp
-obj/main.o: src/hat-trie*
-obj/main.o: src/array-hash.h
+obj/hat-trie-node.o: obj/array-hash.o src/hat-trie-node.cpp
