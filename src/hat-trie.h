@@ -46,12 +46,11 @@
  * header on Google.
  *
  * \subsection Declaration
- * hat_trie objects take two template parameters:
  *
  * \li size of the alphabet (defined as the set of possible characters)
  * \li \c indexof(char) function that indexes characters in the alphabet
  *
- * \c indexof()should return an integer in [0, \c alphabet_size) that is
+ * \c indexof()should return an integer in [0, \c HT_ALPHABET_SIZE) that is
  * unique for each character in the alphabet.
  *
  * Here is an example \c indexof() function that indexes alphanumeric
@@ -68,14 +67,14 @@
  *
  * In this case, the first 10 index values are the characters 0-9, and the
  * next 26 index values are the characters a-z. Note that any value outside
- * the range [0, \c alphabet_size) indicates an invalid character. If a
+ * the range [0, \c HT_ALPHABET_SIZE) indicates an invalid character. If a
  * hat_trie finds an invalid character, an \c unindexed_character exception
  * is thrown.
  *
  * To declare a hat_trie that supports this alphabet:
  *
  * \code
- * hat_trie<36, alphanumeric_index> ht;
+ * hat_trie ht;
  * ht.insert(...);
  * \endcode
  */
@@ -97,11 +96,7 @@
 #ifndef HAT_TRIE_H
 #define HAT_TRIE_H
 
-#include <bitset>
-#include <stack>
 #include <string>
-#include <utility>
-#include <vector>
 
 #include "array-hash.h"
 #include "hat-trie-node.h"
@@ -110,30 +105,14 @@ namespace stx {
 
 /**
  * Trie-based data structure for managing sorted strings.
- *
- * In the context of this data structure, "alphabet" refers to the
- * set of characters that can appear in a word. This data structure
- * requires that this alphabet is well-defined, meaning you must know
- * exactly what characters your strings can contain beforehand.
- *
- * // TODO describe why this limitation is necessary.
- *
- * @param alphabet_size
- *      number of distinct characters in the alphabet
- * @param indexof
- *      indexer function that maps characters to their position in
- *      the alphabet. By default, this function accepts alphanumeric
- *      characters
  */
-template <int alphabet_size = HT_DEFAULT_ALPHABET_SIZE,
-          int (*indexof)(char) = ht_alphanumeric_index>
 class hat_trie {
 
   private:
-    typedef hat_trie<alphabet_size, indexof> self;
-    typedef hat_trie_node<alphabet_size, indexof> node;
-    typedef hat_trie_container<alphabet_size, indexof> container;
-    typedef hat_trie_node_base<alphabet_size, indexof> node_base;
+    typedef hat_trie self;
+    typedef hat_trie_node node;
+    typedef hat_trie_container container;
+    typedef hat_trie_node_base node_base;
 
     // pairs node_base pointers with their type (whether they point to
     // nodes or containers)
@@ -224,7 +203,7 @@ class hat_trie {
         node_pointer n;
 
         // Internal iterator across container types
-        typename container::store_type::iterator container_iterator;
+        ht_array_hash::iterator container_iterator;
         bool word;
 
         // Caches the word as we move up and down the trie and
@@ -277,8 +256,7 @@ class hat_trie {
 /**
  * Default constructor.
  */
-template <int alphabet_size, int (*indexof)(char)>
-hat_trie<alphabet_size, indexof>::
+hat_trie::
 hat_trie() {
     init();
 }
@@ -290,9 +268,8 @@ hat_trie() {
  *
  * @param first, last  iterators specifying a range of elements
  */
-template <int alphabet_size, int (*indexof)(char)>
 template <class input_iterator>
-hat_trie<alphabet_size, indexof>::
+hat_trie::
 hat_trie(const input_iterator &first, const input_iterator &last) {
     init();
 
@@ -300,8 +277,7 @@ hat_trie(const input_iterator &first, const input_iterator &last) {
     insert(first, last);
 }
 
-template <int alphabet_size, int (*indexof)(char)>
-hat_trie<alphabet_size, indexof>::
+hat_trie::
 ~hat_trie() {
     delete root;
     root = NULL;
@@ -316,8 +292,7 @@ hat_trie<alphabet_size, indexof>::
  * @throws unindexed_character
  *      if a character in @a s is not indexed by @a indexof()
  */
-template <int alphabet_size, int (*indexof)(char)>
-bool hat_trie<alphabet_size, indexof>::
+bool hat_trie::
 contains(const std::string &s) const {
     const char *ps = s.c_str();
     node_pointer n;
@@ -329,8 +304,7 @@ contains(const std::string &s) const {
  *
  * @return  true iff this container has no data
  */
-template <int alphabet_size, int (*indexof)(char)>
-bool hat_trie<alphabet_size, indexof>::
+bool hat_trie::
 empty() const {
     return size() == 0;
 }
@@ -340,8 +314,7 @@ empty() const {
  *
  * @return  size of the trie
  */
-template <int alphabet_size, int (*indexof)(char)>
-size_t hat_trie<alphabet_size, indexof>::
+size_t hat_trie::
 size() const {
     return _size;
 }
@@ -349,8 +322,7 @@ size() const {
 /**
  * Removes all the elements in the trie.
  */
-template <int alphabet_size, int (*indexof)(char)>
-void hat_trie<alphabet_size, indexof>::
+void hat_trie::
 clear() {
     delete root;
     init();
@@ -377,8 +349,7 @@ clear() {
  * @throws unindexed_character
  *      if a character in @a word is not indexed by @a indexof()
  */
-template <int alphabet_size, int (*indexof)(char)>
-bool hat_trie<alphabet_size, indexof>::
+bool hat_trie::
 insert(const std::string &word) {
     return insert(word.c_str());
 }
@@ -395,8 +366,7 @@ insert(const std::string &word) {
  * @throws unindexed_character
  *      if a character in @a word is not indexed by @a indexof()
  */
-template <int alphabet_size, int (*indexof)(char)>
-bool hat_trie<alphabet_size, indexof>::
+bool hat_trie::
 insert(const char *word) {
     // Search for s in the trie.
     const char *pos = word;
@@ -420,8 +390,8 @@ insert(const char *word) {
             if (n.type == NODE_POINTER) {
                 // Make a new container for s.
                 node *p = (node *)n.pointer;
-                int index = ht_get_index<alphabet_size, indexof>(*pos);
-                c = new container(*pos);
+                int index = *pos;
+                c = new container(index);
 
                 // Insert the new container into the trie structure.
                 c->parent = p;
@@ -454,9 +424,8 @@ insert(const char *word) {
  * @param word  word to insert
  * @return iterator to @a word in the trie
  */
-template <int alphabet_size, int (*indexof)(char)>
-typename hat_trie<alphabet_size, indexof>::iterator
-hat_trie<alphabet_size, indexof>::
+hat_trie::iterator
+hat_trie::
 insert(const iterator &position, const std::string &word) {
     insert(word);
     return find(word);
@@ -469,9 +438,8 @@ insert(const iterator &position, const std::string &word) {
  *                     to the trie. All words in the range [first, last)
  *                     are added
  */
-template <int alphabet_size, int (*indexof)(char)>
 template <class input_iterator>
-void hat_trie<alphabet_size, indexof>::
+void hat_trie::
 insert(input_iterator first, const input_iterator &last){
     while (first != last) {
         insert(*first);
@@ -487,9 +455,8 @@ insert(input_iterator first, const input_iterator &last){
  *
  * @return  iterator to the first element in the trie
  */
-template <int alphabet_size, int (*indexof)(char)>
-typename hat_trie<alphabet_size, indexof>::iterator
-hat_trie<alphabet_size, indexof>::
+hat_trie::iterator
+hat_trie::
 begin() const {
     // Stop early if there are no elements in the trie.
     if (size() == 0) {
@@ -511,9 +478,8 @@ begin() const {
  * @return  iterator to @a s in the trie. If @a s is not in the trie,
  *          returns an iterator to one past the last element
  */
-template <int alphabet_size, int (*indexof)(char)>
-typename hat_trie<alphabet_size, indexof>::iterator
-hat_trie<alphabet_size, indexof>::
+hat_trie::iterator
+hat_trie::
 find(const std::string &s) const {
     const char *ps = s.c_str();
     node_pointer n;
@@ -545,8 +511,7 @@ find(const std::string &s) const {
  *
  * @param rhs  hat_trie object to swap data with
  */
-template <int alphabet_size, int (*indexof)(char)>
-void hat_trie<alphabet_size, indexof>::
+void hat_trie::
 swap(self &rhs) {
     using std::swap;
     swap(root, rhs.root);
@@ -558,9 +523,8 @@ swap(self &rhs) {
  *
  * @return iterator to one past the last element in the trie
  */
-template <int alphabet_size, int (*indexof)(char)>
-typename hat_trie<alphabet_size, indexof>::iterator
-hat_trie<alphabet_size, indexof>::
+hat_trie::iterator
+hat_trie::
 end() const {
     return iterator();
 }
@@ -569,8 +533,7 @@ end() const {
  * Initializes all the fields in a hat_trie as if it had just been
  * created.
  */
-template <int alphabet_size, int (*indexof)(char)>
-void hat_trie<alphabet_size, indexof>::
+void hat_trie::
 init() {
     _size = 0;
     root = new node();
@@ -588,8 +551,7 @@ init() {
  *
  * @return  true if @a s is found, false otherwise
  */
-template <int alphabet_size, int (*indexof)(char)>
-bool hat_trie<alphabet_size, indexof>::
+bool hat_trie::
 search(const char *&s, node_pointer &n) const {
     // Search for a s in the trie.
     // Traverse the trie until either a s is used up, a is is found
@@ -597,7 +559,7 @@ search(const char *&s, node_pointer &n) const {
     node *p = root;
     node_base *v = NULL;
     while (*s) {
-        int index = ht_get_index<alphabet_size, indexof>(*s);
+        int index = *s;
         v = p->children[index];
         if (v) {
             ++s;
@@ -636,8 +598,7 @@ search(const char *&s, node_pointer &n) const {
  *      true if @a s is successfully inserted into @a htc, false
  *      otherwise
  */
-template <int alphabet_size, int (*indexof)(char)>
-bool hat_trie<alphabet_size, indexof>::
+bool hat_trie::
 insert(container *htc, const char *s) {
     // Try to insert s into the container.
     if (htc->insert(s)) {
@@ -679,8 +640,7 @@ insert(container *htc, const char *s) {
  *
  * @param htc  container to burst
  */
-template <int alphabet_size, int (*indexof)(char)>
-void hat_trie<alphabet_size, indexof>::
+void hat_trie::
 burst(container *htc) {
     // Construct a new node.
     node *result = new node(htc->ch());
@@ -688,9 +648,9 @@ burst(container *htc) {
 
     // Make a set of containers for the data in the old container and
     // add them to the new node.
-    typename container::store_type::iterator it;
+    ht_array_hash::iterator it;
     for (it = htc->store.begin(); it != htc->store.end(); ++it) {
-        int index = ht_get_index<alphabet_size, indexof>((*it)[0]);
+        int index = (*it)[0];
 
         // Do we need to make a new container?
         if (result->children[index] == NULL) {
@@ -717,7 +677,7 @@ burst(container *htc) {
     // Position the new node in the trie.
     node *parent = htc->parent;
     result->parent = parent;
-    int index = ht_get_index<alphabet_size, indexof>(htc->ch());
+    int index = htc->ch();
     parent->children[index] = result;
     parent->types[index] = NODE_POINTER;
     delete htc;
@@ -726,8 +686,7 @@ burst(container *htc) {
 /**
  * Recursively prints the contents of the trie.
  */
-template <int alphabet_size, int (*indexof)(char)>
-void hat_trie<alphabet_size, indexof>::
+void hat_trie::
 print(const node_pointer &n, const std::string &space) const {
     using namespace std;
 
@@ -741,7 +700,7 @@ print(const node_pointer &n, const std::string &space) const {
             cout << endl;
         }
 
-        typename container::store_type::iterator it;
+        ht_array_hash::iterator it;
         it = c->store.begin();
         for (it = c->store.begin(); it != c->store.end(); ++it) {
             cout << space + "  " << *it << " ~" << endl;
@@ -751,12 +710,12 @@ print(const node_pointer &n, const std::string &space) const {
         node *p = (node *)n.pointer;
         if (p->ch() != '\0') {
             cout << space << p->ch();
-            if (p->types[alphabet_size]) {
+            if (p->types[HT_ALPHABET_SIZE]) {
                 cout << " ~";
             }
             cout << endl;
         }
-        for (int i = 0; i < alphabet_size; ++i) {
+        for (int i = 0; i < HT_ALPHABET_SIZE; ++i) {
             if (p->children[i]) {
                 print(node_pointer(p->types[i], p->children[i]), space + "  ");
             }
@@ -773,14 +732,13 @@ print(const node_pointer &n, const std::string &space) const {
  * @return  a pointer to the next child under this node starting from
  *          @a pos, or NULL if this node has no children
  */
-template <int alphabet_size, int (*indexof)(char)>
-typename hat_trie<alphabet_size, indexof>::node_pointer
-hat_trie<alphabet_size, indexof>::
+hat_trie::node_pointer
+hat_trie::
 next_child(node *p, size_t pos, std::string &word) {
     node_pointer result;
 
     // Search for the next child under this node starting at pos.
-    for (size_t i = pos; i < alphabet_size && result.pointer == NULL; ++i) {
+    for (size_t i = pos; i < HT_ALPHABET_SIZE && result.pointer == NULL; ++i) {
         if (p->children[i]) {
             // Found a child.
             result.pointer = p->children[i];
@@ -802,9 +760,8 @@ next_child(node *p, size_t pos, std::string &word) {
  * @return  a pointer to the next child under this node starting from
  *          @a pos, or NULL if this node has no children
  */
-template <int alphabet_size, int (*indexof)(char)>
-typename hat_trie<alphabet_size, indexof>::node_pointer
-hat_trie<alphabet_size, indexof>::
+hat_trie::node_pointer
+hat_trie::
 least_child(node *p, std::string &word) {
     return next_child(p, 0, word);
 }
@@ -818,9 +775,8 @@ least_child(node *p, std::string &word) {
  * @param word  cached word in the trie traversal
  * @return  a pointer to the next node in the trie that marks a word
  */
-template <int alphabet_size, int (*indexof)(char)>
-typename hat_trie<alphabet_size, indexof>::node_pointer
-hat_trie<alphabet_size, indexof>::
+hat_trie::node_pointer
+hat_trie::
 next_word(node_pointer n, std::string &word) {
     // Stop early if we get a NULL pointer.
     if (n.pointer == NULL) { return node_pointer(); }
@@ -858,9 +814,8 @@ next_word(node_pointer n, std::string &word) {
  * @return  lexicographically least node from @a n. This function
  *          may return @a n itself
  */
-template <int alphabet_size, int (*indexof)(char)>
-typename hat_trie<alphabet_size, indexof>::node_pointer
-hat_trie<alphabet_size, indexof>::
+hat_trie::node_pointer
+hat_trie::
 least(node_pointer n, std::string &word) {
     while (n.pointer && n.pointer->is_word() == false && n.type == NODE_POINTER) {
         // Find the leftmost child of this node and move in that direction.
@@ -878,10 +833,9 @@ least(node_pointer n, std::string &word) {
  * @param word  cached word in the trie traversal
  * @return  integer that was formerly the most recent path taken
  */
-template <int alphabet_size, int (*indexof)(char)>
-int hat_trie<alphabet_size, indexof>::
+int hat_trie::
 pop_back(std::string &word) {
-    int result = indexof(word[word.size() - 1]);
+    int result = word[word.size() - 1];
     word.erase(word.size() - 1);
     return result;
 }
@@ -895,9 +849,8 @@ pop_back(std::string &word) {
  *
  * @return  self-reference
  */
-template <int alphabet_size, int (*indexof)(char)>
-typename hat_trie<alphabet_size, indexof>::iterator&
-hat_trie<alphabet_size, indexof>::
+hat_trie::iterator&
+hat_trie::
 iterator::operator++() {
     if (n.type == CONTAINER_POINTER) {
         // If word is set, then this container represents a word as
@@ -926,9 +879,8 @@ iterator::operator++() {
  *
  * @return  copy of this iterator before it was moved
  */
-template <int alphabet_size, int (*indexof)(char)>
-typename hat_trie<alphabet_size, indexof>::iterator
-hat_trie<alphabet_size, indexof>::
+hat_trie::iterator
+hat_trie::
 iterator::operator++(int) {
     iterator result = *this;
     operator++();
@@ -940,9 +892,8 @@ iterator::operator++(int) {
  *
  * @return  self-reference
  */
-template <int alphabet_size, int (*indexof)(char)>
-typename hat_trie<alphabet_size, indexof>::iterator&
-hat_trie<alphabet_size, indexof>::
+hat_trie::iterator&
+hat_trie::
 iterator::operator--() {
     return *this;
 }
@@ -952,9 +903,8 @@ iterator::operator--() {
  *
  * @return  copy of this iterator before it was moved
  */
-template <int alphabet_size, int (*indexof)(char)>
-typename hat_trie<alphabet_size, indexof>::iterator
-hat_trie<alphabet_size, indexof>::
+hat_trie::iterator
+hat_trie::
 iterator::operator--(int) {
     iterator result = *this;
     operator--();
@@ -966,8 +916,7 @@ iterator::operator--(int) {
  *
  * @return  string this iterator points to
  */
-template <int alphabet_size, int (*indexof)(char)>
-std::string hat_trie<alphabet_size, indexof>::
+std::string hat_trie::
 iterator::operator*() const {
     if (word || n.type == NODE_POINTER) {
         // Print the word that has been cached over the trie traversal.
@@ -989,8 +938,7 @@ iterator::operator*() const {
  * @return  true iff this iterator points to the same location as
  *          @a rhs
  */
-template <int alphabet_size, int (*indexof)(char)>
-bool hat_trie<alphabet_size, indexof>::
+bool hat_trie::
 iterator::operator==(const iterator &rhs) {
     // TODO does iterator comparison need to be on more than just pointer?
     return n == rhs.n;
@@ -1002,8 +950,7 @@ iterator::operator==(const iterator &rhs) {
  * @param rhs  iterator to compare against
  * @return  true iff this iterator is not equal to @a rhs
  */
-template <int alphabet_size, int (*indexof)(char)>
-bool hat_trie<alphabet_size, indexof>::
+bool hat_trie::
 iterator::operator!=(const iterator &rhs) {
     return !operator==(rhs);
 }
@@ -1015,8 +962,7 @@ iterator::operator!=(const iterator &rhs) {
  * this function ensures that the iterator's internal iterator
  * across the elements in the container is properly initialized.
  */
-template <int alphabet_size, int (*indexof)(char)>
-hat_trie<alphabet_size, indexof>::
+hat_trie::
 iterator::iterator(node_pointer n) {
     operator=(n);
 }
@@ -1028,9 +974,8 @@ iterator::iterator(node_pointer n) {
  * function ensures that the iterator's internal iterator across
  * the elements in the container is properly initialized.
  */
-template <int alphabet_size, int (*indexof)(char)>
-typename hat_trie<alphabet_size, indexof>::iterator &
-hat_trie<alphabet_size, indexof>::
+hat_trie::iterator &
+hat_trie::
 iterator::operator=(node_pointer n) {
     this->n = n;
     if (n.type == CONTAINER_POINTER) {
@@ -1045,11 +990,9 @@ iterator::operator=(node_pointer n) {
 namespace std {
 
 /**
- * Template specialization of std::swap for hat tries.
  */
-template <int alphabet_size, int (*indexof)(char)>
-void swap(stx::hat_trie<alphabet_size, indexof> &lhs,
-          stx::hat_trie<alphabet_size, indexof> &rhs) {
+void swap(stx::hat_trie &lhs,
+          stx::hat_trie &rhs) {
     lhs.swap(rhs);
 }
 

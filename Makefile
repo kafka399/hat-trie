@@ -4,10 +4,10 @@ OBJECTS = obj/main.o
 EXECUTABLE = bin/main
 
 # make variables
-OFLAGS   = -O0
+OFLAGS   = -O2
 CXX      = clang++
 CXXFLAGS = -Wall -c $(OFLAGS) 
-LDFLAGS  = -lprofiler
+LDFLAGS  = -lprofiler 
 
 COMPILE.cpp = $(CXX) $(CXXFLAGS)
 
@@ -27,6 +27,9 @@ clean:
 
 doc:
 	doxygen
+
+gen: src/generator.cpp
+	$(CXX) $(OFLAGS) src/generator.cpp -o bin/generator
 
 # List dependencies here. Order doesn't matter. makedepend src/*.cpp
 # works perfectly for this section.

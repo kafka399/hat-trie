@@ -16,7 +16,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see .
  */
 
 // TODO exclude these classes / this file from Doxygen
@@ -25,24 +25,24 @@
 #ifndef HAT_TRIE_NODE_H
 #define HAT_TRIE_NODE_H
 
+#include <bitset>
+
+#include "array-hash.h"
+
 namespace stx {
 
-template <int alphabet_size, int (*indexof)(char)>
 class hat_trie;
 
-template <int alphabet_size, int (*indexof)(char)>
 class hat_trie_container;
 
-template <int alphabet_size, int (*indexof)(char)>
 class hat_trie_node;
 
-template <int alphabet_size, int (*indexof)(char)>
 class hat_trie_node_base {
-    friend class hat_trie<alphabet_size, indexof>;
+    friend class hat_trie;
 
   private:
-    typedef hat_trie_node<alphabet_size, indexof> node;
-    typedef hat_trie_container<alphabet_size, indexof> container;
+    typedef hat_trie_node node;
+    typedef hat_trie_container container;
 
   public:
     hat_trie_node_base(char ch = '\0') : _ch(ch), parent(NULL) { }
@@ -64,13 +64,10 @@ class hat_trie_node_base {
 // hat trie helper classes
 // -----------------------
 
-template <int alphabet_size, int (*indexof)(char)>
-class hat_trie_container : public hat_trie_node_base<alphabet_size, indexof> {
-    friend class hat_trie<alphabet_size, indexof>;
+class hat_trie_container : public hat_trie_node_base {
+    friend class hat_trie;
 
   public:
-    typedef ht_array_hash<alphabet_size, indexof> store_type;
-
     hat_trie_container(char ch = '\0');
     virtual ~hat_trie_container() { }
 
@@ -85,44 +82,41 @@ class hat_trie_container : public hat_trie_node_base<alphabet_size, indexof> {
 
   private:
     bool word;
-    store_type store;
+    ht_array_hash store;
 };
 
-template <int alphabet_size, int (*indexof)(char)>
-class hat_trie_node : public hat_trie_node_base<alphabet_size, indexof> {
-    friend class hat_trie<alphabet_size, indexof>;
+class hat_trie_node : public hat_trie_node_base {
+    friend class hat_trie;
 
   private:
-    typedef hat_trie_node_base<alphabet_size, indexof> node_base;
+    typedef hat_trie_node_base node_base;
 
   public:
     hat_trie_node(char ch = '\0');
     virtual ~hat_trie_node();
 
     // accessors
-    bool is_word() const { return types[alphabet_size]; }
+    bool is_word() const { return types[HT_ALPHABET_SIZE]; }
 
     // modifiers
-    void set_word(bool b) { types[alphabet_size] = b; }
+    void set_word(bool b) { types[HT_ALPHABET_SIZE] = b; }
 
   private:
-    std::bitset<alphabet_size + 1> types;  // extra bit is an end of word flag
-    node_base *children[alphabet_size];  // untyped pointers to children
+    std::bitset<HT_ALPHABET_SIZE + 1> types;  // extra bit is an end of word flag
+    node_base *children[HT_ALPHABET_SIZE];  // untyped pointers to children
 };
 
 // ---------------------------------
 // hat_trie_container implementation
 // ---------------------------------
 
-template <int alphabet_size, int (*indexof)(char)>
-hat_trie_container<alphabet_size, indexof>::
+hat_trie_container::
 hat_trie_container(char ch) :
-        hat_trie_node_base<alphabet_size, indexof>(ch) {
+        hat_trie_node_base(ch) {
     set_word(false);
 }
 
-template <int alphabet_size, int (*indexof)(char)>
-bool hat_trie_container<alphabet_size, indexof>::
+bool hat_trie_container::
 contains(const char *p) const {
     if (*p == '\0') {
         return is_word();
@@ -130,8 +124,7 @@ contains(const char *p) const {
     return store.contains(p);
 }
 
-template <int alphabet_size, int (*indexof)(char)>
-bool hat_trie_container<alphabet_size, indexof>::
+bool hat_trie_container::
 insert(const char *p) {
     if (*p == '\0') {
         bool b = is_word();
@@ -145,19 +138,17 @@ insert(const char *p) {
 // hat_trie_node implementation
 // ----------------------------
 
-template <int alphabet_size, int (*indexof)(char)>
-hat_trie_node<alphabet_size, indexof>::
+hat_trie_node::
 hat_trie_node(char ch) :
-        hat_trie_node_base<alphabet_size, indexof>(ch) {
-    for (int i = 0; i < alphabet_size; ++i) {
+        hat_trie_node_base(ch) {
+    for (int i = 0; i < HT_ALPHABET_SIZE; ++i) {
         children[i] = NULL;
     }
 }
 
-template <int alphabet_size, int (*indexof)(char)>
-hat_trie_node<alphabet_size, indexof>::
+hat_trie_node::
 ~hat_trie_node() {
-    for (int i = 0; i < alphabet_size; ++i) {
+    for (int i = 0; i < HT_ALPHABET_SIZE; ++i) {
         delete children[i];
     }
 }

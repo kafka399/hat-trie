@@ -28,15 +28,13 @@
 #include <stdint.h>
 #include <utility>
 
-#include "hat-trie-common.h"
-
 namespace stx {
+
+const int HT_ALPHABET_SIZE = 128;
 
 /**
  * Hash table container for unsorted strings.
  */
-template <int alphabet_size = HT_DEFAULT_ALPHABET_SIZE,
-          int (*indexof)(char) = ht_alphanumeric_index>
 class ht_array_hash {
   private:
     typedef uint16_t length_type;
@@ -98,8 +96,7 @@ class ht_array_hash {
 /**
  * Default constructor.
  */
-template <int alphabet_size, int (*indexof)(char)>
-ht_array_hash<alphabet_size, indexof>::
+ht_array_hash::
 ht_array_hash() {
     data = new char *[SLOT_COUNT];
     for (int i = 0; i < SLOT_COUNT; ++i) {
@@ -111,8 +108,7 @@ ht_array_hash() {
 /**
  * Standard destructor.
  */
-template <int alphabet_size, int (*indexof)(char)>
-ht_array_hash<alphabet_size, indexof>::
+ht_array_hash::
 ~ht_array_hash() {
     for (int i = 0; i < SLOT_COUNT; ++i) {
         delete data[i];
@@ -130,8 +126,7 @@ ht_array_hash<alphabet_size, indexof>::
  * @return  If @a str is found in the table, returns a pointer to the string
  *          and its corresponding length. If not, returns NULL.
  */
-template <int alphabet_size, int (*indexof)(char)>
-char *ht_array_hash<alphabet_size, indexof>::
+char *ht_array_hash::
 search(const char *str, length_type length, char *p) const {
     // Search for str in the slot p points to.
     p += sizeof(size_type);  // skip past size at beginning of slot
@@ -159,8 +154,7 @@ search(const char *str, length_type length, char *p) const {
  * @return  true if @a str is successfully inserted, false if @a str already
  *          appears in the table
  */
-template <int alphabet_size, int (*indexof)(char)>
-bool ht_array_hash<alphabet_size, indexof>::
+bool ht_array_hash::
 insert(const char *str) {
     length_type length;
     int slot = hash(str, length);
@@ -208,8 +202,7 @@ insert(const char *str) {
  * @param str  string to search for
  * @return  true iff @a str is in the table
  */
-template <int alphabet_size, int (*indexof)(char)>
-bool ht_array_hash<alphabet_size, indexof>::
+bool ht_array_hash::
 contains(const char *str) const {
     // Determine which slot in the table should contain str.
     length_type length;
@@ -229,9 +222,8 @@ contains(const char *str) const {
  * @return  iterator to @a str in the table, or @a end() if @a str
  *          is not in the table
  */
-template <int alphabet_size, int (*indexof)(char)>
-typename ht_array_hash<alphabet_size, indexof>::iterator
-ht_array_hash<alphabet_size, indexof>::
+ht_array_hash::iterator
+ht_array_hash::
 find(const char *str) const {
     // Determine which slot in the table should contain str.
     length_type length;
@@ -249,8 +241,7 @@ find(const char *str) const {
 /**
  * Gets the number of elements in the table.
  */
-template <int alphabet_size, int (*indexof)(char)>
-size_t ht_array_hash<alphabet_size, indexof>::
+size_t ht_array_hash::
 size() const {
     return _size;
 }
@@ -258,9 +249,8 @@ size() const {
 /**
  * Gets an iterator to the first element in the table.
  */
-template <int alphabet_size, int (*indexof)(char)>
-typename ht_array_hash<alphabet_size, indexof>::iterator
-ht_array_hash<alphabet_size, indexof>::
+ht_array_hash::iterator
+ht_array_hash::
 begin() const {
     iterator result;
     if (size() == 0) {
@@ -278,9 +268,8 @@ begin() const {
 /**
  * Gets an iterator to one past the last element in the hash table.
  */
-template <int alphabet_size, int (*indexof)(char)>
-typename ht_array_hash<alphabet_size, indexof>::iterator
-ht_array_hash<alphabet_size, indexof>::
+ht_array_hash::iterator
+ht_array_hash::
 end() const {
     return iterator(SLOT_COUNT, NULL, data);
 }
@@ -294,16 +283,11 @@ end() const {
  *
  * @return  hashed value of @a str, its slot in the table
  */
-template <int alphabet_size, int (*indexof)(char)>
-int ht_array_hash<alphabet_size, indexof>::
+int ht_array_hash::
 hash(const char *str, length_type& length, int seed) const {
     int h = seed;
     length = 0;
     while (str[length]) {
-        // Make sure this character is a valid character. get_index
-        // throws an exception if it is not.
-        ht_get_index<alphabet_size, indexof>(str[length]);
-
         // Hash this character.
         h = h ^ ((h << 5) + (h >> 2) + str[length]);
         ++length;
@@ -321,8 +305,7 @@ hash(const char *str, length_type& length, int seed) const {
 /**
  * Standard default constructor.
  */
-template <int alphabet_size, int (*indexof)(char)>
-ht_array_hash<alphabet_size, indexof>::
+ht_array_hash::
 iterator::iterator() :
         slot(0), p(NULL), data(NULL) {
 
@@ -331,8 +314,7 @@ iterator::iterator() :
 /**
  * Standard copy constructor.
  */
-template <int alphabet_size, int (*indexof)(char)>
-ht_array_hash<alphabet_size, indexof>::
+ht_array_hash::
 iterator::iterator(const iterator& rhs) {
     *this = rhs;
 }
@@ -342,9 +324,8 @@ iterator::iterator(const iterator& rhs) {
  *
  * @return  self-reference
  */
-template <int alphabet_size, int (*indexof)(char)>
-typename ht_array_hash<alphabet_size, indexof>::iterator&
-ht_array_hash<alphabet_size, indexof>::
+ht_array_hash::iterator&
+ht_array_hash::
 iterator::operator++() {
     // Move p to the next string in this slot.
     if (p) {
@@ -368,9 +349,8 @@ iterator::operator++() {
     return *this;
 }
 
-template <int alphabet_size, int (*indexof)(char)>
-typename ht_array_hash<alphabet_size, indexof>::iterator&
-ht_array_hash<alphabet_size, indexof>::
+ht_array_hash::iterator&
+ht_array_hash::
 iterator::operator--() {
     // TODO
     return *this;
@@ -381,8 +361,7 @@ iterator::operator--() {
  *
  * @return  character pointer to the string this iterator points to
  */
-template <int alphabet_size, int (*indexof)(char)>
-const char *ht_array_hash<alphabet_size, indexof>::
+const char *ht_array_hash::
 iterator::operator*() const {
     if (p) {
         return p + sizeof(length_type);
@@ -393,8 +372,7 @@ iterator::operator*() const {
 /**
  * Standard equality operator.
  */
-template <int alphabet_size, int (*indexof)(char)>
-bool ht_array_hash<alphabet_size, indexof>::
+bool ht_array_hash::
 iterator::operator==(const iterator& rhs) {
     return p == rhs.p;
 }
@@ -402,8 +380,7 @@ iterator::operator==(const iterator& rhs) {
 /**
  * Standard inequality operator.
  */
-template <int alphabet_size, int (*indexof)(char)>
-bool ht_array_hash<alphabet_size, indexof>::
+bool ht_array_hash::
 iterator::operator!=(const iterator& rhs) {
     return !operator==(rhs);
 }

@@ -25,10 +25,11 @@ void print(const T &t) {
     }
 }
 
-int main() {
+int main(int argc, char **args) {
     std::ios_base::sync_with_stdio(false);  // speed up reading from stdin
 
-    hat_trie<> ht;
+    //ProfilerStart("profile/prof.prof");
+    hat_trie ht;
 
 //    string reader;
 //    while (cin >> reader) {
@@ -36,7 +37,7 @@ int main() {
 //    }
 
     // read entire file into main memory
-    FILE *f = fopen("kjv", "r");
+    FILE *f = fopen(args[1], "r");
     fseek(f, 0, SEEK_END);
     int size = ftell(f);
     char *data = new char[size];
@@ -52,9 +53,10 @@ int main() {
         }
     }
 
-    ProfilerStart("profile/prof.prof");
-    print(ht);
-    ProfilerStop();
+    //sleep(1000);
+
+    //print(ht);
+    //ProfilerStop();
 
     return 0;
 }
