@@ -92,6 +92,7 @@
 // TODO visual studio compatibility
 // TODO make array_hash find function return an iterator
 // TODO is unindexed_character really necessary?
+//   TODO askitis maps to all 7-bit values in the ASCII table
 
 #ifndef HAT_TRIE_H
 #define HAT_TRIE_H
@@ -173,7 +174,8 @@ class hat_trie {
 
     // modifiers
     void clear();
-    bool insert(const std::string &s);
+    bool insert(const std::string &word);
+    bool insert(const char *word);
     template <class input_iterator>
     void insert(input_iterator first, const input_iterator &last);
     iterator insert(const iterator &position, const std::string &word);
@@ -248,7 +250,7 @@ class hat_trie {
 
     // containers are burst after their size crosses this threshold
     // MUST be <= 32,768
-    enum { BURST_THRESHOLD = 8192 };
+    enum { BURST_THRESHOLD = 16384 };
 
     void init();
 
@@ -378,8 +380,26 @@ clear() {
 template <int alphabet_size, int (*indexof)(char)>
 bool hat_trie<alphabet_size, indexof>::
 insert(const std::string &word) {
+    return insert(word.c_str());
+}
+
+/**
+ * Inserts a word into the trie.
+ *
+ * Uses C-strings instead of C++ strings. This function is no more
+ * efficient than the string version. It is provided for convenience.
+ *
+ * @param word  word to insert
+ * @return  true if @a word is inserted into the trie, false if @a word
+ *          was already in the trie
+ * @throws unindexed_character
+ *      if a character in @a word is not indexed by @a indexof()
+ */
+template <int alphabet_size, int (*indexof)(char)>
+bool hat_trie<alphabet_size, indexof>::
+insert(const char *word) {
     // Search for s in the trie.
-    const char *pos = word.c_str();
+    const char *pos = word;
     node_pointer n;
     bool found = search(pos, n);
     if (!found) {
