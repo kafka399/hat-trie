@@ -5,7 +5,7 @@ EXECUTABLE = bin/main
 
 # make variables
 OFLAGS   = -O2
-CXX      = clang++
+CXX      = g++
 CXXFLAGS = -Wall -c $(OFLAGS) 
 LDFLAGS  = -lprofiler 
 
@@ -35,4 +35,5 @@ gen: src/generator.cpp
 # works perfectly for this section.
 # Ex:
 #   obj/main.o: src/main.* src/matrix.*
+obj/main.o: obj/hat-trie.o
 obj/hat-trie-node.o: obj/array-hash.o src/hat-trie-node.cpp

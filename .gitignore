@@ -6,4 +6,7 @@ out
 src/main.cpp
 Makefile
 doc
-hat-trie*
+prof*
+distinct
+in
+dict

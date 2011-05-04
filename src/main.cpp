@@ -28,7 +28,7 @@ void print(const T &t) {
 int main(int argc, char **args) {
     std::ios_base::sync_with_stdio(false);  // speed up reading from stdin
 
-    //ProfilerStart("profile/prof.prof");
+    ProfilerStart("profile/prof.prof");
     hat_trie ht;
 
 //    string reader;
@@ -56,7 +56,7 @@ int main(int argc, char **args) {
     //sleep(1000);
 
     //print(ht);
-    //ProfilerStop();
+    ProfilerStop();
 
     return 0;
 }

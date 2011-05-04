@@ -493,7 +493,7 @@ next_child(node *p, size_t pos, std::string &word) {
     node_pointer result;
 
     // Search for the next child under this node starting at pos.
-    for (size_t i = pos; i < HT_ALPHABET_SIZE && result.pointer == NULL; ++i) {
+    for (int i = pos; i < HT_ALPHABET_SIZE && result.pointer == NULL; ++i) {
         if (p->children[i]) {
             // Found a child.
             result.pointer = p->children[i];
