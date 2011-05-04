@@ -4,10 +4,10 @@ OBJECTS = obj/main.o
 EXECUTABLE = bin/main
 
 # make variables
-OFLAGS   = -O2
+OFLAGS   = -O0
 CXX      = clang++
-CXXFLAGS = -Wall -c $(OFLAGS)
-LDFLAGS  =
+CXXFLAGS = -Wall -c $(OFLAGS) 
+LDFLAGS  = -lprofiler
 
 COMPILE.cpp = $(CXX) $(CXXFLAGS)
 

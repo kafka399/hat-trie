@@ -52,7 +52,9 @@ int main() {
         }
     }
 
+    ProfilerStart("profile/prof.prof");
     print(ht);
+    ProfilerStop();
 
     return 0;
 }
