@@ -1,3 +1,4 @@
+#include <cassert>
 #include <cstdio>
 #include <iostream>
 #include <set>
@@ -69,7 +70,18 @@ int main() {
 
     hat_trie a;
     hat_trie b;
+    a.insert("rawr");
+    b.insert("abc");
+    assert(a > b);
+    assert(b < a);
     swap(a, b);
+    assert(a < b);
+    assert(b > a);
+    assert(a != b);
+
+    hat_trie c;
+    c.insert("rawr");
+    assert(c == b);
 
     //ProfilerStart("profile/prof.prof");
     //stl();

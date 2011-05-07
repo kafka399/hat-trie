@@ -93,7 +93,7 @@
 #ifndef HAT_TRIE_H
 #define HAT_TRIE_H
 
-#include <iostream>
+#include <iostream>  // for std::ostream
 #include <string>
 
 #include "array-hash.h"
@@ -170,6 +170,14 @@ class hat_trie {
 
     // utilities
     void swap(self &rhs);
+
+    // comparison operators
+    friend bool operator<(const self &lhs, const self &rhs);
+    friend bool operator>(const self &lhs, const self &rhs);
+    friend bool operator<=(const self &lhs, const self &rhs);
+    friend bool operator>=(const self &lhs, const self &rhs);
+    friend bool operator==(const self &lhs, const self &rhs);
+    friend bool operator!=(const self &lhs, const self &rhs);
 
     // TODO explain all the state an iterator maintains
     //     TODO is this the best way to solve this problem?

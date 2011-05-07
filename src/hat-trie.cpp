@@ -1,4 +1,4 @@
-#include <iostream>
+#include <algorithm>  // for std::lexicographical_compare and std::equal
 
 #include "hat-trie.h"
 
@@ -40,8 +40,6 @@ hat_trie::
  * @param s  word to search for
  *
  * @return  true iff @a s is in the trie
- * @throws unindexed_character
- *      if a character in @a s is not indexed by @a indexof()
  */
 bool
 hat_trie::contains(const key_type &s) const {
@@ -97,8 +95,6 @@ hat_trie::clear() {
  *
  * @return  true if @a word is inserted into the trie, false if @a word
  *          was already in the trie
- * @throws unindexed_character
- *      if a character in @a word is not indexed by @a indexof()
  */
 bool
 hat_trie::insert(const key_type &word) {
@@ -114,8 +110,6 @@ hat_trie::insert(const key_type &word) {
  * @param word  word to insert
  * @return  true if @a word is inserted into the trie, false if @a word
  *          was already in the trie
- * @throws unindexed_character
- *      if a character in @a word is not indexed by @a indexof()
  */
 bool
 hat_trie::insert(const char *word) {
@@ -569,7 +563,7 @@ hat_trie::_least(node_pointer n, key_type &word) {
 /**
  * Removes a record from the back of a word.
  *
- * This function assumes word is populated. The string class
+ * This function assumes @a word is populated. The string class
  * will throw an exception if this precondition is not met.
  *
  * @param word  cached word in the trie traversal
@@ -726,6 +720,35 @@ hat_trie::iterator::operator=(node_pointer n) {
  */
 void swap(hat_trie &lhs, hat_trie &rhs) {
     lhs.swap(rhs);
+}
+
+// --------------------
+// COMPARISON OPERATORS
+// --------------------
+
+bool
+operator<(const stx::hat_trie &lhs, const stx::hat_trie &rhs) {
+    return std::lexicographical_compare(lhs.begin(), lhs.end(),
+                                        rhs.begin(), rhs.end());
+}
+bool operator==(const stx::hat_trie &lhs, const stx::hat_trie &rhs) {
+    return lhs.size() == rhs.size() &&
+           std::equal(lhs.begin(), lhs.end(), rhs.begin());
+}
+bool
+operator>(const stx::hat_trie &lhs, const stx::hat_trie &rhs) {
+    return rhs < lhs;
+}
+bool
+operator<=(const stx::hat_trie &lhs, const stx::hat_trie &rhs) {
+    return !(rhs < lhs);
+}
+bool
+operator>=(const stx::hat_trie &lhs, const stx::hat_trie &rhs) {
+    return !(lhs < rhs);
+}
+bool operator!=(const stx::hat_trie &lhs, const stx::hat_trie &rhs) {
+    return !(lhs == rhs);
 }
 
 }  // namespace stx
