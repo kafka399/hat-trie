@@ -1,12 +1,11 @@
+# executable run script
 run
-.gitignore
-kjv
-simple
-out
-src/main.cpp
-Makefile
-doc
+
+# documentation files
+doc/*
+
+# google profiling tools
 prof*
-distinct
-in
-dict
+
+# input files
+inputs/*
