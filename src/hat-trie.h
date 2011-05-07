@@ -136,6 +136,14 @@ class hat_trie {
     };
 
   public:
+    // STL types
+    typedef std::string key_type;
+    typedef key_type    value_type;
+    // key_compare
+    // value_compare
+    typedef key_type&       reference;
+    typedef const key_type& const_reference;
+
     class iterator;
     typedef iterator const_iterator;
 
@@ -146,23 +154,23 @@ class hat_trie {
     virtual ~hat_trie();
 
     // accessors
-    bool contains(const std::string &s) const;
+    bool contains(const key_type &s) const;
     bool empty() const;
     size_t size() const;
     void print() const { print(root); }
 
     // modifiers
     void clear();
-    bool insert(const std::string &word);
+    bool insert(const key_type &word);
     bool insert(const char *word);
     template <class input_iterator>
     void insert(input_iterator first, const input_iterator &last);
-    iterator insert(const iterator &position, const std::string &word);
+    iterator insert(const iterator &position, const key_type &word);
 
     // iterators
     iterator begin() const;
     iterator end() const;
-    iterator find(const std::string &s) const;
+    iterator find(const key_type &s) const;
 
     // utilities
     void swap(self &rhs);
@@ -183,7 +191,7 @@ class hat_trie {
      * ugly, but they have to be constructed incrementally because of
      * the large amount of state they maintain.
      */
-    class iterator : std::iterator<std::bidirectional_iterator_tag, node_base> {
+    class iterator : public std::iterator<std::bidirectional_iterator_tag, const key_type> {
         friend class hat_trie;
 
       public:
@@ -194,7 +202,7 @@ class hat_trie {
         iterator operator--(int);
         iterator &operator--();
 
-        std::string operator*() const;
+        key_type operator*() const;
         bool operator==(const iterator &rhs);
         bool operator!=(const iterator &rhs);
 
@@ -208,7 +216,7 @@ class hat_trie {
 
         // Caches the word as we move up and down the trie and
         // implicitly caches the path we followed as well
-        std::string cached_word;
+        key_type cached_word;
 
         // Special-purpose constructor and assignment operator. If
         // an iterator is assigned to a container, it automatically
@@ -235,13 +243,13 @@ class hat_trie {
 
     // accessors
     bool search(const char * &s, node_pointer &n) const;
-    void print(const node_pointer &n, const std::string &space = "") const;
+    void print(const node_pointer &n, const key_type &space = "") const;
 
-    static node_pointer next_child(node *, size_t, std::string &);
-    static node_pointer least_child(node *, std::string &);
-    static node_pointer next_word(node_pointer, std::string &);
-    static node_pointer least(node_pointer, std::string &);
-    static int pop_back(std::string &);
+    static node_pointer next_child(node *, size_t, key_type &);
+    static node_pointer least_child(node *, key_type &);
+    static node_pointer next_word(node_pointer, key_type &);
+    static node_pointer least(node_pointer, key_type &);
+    static int pop_back(key_type &);
 
     // modifiers
     bool insert(container *htc, const char *s);
