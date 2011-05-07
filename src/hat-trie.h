@@ -87,15 +87,13 @@
 //   NO! it accumulates!
 // TODO make it really hard to use a container that isn't an array hash
 // TODO documentation that limits string length to 65k characters
-// TODO store the empty string at root
 // TODO visual studio compatibility
 // TODO make array_hash find function return an iterator
-// TODO is unindexed_character really necessary?
-//   TODO askitis maps to all 7-bit values in the ASCII table
 
 #ifndef HAT_TRIE_H
 #define HAT_TRIE_H
 
+#include <iostream>
 #include <string>
 
 #include "array-hash.h"
@@ -137,10 +135,8 @@ class hat_trie {
 
   public:
     // STL types
-    typedef std::string key_type;
-    typedef key_type    value_type;
-    // key_compare
-    // value_compare
+    typedef std::string     key_type;
+    typedef key_type        value_type;
     typedef key_type&       reference;
     typedef const key_type& const_reference;
 
@@ -157,7 +153,7 @@ class hat_trie {
     bool contains(const key_type &s) const;
     bool empty() const;
     size_t size() const;
-    void print() const { print(root); }
+    void print(std::ostream &out = std::cout) const { _print(out, _root); }
 
     // modifiers
     void clear();
@@ -165,7 +161,7 @@ class hat_trie {
     bool insert(const char *word);
     template <class input_iterator>
     void insert(input_iterator first, const input_iterator &last);
-    iterator insert(const iterator &position, const key_type &word);
+    iterator insert(const iterator &, const key_type &word);
 
     // iterators
     iterator begin() const;
@@ -191,7 +187,8 @@ class hat_trie {
      * ugly, but they have to be constructed incrementally because of
      * the large amount of state they maintain.
      */
-    class iterator : public std::iterator<std::bidirectional_iterator_tag, const key_type> {
+    class iterator : public std::iterator<std::bidirectional_iterator_tag,
+                                          const key_type> {
         friend class hat_trie;
 
       public:
@@ -228,7 +225,7 @@ class hat_trie {
     };
 
   private:
-    node *root;  // pointer to the root of the trie
+    node *_root;  // pointer to the root of the trie
     size_t _size;  // number of distinct elements in the trie
 
     // types node_base values could point to. This is stored in
@@ -239,21 +236,23 @@ class hat_trie {
     // MUST be <= 32,768
     enum { BURST_THRESHOLD = 16384 };
 
-    void init();
+    void _init();
 
     // accessors
-    bool search(const char * &s, node_pointer &n) const;
-    void print(const node_pointer &n, const key_type &space = "") const;
+    bool _search(const char * &s, node_pointer &n) const;
+    void _print(std::ostream &,
+                const node_pointer &,
+                const key_type & = "") const;
 
-    static node_pointer next_child(node *, size_t, key_type &);
-    static node_pointer least_child(node *, key_type &);
-    static node_pointer next_word(node_pointer, key_type &);
-    static node_pointer least(node_pointer, key_type &);
-    static int pop_back(key_type &);
+    static node_pointer _next_child(node *, size_t, key_type &);
+    static node_pointer _least_child(node *, key_type &);
+    static node_pointer _next_word(node_pointer, key_type &);
+    static node_pointer _least(node_pointer, key_type &);
+    static int _pop_back(key_type &);
 
     // modifiers
-    bool insert(container *htc, const char *s);
-    void burst(container *htc);
+    bool _insert(container *htc, const char *s);
+    void _burst(container *htc);
 
 };
 
