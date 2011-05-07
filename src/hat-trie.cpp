@@ -113,47 +113,42 @@ hat_trie::insert(const key_type &word) {
  */
 bool
 hat_trie::insert(const char *word) {
-    // Search for s in the trie.
     const char *pos = word;
-    node_pointer n;
-    bool found = _search(pos, n);
-    if (!found) {
-        // Was s found in the structure of the trie?
-        if (*pos == '\0') {
-            // s was found in the trie's structure. Mark its location
-            // as the end of a word.
-            if (n.pointer->is_word() == false) {
-                n.pointer->set_word(true);
-                ++_size;
-            }
-
-        } else {
-            // s was not found in the trie's structure. Either make a
-            // new container for it or insert it into an already
-            // existing container.
-            container *c = NULL;
-            if (n.type == NODE_POINTER) {
-                // Make a new container for s.
-                node *p = (node *)n.pointer;
-                int index = *pos;
-                c = new container(index);
-
-                // Insert the new container into the trie structure.
-                c->parent = p;
-                p->children[index] = c;
-                p->types[index] = CONTAINER_POINTER;
-                ++pos;
-            } else if (n.type == CONTAINER_POINTER) {
-                // The container for s already exists.
-                c = (container *) n.pointer;
-            }
-
-            // Insert s into the container we found.
-            return _insert(c, pos);
+    node_pointer n = _locate(pos);
+    if (*pos == '\0') {
+        // word was found in the trie's structure. Mark its location
+        // as the end of a word.
+        if (n.pointer->is_word() == false) {
+            n.pointer->set_word(true);
+            ++_size;
+            return true;
         }
-    }
+        return false;
 
-    return !found;
+    } else {
+        // word was not found in the trie's structure. Either make a
+        // new container for it or insert it into an already
+        // existing container.
+        container *c = NULL;
+        if (n.type == NODE_POINTER) {
+            // Make a new container for word.
+            node *p = (node *) n.pointer;
+            int index = *pos;
+            c = new container(index);
+
+            // Insert the new container into the trie structure.
+            c->parent = p;
+            p->children[index] = c;
+            p->types[index] = CONTAINER_POINTER;
+            ++pos;
+        } else if (n.type == CONTAINER_POINTER) {
+            // The container for s already exists.
+            c = (container *) n.pointer;
+        }
+
+        // Insert the rest of word into the container.
+        return _insert(c, pos);
+    }
 }
 
 /**
@@ -323,6 +318,42 @@ hat_trie::_search(const char *&s, node_pointer &n) const {
     // the end of word flag in n is set.
     n = node_pointer(NODE_POINTER, p);
     return p->is_word();
+}
+
+/**
+ * Locates the position @a s should be in the trie.
+ *
+ * @param s  string to search for. After this function completes, if
+ *           <code>*s = '\0'</code>, @a s is in the trie part of this
+ *           data structure. If not, @a s is either completed in a
+ *           container or is not in the trie at all.
+ * @return  a node_pointer to the location of @a s in the trie
+ */
+hat_trie::node_pointer
+hat_trie::_locate(const char *&s) const {
+    node *p = _root;
+    node_base *v = NULL;
+    while (*s) {
+        int index = *s;
+        v = p->children[index];
+        if (v) {
+            ++s;
+            if (p->types[index] == NODE_POINTER) {
+                // Keep moving down the trie structure.
+                p = (node *) v;
+            } else if (p->types[index] == CONTAINER_POINTER) {
+                // s should appear in the container v
+                return node_pointer(CONTAINER_POINTER, v);
+            }
+        } else {
+            // s should appear underneath this node
+            return node_pointer(NODE_POINTER, p);
+        }
+    }
+
+    // If we get here, no container was found that could have held
+    // s, meaning node n represents s in the trie.
+    return node_pointer(NODE_POINTER, p);
 }
 
 /**

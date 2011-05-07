@@ -68,25 +68,10 @@ void mine() {
 int main() {
     std::ios_base::sync_with_stdio(false);  // speed up reading from stdin
 
-    hat_trie a;
-    hat_trie b;
-    a.insert("rawr");
-    b.insert("abc");
-    assert(a > b);
-    assert(b < a);
-    swap(a, b);
-    assert(a < b);
-    assert(b > a);
-    assert(a != b);
-
-    hat_trie c;
-    c.insert("rawr");
-    assert(c == b);
-
     //ProfilerStart("profile/prof.prof");
     //stl();
     //mine();
-    //mine_c();
+    mine_c();
     //ProfilerStop();
 
     return 0;
