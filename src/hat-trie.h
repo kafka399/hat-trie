@@ -256,6 +256,11 @@ class hat_trie {
 
 };
 
+/**
+ * Namespace-scope swap function for hat tries.
+ */
+void swap(hat_trie &, hat_trie&);
+
 }  // namespace stx
 
 #endif  // HAT_TRIE_H

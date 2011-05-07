@@ -6,7 +6,7 @@ EXECUTABLE = bin/main
 # make variables
 OFLAGS   = -O2
 CXX      = clang++
-CXXFLAGS = -Wall -c -I/opt/local/include -stdlib=libc++ $(OFLAGS)
+CXXFLAGS = -Wall -Wextra -c -I/opt/local/include -stdlib=libc++ $(OFLAGS)
 LDFLAGS  = -lprofiler -stdlib=libc++
 
 COMPILE.cpp = $(CXX) $(CXXFLAGS)
@@ -41,17 +41,16 @@ depend:
 # ... then change src/*.o in this Makefile to obj/*.o.
 # DO NOT DELETE
 
-src/MurmurHash3.o: src/MurmurHash3.h /usr/include/stdint.h
-src/array-hash.o: src/array-hash.h /usr/include/stdint.h
-src/hat-trie-node.o: src/hat-trie-node.h src/array-hash.h
-src/hat-trie-node.o: /usr/include/stdint.h
-src/hat-trie.o: src/hat-trie.h src/array-hash.h /usr/include/stdint.h
-src/hat-trie.o: src/hat-trie-node.h
-src/main.o: /usr/include/time.h /usr/include/_types.h
-src/main.o: /usr/include/sys/_types.h /usr/include/sys/cdefs.h
-src/main.o: /usr/include/machine/_types.h /usr/include/i386/_types.h
-src/main.o: /usr/include/_structs.h /usr/include/sys/_structs.h
-src/main.o: /usr/include/unistd.h /usr/include/sys/unistd.h
-src/main.o: /usr/include/sys/select.h /usr/include/sys/appleapiopts.h
-src/main.o: /usr/include/sys/_select.h src/array-hash.h /usr/include/stdint.h
-src/main.o: src/hat-trie.h src/hat-trie-node.h
+obj/MurmurHash3.o: src/MurmurHash3.h /usr/include/stdint.h
+obj/array-hash.o: src/array-hash.h /usr/include/stdint.h
+obj/hat-trie-node.o: src/hat-trie-node.h src/array-hash.h
+obj/hat-trie-node.o: /usr/include/stdint.h
+obj/hat-trie.o: src/hat-trie.h src/array-hash.h /usr/include/stdint.h
+obj/hat-trie.o: src/hat-trie-node.h
+obj/main.o: /usr/include/unistd.h /usr/include/_types.h
+obj/main.o: /usr/include/sys/_types.h /usr/include/sys/cdefs.h
+obj/main.o: /usr/include/machine/_types.h /usr/include/i386/_types.h
+obj/main.o: /usr/include/sys/unistd.h /usr/include/sys/select.h
+obj/main.o: /usr/include/sys/appleapiopts.h /usr/include/sys/_structs.h
+obj/main.o: /usr/include/sys/_select.h src/array-hash.h /usr/include/stdint.h
+obj/main.o: src/hat-trie.h src/hat-trie-node.h

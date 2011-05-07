@@ -258,10 +258,10 @@ hat_trie::find(const key_type &s) const {
  *
  * @param rhs  hat_trie object to swap data with
  */
-void hat_trie::
-swap(self &rhs) {
+void
+hat_trie::swap(self &rhs) {
     using std::swap;
-    swap(root, rhs.root);
+    swap(_root, rhs._root);
     swap(_size, rhs._size);
 }
 
@@ -721,14 +721,23 @@ hat_trie::iterator::operator=(node_pointer n) {
     return *this;
 }
 
+/**
+ * Namespace-scope swap function for hat tries.
+ */
+void swap(hat_trie &lhs, hat_trie &rhs) {
+    lhs.swap(rhs);
+}
+
 }  // namespace stx
 
 namespace std {
 
 /**
+ * Template specialization of std::swap for hat_tries.
  */
-void swap(stx::hat_trie &lhs,
-          stx::hat_trie &rhs) {
+template <>
+void
+swap(stx::hat_trie &lhs, stx::hat_trie &rhs) {
     lhs.swap(rhs);
 }
 

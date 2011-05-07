@@ -64,12 +64,16 @@ void mine() {
     }
 }
 
-int main(int argc, char **args) {
+int main() {
     std::ios_base::sync_with_stdio(false);  // speed up reading from stdin
+
+    hat_trie a;
+    hat_trie b;
+    swap(a, b);
 
     //ProfilerStart("profile/prof.prof");
     //stl();
-    mine();
+    //mine();
     //mine_c();
     //ProfilerStop();
 
