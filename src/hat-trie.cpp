@@ -37,15 +37,21 @@ hat_trie::
 /**
  * Searches for a word in the trie.
  *
- * @param s  word to search for
+ * This function is an extension to the standard STL interface.
  *
+ * @param word  word to search for
  * @return  true iff @a s is in the trie
  */
 bool
-hat_trie::contains(const key_type &s) const {
-    const char *ps = s.c_str();
-    node_pointer n;
-    return _search(ps, n);
+hat_trie::contains(const key_type &word) const {
+    // Locate s in the trie's structure.
+    const char *ps = word.c_str();
+    node_pointer n = _locate(ps);
+
+    if (n.type == CONTAINER_POINTER) {
+        return ((container *) n.pointer)->contains(ps);
+    }
+    return n.pointer->is_word();
 }
 
 /**
@@ -218,16 +224,18 @@ hat_trie::begin() const {
 hat_trie::iterator
 hat_trie::find(const key_type &s) const {
     const char *ps = s.c_str();
-    node_pointer n;
+    node_pointer n = _locate(ps);
 
     // Search for the word in the trie.
     iterator result;
-    if (_search(ps, n)) {
-        // Initialize result to node n in the trie.
+    if ((n.type == CONTAINER_POINTER &&
+            ((container *) n.pointer)->contains(ps)) ||
+            n.pointer->is_word()) {
+        // The word is in the trie. Find its location and initialize the
+        // return iterator to that location.
         result = n;
         result.cached_word = key_type(s.c_str(), ps);
         if (*ps != '\0') {
-            // TODO initialize result.contanier_iterator too
             result.word = false;
             result.container_iterator = ((container *) n.pointer)->store.find(ps);
         }
@@ -272,52 +280,6 @@ void
 hat_trie::_init() {
     _size = 0;
     _root = new node();
-}
-
-/**
- * Searches for @a s in the trie, returning statistics about its position.
- *
- * @param s  string to search for. After this function completes, if
- *           <code>*s = '\0'</code>, @a s is in the trie part of this
- *           data structure. If not, @a s is either completed in a
- *           container or is not in the trie at all.
- * @param p  after this function completes, @a p stores a pointer to
- *           either the node or container for @a s
- *
- * @return  true if @a s is found, false otherwise
- */
-bool
-hat_trie::_search(const char *&s, node_pointer &n) const {
-    // Search for a s in the trie.
-    // Traverse the trie until either a s is used up, a is is found
-    // in the trie, or s cannot be in the trie.
-    node *p = _root;
-    node_base *v = NULL;
-    while (*s) {
-        int index = *s;
-        v = p->children[index];
-        if (v) {
-            ++s;
-            if (p->types[index] == NODE_POINTER) {
-                // Keep moving down the trie structure.
-                p = (node *)v;
-            } else if (p->types[index] == CONTAINER_POINTER) {
-                // s should appear in the container v. If it
-                // doesn't, it's not in the trie.
-                n = node_pointer(CONTAINER_POINTER, v);
-                return ((container *)v)->contains(s);
-            }
-        } else {
-            n = node_pointer(NODE_POINTER, p);
-            return false;
-        }
-    }
-
-    // If we get here, no container was found that could have held
-    // s, meaning node n represents s in the trie. Return true if
-    // the end of word flag in n is set.
-    n = node_pointer(NODE_POINTER, p);
-    return p->is_word();
 }
 
 /**

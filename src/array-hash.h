@@ -20,6 +20,8 @@
  */
 
 // TODO erase function
+// TODO backwards iteration
+// TODO allocate in block chunks rather than just enough
 
 #ifndef HT_ARRAY_HASH_H
 #define HT_ARRAY_HASH_H

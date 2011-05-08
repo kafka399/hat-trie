@@ -20,7 +20,7 @@ template <class T>
 void print(const T &t) {
     // use boost's foreach function! woot!
     foreach (const string &s, t) {
-        cout << s << endl;
+        cout << s << '\n';
     }
 }
 
@@ -62,6 +62,8 @@ void mine() {
     string reader;
     while (cin >> reader) {
         ht.insert(reader);
+        assert(*ht.find(reader) == reader);
+        cout << *ht.find(reader) << endl;
     }
 }
 
@@ -70,8 +72,8 @@ int main() {
 
     //ProfilerStart("profile/prof.prof");
     //stl();
-    //mine();
-    mine_c();
+    mine();
+    //mine_c();
     //ProfilerStop();
 
     return 0;

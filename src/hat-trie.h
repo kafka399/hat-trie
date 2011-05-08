@@ -248,7 +248,6 @@ class hat_trie {
 
     // accessors
     node_pointer _locate(const char *&s) const;
-    bool _search(const char * &s, node_pointer &n) const;
     void _print(std::ostream &,
                 const node_pointer &,
                 const key_type & = "") const;
