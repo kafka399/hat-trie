@@ -55,11 +55,8 @@ void mine_c() {
             start = data + i + 1;
         }
     }
+    delete [] data;
     //print(ht);
-
-    //for (ht_array_hash::iterator it = ht.begin(); it != ht.end(); ++it) {
-        //cout << *it << endl;
-    //}
 }
 
 void mine() {

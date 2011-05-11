@@ -85,10 +85,10 @@
 // insert into this container) is acceptable. No container will have more
 // values in it than BURST_THRESHOLD + 1.
 //   NO! it accumulates!
-// TODO make it really hard to use a container that isn't an array hash
 // TODO documentation that limits string length to 65k characters
 // TODO visual studio compatibility
-// TODO make array_hash find function return an iterator
+// TODO code structure in hat-trie-node.h
+// TODO decide which allocation scheme is better for array_hash
 
 #ifndef HAT_TRIE_H
 #define HAT_TRIE_H

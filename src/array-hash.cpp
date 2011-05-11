@@ -27,7 +27,7 @@ ht_array_hash::
     for (int i = 0; i < SLOT_COUNT; ++i) {
         delete data[i];
     }
-    delete data;
+    delete [] data;
 }
 
 /**
@@ -36,13 +36,16 @@ ht_array_hash::
  * @param str     string to search for
  * @param length  length of @a str
  * @param p       slot in @a data that @a str goes into
+ * @param occupied  number of bytes in the slot that are currently in use.
+ *                  This value is only used when this function doesn't
+ *                  find the string in question
  *
  * @return  If @a str is found in the table, returns a pointer to the string
  *          and its corresponding length. If not, returns NULL.
  */
 char *ht_array_hash::
-_search(const char *str, length_type length, char *p, size_type &slot_size) const {
-    slot_size = -1;
+_search(const char *str, length_type length, char *p, size_type &occupied) const {
+    occupied = -1;
     char *start = p;
 
     // Search for str in the slot p points to.
@@ -61,10 +64,17 @@ _search(const char *str, length_type length, char *p, size_type &slot_size) cons
         p += w;
         w = *((length_type *)p);
     }
-    slot_size = p - start + sizeof(length_type);
+    occupied = p - start + sizeof(length_type);
     return NULL;
 }
 
+/**
+ * Increases the capacity of a slot to be >= required.
+ *
+ * @param slot      slot to change
+ * @param current   current size of the slot
+ * @param required  required size of the slot
+ */
 void ht_array_hash::
 _grow_slot(int slot, size_type current, size_type required) {
     // Determine how much space the new slot needs.
@@ -83,6 +93,14 @@ _grow_slot(int slot, size_type current, size_type required) {
     *((size_type *)(data[slot])) = new_size;
 }
 
+/**
+ * Appends a string to a list of strings in a slot.
+ *
+ * @param str     string to append
+ * @param p       pointer to the location in the slot this string
+ *                should occupy
+ * @param length  length of @a str
+ */
 void ht_array_hash::
 _write_string(const char *str, char *p, length_type length) {
     // Write data for s.
@@ -107,21 +125,21 @@ insert(const char *str) {
     int slot = _hash(str, length);
     char *p = data[slot];
     if (p) {
-        size_type slot_size;
-        if (_search(str, length, p, slot_size) != NULL) {
+        size_type occupied;
+        if (_search(str, length, p, occupied) != NULL) {
             // str is already in the table. Nothing needs to be done.
             return false;
         }
 
         // Resize the slot if it doesn't have enough space.
         size_type current = *((size_type *)(p));
-        size_type required = slot_size + sizeof(length_type) + length;
+        size_type required = occupied + sizeof(length_type) + length;
         if (required > current) {
             _grow_slot(slot, current, required);
         }
 
         // Position for writing to the slot.
-        p = data[slot] + slot_size - sizeof(length_type);
+        p = data[slot] + occupied - sizeof(length_type);
 
     } else {
         // Make a new slot for this string.
