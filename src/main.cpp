@@ -24,6 +24,24 @@ void print(const T &t) {
     }
 }
 
+template <>
+void print(const ht_array_hash &ah) {
+    ht_array_hash::iterator it;
+    for (it = ah.begin(); it != ah.end(); ++it) {
+        cout << *it << endl;
+    }
+}
+
+template <class A, class B>
+void assert_equals(const A &a, const B &b) {
+    assert(a.size() == b.size());
+    typename A::iterator ait = a.begin();
+    typename B::iterator bit = b.begin();
+    while (ait != a.end()) {
+        assert(string(*ait) == string(*bit));
+    }
+}
+
 void stl() {
     set<string> s;
     string reader;
@@ -33,8 +51,8 @@ void stl() {
 }
 
 void mine_c() {
-    hat_trie ht;
-    //ht_array_hash ht;
+    //hat_trie ht;
+    ht_array_hash ht;
 
     // read entire file into main memory
     FILE *f = stdin;
@@ -76,6 +94,20 @@ int main() {
     mine_c();
     //ProfilerStop();
 
+
+    string reader;
+    ht_array_hash ah;
+    set<string> s;
+    while (cin >> reader) {
+        ah.insert(reader.c_str());
+        s.insert(reader);
+    }
+    while (!s.empty()) {
+        reader = *s.begin();
+        ah.erase(reader.c_str());
+        s.erase(reader);
+        assert_equals(s, ah);
+    }
     return 0;
 }
 

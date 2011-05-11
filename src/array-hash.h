@@ -33,7 +33,7 @@
 
 namespace stx {
 
-const int HT_ALPHABET_SIZE = 128;
+const int HT_ALPHABET_SIZE = 128;  // TODO move this
 
 /**
  * Hash table container for unsorted strings.
@@ -57,6 +57,7 @@ class ht_array_hash {
 
     // modifiers
     bool insert(const char *str);
+    void erase(const char *str);
 
     iterator begin() const;
     iterator end() const;

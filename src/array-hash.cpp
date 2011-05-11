@@ -25,7 +25,7 @@ ht_array_hash() {
 ht_array_hash::
 ~ht_array_hash() {
     for (int i = 0; i < SLOT_COUNT; ++i) {
-        delete data[i];
+        delete [] data[i];
     }
     delete [] data;
 }
@@ -150,10 +150,36 @@ insert(const char *str) {
         p = data[slot] + sizeof(size_type);
     }
 
-    // We wrote str into the table, so return true.
+    // Write str into the slot.
     _write_string(str, p, length);
     ++_size;
     return true;
+}
+
+/**
+ * Erases a string from the hash table.
+ *
+ * @param str  string to erase
+ */
+void ht_array_hash::
+erase(const char *str) {
+    length_type length;
+    int slot = _hash(str, length);
+    char *p = data[slot];
+    if (p) {
+        size_type occupied;
+        if ((p = _search(str, length, p, occupied)) != NULL) {
+            // Erase the old word by overwriting it.
+            int n = ALLOCATION_CHUNK_SIZE - (p - data[slot]);
+            memcpy(p, p + sizeof(length_type) + length, n);
+
+            // If that made the slot empty, erase the slot.
+            if (*((length_type *)(data[slot] + sizeof(size_type))) == 0) {
+                delete [] data[slot];
+                data[slot] = NULL;
+            }
+        }
+    }
 }
 
 /**
