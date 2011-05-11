@@ -34,6 +34,7 @@ void stl() {
 
 void mine_c() {
     hat_trie ht;
+    //ht_array_hash ht;
 
     // read entire file into main memory
     FILE *f = stdin;
@@ -55,6 +56,10 @@ void mine_c() {
         }
     }
     //print(ht);
+
+    //for (ht_array_hash::iterator it = ht.begin(); it != ht.end(); ++it) {
+        //cout << *it << endl;
+    //}
 }
 
 void mine() {
@@ -62,8 +67,6 @@ void mine() {
     string reader;
     while (cin >> reader) {
         ht.insert(reader);
-        assert(*ht.find(reader) == reader);
-        cout << *ht.find(reader) << endl;
     }
 }
 
@@ -72,8 +75,8 @@ int main() {
 
     //ProfilerStart("profile/prof.prof");
     //stl();
-    mine();
-    //mine_c();
+    //mine();
+    mine_c();
     //ProfilerStop();
 
     return 0;

@@ -41,10 +41,13 @@ ht_array_hash::
  *          and its corresponding length. If not, returns NULL.
  */
 char *ht_array_hash::
-_search(const char *str, length_type length, char *p) const {
+_search(const char *str, length_type length, char *p, size_type &slot_size) const {
+    slot_size = -1;
+    char *start = p;
+
     // Search for str in the slot p points to.
     p += sizeof(size_type);  // skip past size at beginning of slot
-    length_type w = *((length_type *)p);
+    length_type w = *((length_type *) p);
     while (w != 0) {
         p += sizeof(length_type);
         if (w == length) {
@@ -58,6 +61,7 @@ _search(const char *str, length_type length, char *p) const {
         p += w;
         w = *((length_type *)p);
     }
+    slot_size = p - start + sizeof(length_type);
     return NULL;
 }
 
@@ -92,7 +96,7 @@ insert(const char *str) {
     int slot = _hash(str, length);
     char *p = data[slot];
     if (p) {
-        int slot_size;
+        size_type slot_size;
         if (_search(str, length, p, slot_size) != NULL) {
             // str is already in the table. Nothing needs to be done.
             return false;
@@ -101,12 +105,12 @@ insert(const char *str) {
         // Resize the slot if it doesn't have enough space.
         size_type current = *((size_type *)(p));
         size_type required = slot_size + sizeof(length_type) + length;
-        if (required > old_size) {
-            _grow_slot(slot, old_size, required);
+        if (required > current) {
+            _grow_slot(slot, current, required);
         }
 
         // Position for writing to the slot.
-        p = data[slot] + old_size - sizeof(length_type);
+        p = data[slot] + slot_size - sizeof(length_type);
 
     } else {
         // Make a new slot for this string.
@@ -146,7 +150,8 @@ contains(const char *str) const {
     if (p == NULL) {
         return false;
     }
-    return _search(str, length, p) != NULL;
+    size_type s;
+    return _search(str, length, p, s) != NULL;
 }
 
 /**
@@ -168,7 +173,8 @@ find(const char *str) const {
     if (p == NULL) {
         return end();
     }
-    p = _search(str, length, p);
+    size_type s;
+    p = _search(str, length, p, s);
     return iterator(slot, p, data);
 }
 
