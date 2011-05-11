@@ -83,6 +83,17 @@ _grow_slot(int slot, size_type current, size_type required) {
     *((size_type *)(data[slot])) = new_size;
 }
 
+void ht_array_hash::
+_write_string(const char *str, char *p, length_type length) {
+    // Write data for s.
+    memcpy(p, &length, sizeof(length_type));
+    p += sizeof(length_type);
+    memcpy(p, str, length);
+    p += length;
+    length = 0;
+    memcpy(p, &length, sizeof(length_type));
+}
+
 /**
  * Inserts @a str into the table.
  *
@@ -121,16 +132,9 @@ insert(const char *str) {
         p = data[slot] + sizeof(size_type);
     }
 
-    // Write data for s.
-    memcpy(p, &length, sizeof(length_type));
-    p += sizeof(length_type);
-    memcpy(p, str, length);
-    p += length;
-    length = 0;
-    memcpy(p, &length, sizeof(length_type));
-    ++_size;
-
     // We wrote str into the table, so return true.
+    _write_string(str, p, length);
+    ++_size;
     return true;
 }
 
