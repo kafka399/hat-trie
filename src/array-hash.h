@@ -42,6 +42,7 @@ class ht_array_hash {
   private:
     typedef uint16_t length_type;
     typedef uint32_t size_type;
+    size_type ALLOCATION_CHUNK_SIZE;
 
   public:
     class iterator;
@@ -88,8 +89,8 @@ class ht_array_hash {
     uint16_t _size;  // size can be no larger than 32768
     char **data;
 
-    int hash(const char *str, length_type& length, int seed = 23) const;
-    char *search(const char *str, length_type length, char *p) const;
+    int _hash(const char *str, length_type& length, int seed = 23) const;
+    char *_search(const char *str, length_type length, char *p) const;
 };
 
 } // namespace stx

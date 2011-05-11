@@ -16,6 +16,7 @@ ht_array_hash() {
         data[i] = NULL;
     }
     _size = 0;
+    ALLOCATION_CHUNK_SIZE = 32;
 }
 
 /**
@@ -40,7 +41,7 @@ ht_array_hash::
  *          and its corresponding length. If not, returns NULL.
  */
 char *ht_array_hash::
-search(const char *str, length_type length, char *p) const {
+_search(const char *str, length_type length, char *p) const {
     // Search for str in the slot p points to.
     p += sizeof(size_type);  // skip past size at beginning of slot
     length_type w = *((length_type *)p);
@@ -70,11 +71,11 @@ search(const char *str, length_type length, char *p) const {
 bool ht_array_hash::
 insert(const char *str) {
     length_type length;
-    int slot = hash(str, length);
+    int slot = _hash(str, length);
     char *p = data[slot];
     if (p) {
         // Append the new string to the end of this slot.
-        if (search(str, length, p) != NULL) {
+        if (_search(str, length, p) != NULL) {
             // str is already in the table. Nothing needs to be done.
             return false;
         }
@@ -92,7 +93,8 @@ insert(const char *str) {
         // Make a new slot for this string.
         size_type size = sizeof(size_type) + 2 * sizeof(length_type) + length;
         data[slot] = new char[size];
-        *((size_type *)(data[slot])) = size;
+        //data[slot] = new char[ALLOCATION_CHUNK_SIZE];
+        //*((size_type *)(data[slot])) = ALLOCATION_CHUNK_SIZE;
         p = data[slot] + sizeof(size_type);
     }
 
@@ -119,13 +121,13 @@ bool ht_array_hash::
 contains(const char *str) const {
     // Determine which slot in the table should contain str.
     length_type length;
-    char *p = data[hash(str, length)];
+    char *p = data[_hash(str, length)];
 
     // Return true if p is in that slot.
     if (p == NULL) {
         return false;
     }
-    return search(str, length, p) != NULL;
+    return _search(str, length, p) != NULL;
 }
 
 /**
@@ -140,14 +142,14 @@ ht_array_hash::
 find(const char *str) const {
     // Determine which slot in the table should contain str.
     length_type length;
-    int slot = hash(str, length);
+    int slot = _hash(str, length);
     char *p = data[slot];
 
     // Search for str in that slot.
     if (p == NULL) {
         return end();
     }
-    p = search(str, length, p);
+    p = _search(str, length, p);
     return iterator(slot, p, data);
 }
 
@@ -197,7 +199,7 @@ end() const {
  * @return  hashed value of @a str, its slot in the table
  */
 int ht_array_hash::
-hash(const char *str, length_type& length, int seed) const {
+_hash(const char *str, length_type& length, int seed) const {
     int h = seed;
     length = 0;
     while (str[length]) {
