@@ -61,6 +61,24 @@ _search(const char *str, length_type length, char *p) const {
     return NULL;
 }
 
+void ht_array_hash::
+_grow_slot(int slot, size_type current, size_type required) {
+    // Determine how much space the new slot needs.
+    size_type new_size = current;
+    while (new_size < required) {
+        new_size += ALLOCATION_CHUNK_SIZE;
+    }
+
+    // Make a new slot and copy all the data over.
+    char *p = data[slot];
+    data[slot] = new char[new_size];
+    if (p != NULL) {
+        memcpy(data[slot], p, current);
+        delete [] p;
+    }
+    *((size_type *)(data[slot])) = new_size;
+}
+
 /**
  * Inserts @a str into the table.
  *
@@ -74,27 +92,28 @@ insert(const char *str) {
     int slot = _hash(str, length);
     char *p = data[slot];
     if (p) {
-        // Append the new string to the end of this slot.
-        if (_search(str, length, p) != NULL) {
+        int slot_size;
+        if (_search(str, length, p, slot_size) != NULL) {
             // str is already in the table. Nothing needs to be done.
             return false;
         }
 
-        // Append the new string to the end of this slot.
-        size_type old_size = *((size_type *)(p));
-        size_type new_size = old_size + sizeof(length_type) + length;
-        data[slot] = new char[new_size];
-        memcpy(data[slot], p, old_size);
-        *((size_type *)(data[slot])) = new_size;
-        delete [] p;
+        // Resize the slot if it doesn't have enough space.
+        size_type current = *((size_type *)(p));
+        size_type required = slot_size + sizeof(length_type) + length;
+        if (required > old_size) {
+            _grow_slot(slot, old_size, required);
+        }
+
+        // Position for writing to the slot.
         p = data[slot] + old_size - sizeof(length_type);
 
     } else {
         // Make a new slot for this string.
-        size_type size = sizeof(size_type) + 2 * sizeof(length_type) + length;
-        data[slot] = new char[size];
-        //data[slot] = new char[ALLOCATION_CHUNK_SIZE];
-        //*((size_type *)(data[slot])) = ALLOCATION_CHUNK_SIZE;
+        size_type required = sizeof(size_type) + 2 * sizeof(length_type) + length;
+        _grow_slot(slot, 0, required);
+
+        // Position for writing to the slot.
         p = data[slot] + sizeof(size_type);
     }
 

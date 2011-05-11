@@ -90,7 +90,8 @@ class ht_array_hash {
     char **data;
 
     int _hash(const char *str, length_type& length, int seed = 23) const;
-    char *_search(const char *str, length_type length, char *p) const;
+    char *_search(const char *, length_type, char *, size_type &) const;
+    void _grow_slot(char *slot, size_type current, size_type required);
 };
 
 } // namespace stx
