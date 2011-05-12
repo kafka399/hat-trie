@@ -19,9 +19,6 @@
  * along with this program.  If not, see .
  */
 
-// TODO exclude these classes / this file from Doxygen
-// TODO doc comments
-
 #ifndef HAT_TRIE_NODE_H
 #define HAT_TRIE_NODE_H
 
@@ -31,79 +28,108 @@
 
 namespace stx {
 
+// number of distinct characters a hat trie can store
+const int HT_ALPHABET_SIZE = 128;
+
+// forward declarations
 class hat_trie;
-
 class hat_trie_container;
-
 class hat_trie_node;
 
+/**
+ * Base class for hat trie node types.
+ */
 class hat_trie_node_base {
     friend class hat_trie;
 
   private:
-    typedef hat_trie_node node;
-    typedef hat_trie_container container;
+    typedef hat_trie_node _node;
+    typedef hat_trie_container _container;
 
   public:
-    hat_trie_node_base(char ch = '\0') : _ch(ch), parent(NULL) { }
+    hat_trie_node_base(char ch = '\0') : _ch(ch), _parent(NULL) {
+        set_word(false);
+    }
     virtual ~hat_trie_node_base() { }
 
     // accessors
     char ch() const { return _ch; }
-    virtual bool is_word() const = 0;
+    virtual bool word() const = 0;
 
     // modifiers
     virtual void set_word(bool b) = 0;
 
   protected:
     char _ch;
-    node *parent;
+    _node *_parent;
 };
 
-// -----------------------
-// hat trie helper classes
-// -----------------------
-
+/**
+ * HAT-trie container type.
+ */
 class hat_trie_container : public hat_trie_node_base {
     friend class hat_trie;
 
   public:
-    hat_trie_container(char ch = '\0');
-    virtual ~hat_trie_container() { }
+    hat_trie_container(char ch = '\0') : hat_trie_node_base(ch) { }
+    ~hat_trie_container() { }
 
     // accessors
-    bool contains(const char *p) const;
-    size_t size() const { return store.size(); }
-    bool is_word() const { return word; }
+    bool contains(const char *p) const {
+        if (*p == '\0') {
+            return word();
+        }
+        return _store.contains(p);
+    }
+    size_t size() const { return _store.size(); }
+    bool word() const { return _word; }
 
     // modifiers
-    bool insert(const char *p);
-    void set_word(bool b) { word = b; }
+    bool insert(const char *p) {
+        if (*p == '\0') {
+            bool b = word();
+            set_word(true);
+            return !b;
+        }
+        return _store.insert(p);
+    }
+    void set_word(bool b) { _word = b; }
 
   private:
-    bool word;
-    ht_array_hash store;
+    bool _word;
+    array_hash _store;
 };
 
+/**
+ * HAT-trie node type.
+ */
 class hat_trie_node : public hat_trie_node_base {
     friend class hat_trie;
 
   private:
-    typedef hat_trie_node_base node_base;
+    typedef hat_trie_node_base _node_base;
 
   public:
-    hat_trie_node(char ch = '\0');
-    virtual ~hat_trie_node();
+    hat_trie_node(char ch = '\0') : _node_base(ch) {
+        for (int i = 0; i < HT_ALPHABET_SIZE; ++i) {
+            _children[i] = NULL;
+        }
+    }
+    ~hat_trie_node() {
+        for (int i = 0; i < HT_ALPHABET_SIZE; ++i) {
+            delete _children[i];
+        }
+    }
 
     // accessors
-    bool is_word() const { return types[HT_ALPHABET_SIZE]; }
+    bool word() const { return _types[HT_ALPHABET_SIZE]; }
 
     // modifiers
-    void set_word(bool b) { types[HT_ALPHABET_SIZE] = b; }
+    void set_word(bool b) { _types[HT_ALPHABET_SIZE] = b; }
 
   private:
-    std::bitset<HT_ALPHABET_SIZE + 1> types;  // extra bit is an end of word flag
-    node_base *children[HT_ALPHABET_SIZE];  // untyped pointers to children
+    std::bitset<HT_ALPHABET_SIZE + 1> _types;  // extra bit is an end of word flag
+    _node_base *_children[HT_ALPHABET_SIZE];  // untyped pointers to children
 };
 
 }  // namespace stx

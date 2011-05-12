@@ -19,36 +19,53 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// TODO erase function
 // TODO backwards iteration
-// TODO allocate in block chunks rather than just enough
 
-#ifndef HT_ARRAY_HASH_H
-#define HT_ARRAY_HASH_H
+#ifndef ARRAY_HASH_H
+#define ARRAY_HASH_H
 
 #include <cstring>
-#include <stdint.h>  // TODO generalize this to windows platforms
+#include <cstdint>  // TODO generalize this to windows platforms
 #include <utility>
 #include <iterator>
 
 namespace stx {
 
-const int HT_ALPHABET_SIZE = 128;  // TODO move this
+/**
+ * Provides a way to tune the performance characteristics of an
+ * array hash table.
+ */
+class array_hash_traits {
+
+  public:
+
+    array_hash_traits() {
+        slot_count = 512;
+        allocation_chunk_size = 32;
+    }
+
+    /// number of slots in the hash table
+    int slot_count;
+
+    /// when a slot in the array hash is allocated,
+    int allocation_chunk_size;
+
+};
 
 /**
  * Hash table container for unsorted strings.
  */
-class ht_array_hash {
+class array_hash {
+
   private:
     typedef uint16_t length_type;
     typedef uint32_t size_type;
-    size_type ALLOCATION_CHUNK_SIZE;
 
   public:
     class iterator;
 
-    ht_array_hash();
-    ~ht_array_hash();
+    array_hash(const array_hash_traits & = array_hash_traits());
+    ~array_hash();
 
     // accessors
     bool contains(const char *str) const;
@@ -62,8 +79,9 @@ class ht_array_hash {
     iterator begin() const;
     iterator end() const;
 
-    class iterator : std::iterator<std::bidirectional_iterator_tag, const char *> {
-        friend class ht_array_hash;
+    class iterator : std::iterator<std::bidirectional_iterator_tag,
+                                   const char *> {
+        friend class array_hash;
 
       public:
         iterator();
@@ -77,26 +95,29 @@ class ht_array_hash {
         bool operator!=(const iterator& rhs);
 
       private:
-        int slot;
-        char *p;
-        char **data;
+        int _slot;
+        char *_p;
+        char **_data;
+        int _slot_count;
 
-        iterator(int slot, char *p, char **data) :
-                slot(slot), p(p), data(data) { }
+        iterator(int slot, char *p, char **data,
+                 const array_hash &owner = array_hash()) :
+                 _slot(slot), _p(p), _data(data),
+                 _slot_count(owner._traits.slot_count) { }
     };
 
   private:
-    enum { SLOT_COUNT = 512 };  // MUST be a power of 2
-    uint16_t _size;  // size can be no larger than 32768
-    char **data;
+    array_hash_traits _traits;
+    size_t _size;
+    char **_data;
 
-    int _hash(const char *str, length_type& length, int seed = 23) const;
-    char *_search(const char *, length_type, char *, size_type &) const;
+    int _hash(const char *str, length_type &length, int seed = 23) const;
+    char *_search(const char *, char *, length_type, size_type &) const;
     void _grow_slot(int slot, size_type current, size_type required);
-    void _write_string(const char *str, char *p, length_type length);
+    void _append_string(const char *str, char *p, length_type length);
 };
 
 } // namespace stx
 
-#endif  // HT_ARRAY_HASH_H
+#endif  // ARRAY_HASH_H
 

@@ -651,7 +651,6 @@ RECURSIVE              = YES
 # subdirectory from a directory tree whose root is specified with the INPUT tag.
 
 EXCLUDE                = src/hat-trie-node.h \
-                         src/array-hash.h \
                          src/hat-map.h \
                          src/hat-trie-common.h \
                          src/new.h

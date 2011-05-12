@@ -25,8 +25,8 @@ void print(const T &t) {
 }
 
 template <>
-void print(const ht_array_hash &ah) {
-    ht_array_hash::iterator it;
+void print(const array_hash &ah) {
+    array_hash::iterator it;
     for (it = ah.begin(); it != ah.end(); ++it) {
         cout << *it << endl;
     }
@@ -52,7 +52,7 @@ void stl() {
 
 void mine_c() {
     //hat_trie ht;
-    ht_array_hash ht;
+    array_hash ht;
 
     // read entire file into main memory
     FILE *f = stdin;
@@ -96,7 +96,7 @@ int main() {
 
 
     string reader;
-    ht_array_hash ah;
+    array_hash ah;
     set<string> s;
     while (cin >> reader) {
         ah.insert(reader.c_str());

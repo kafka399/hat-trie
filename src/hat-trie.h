@@ -107,29 +107,33 @@ namespace stx {
 class hat_trie {
 
   private:
-    typedef hat_trie self;
-    typedef hat_trie_node node;
-    typedef hat_trie_container container;
-    typedef hat_trie_node_base node_base;
+    // types node_base values could point to. This is stored in
+    // one bit, so the only valid values are 0 and 1
+    enum { NODE_POINTER = 0, CONTAINER_POINTER = 1 };
+
+    typedef hat_trie _self;
+    typedef hat_trie_node _node;
+    typedef hat_trie_container _container;
+    typedef hat_trie_node_base _node_base;
 
     // pairs node_base pointers with their type (whether they point to
     // nodes or containers)
-    class node_pointer {
+    class _node_pointer {
 
       public:
         unsigned char type;
-        node_base *pointer;
+        _node_base *p;
 
-        node_pointer(unsigned char type = 0, node_base *pointer = NULL) :
-                type(type), pointer(pointer) { }
+        _node_pointer(unsigned char type = 0, _node_base *p = NULL) :
+                type(type), p(p) { }
 
-        // Conversion constructor from node * to node_pointer type
-        node_pointer(node *n) : type(NODE_POINTER), pointer(n) { }
+        // Conversion constructor from node * to _node_pointer type
+        _node_pointer(_node *n) : type(NODE_POINTER), p(n) { }
 
         // comparison operators
-        bool operator==(const node_pointer &rhs)
-        { return pointer == rhs.pointer; }
-        bool operator!=(const node_pointer &rhs)
+        bool operator==(const _node_pointer &rhs)
+        { return p == rhs.p; }
+        bool operator!=(const _node_pointer &rhs)
         { return !operator==(rhs); }
     };
 
@@ -169,15 +173,15 @@ class hat_trie {
     iterator find(const key_type &s) const;
 
     // utilities
-    void swap(self &rhs);
+    void swap(_self &rhs);
 
     // comparison operators
-    friend bool operator<(const self &lhs, const self &rhs);
-    friend bool operator>(const self &lhs, const self &rhs);
-    friend bool operator<=(const self &lhs, const self &rhs);
-    friend bool operator>=(const self &lhs, const self &rhs);
-    friend bool operator==(const self &lhs, const self &rhs);
-    friend bool operator!=(const self &lhs, const self &rhs);
+    friend bool operator<(const _self &lhs, const _self &rhs);
+    friend bool operator>(const _self &lhs, const _self &rhs);
+    friend bool operator<=(const _self &lhs, const _self &rhs);
+    friend bool operator>=(const _self &lhs, const _self &rhs);
+    friend bool operator==(const _self &lhs, const _self &rhs);
+    friend bool operator!=(const _self &lhs, const _self &rhs);
 
     // TODO explain all the state an iterator maintains
     //     TODO is this the best way to solve this problem?
@@ -186,7 +190,6 @@ class hat_trie {
     //      cons - not intuitive because assigning to a position in
     //             the trie would intuitively affect all the state
     //             in the iterator
-    // TODO what happens when you -- from begin() or ++ from end()?
     /**
      * Iterates over the elements in a HAT-trie.
      *
@@ -212,33 +215,30 @@ class hat_trie {
         bool operator!=(const iterator &rhs);
 
       private:
-        // Current location in the trie
-        node_pointer n;
+        // Current position in the trie
+        _node_pointer _position;
 
         // Internal iterator across container types
-        ht_array_hash::iterator container_iterator;
-        bool word;
+        array_hash::iterator _container_iterator;
+        bool _word;
 
         // Caches the word as we move up and down the trie and
         // implicitly caches the path we followed as well
-        key_type cached_word;
+        key_type _cached_word;
 
         // Special-purpose constructor and assignment operator. If
         // an iterator is assigned to a container, it automatically
         // initializes its internal iterator to the first element
         // in that container.
-        iterator(node_pointer);
-        iterator &operator=(node_pointer);
+        iterator(_node_pointer);
+        iterator &operator=(_node_pointer);
 
     };
 
   private:
-    node *_root;  // pointer to the root of the trie
+    _node *_root;  // pointer to the root of the trie
     size_t _size;  // number of distinct elements in the trie
 
-    // types node_base values could point to. This is stored in
-    // one bit, so the only valid values are 0 and 1
-    enum { NODE_POINTER = 0, CONTAINER_POINTER = 1 };
 
     // containers are burst after their size crosses this threshold
     // MUST be <= 32,768
@@ -247,27 +247,27 @@ class hat_trie {
     void _init();
 
     // accessors
-    node_pointer _locate(const char *&s) const;
+    _node_pointer _locate(const char *&s) const;
     void _print(std::ostream &,
-                const node_pointer &,
+                const _node_pointer &,
                 const key_type & = "") const;
 
-    static node_pointer _next_child(node *, size_t, key_type &);
-    static node_pointer _least_child(node *, key_type &);
-    static node_pointer _next_word(node_pointer, key_type &);
-    static node_pointer _least(node_pointer, key_type &);
+    static _node_pointer _next_child(_node *, size_t, key_type &);
+    static _node_pointer _least_child(_node *, key_type &);
+    static _node_pointer _next_word(_node_pointer, key_type &);
+    static _node_pointer _least(_node_pointer, key_type &);
     static int _pop_back(key_type &);
 
     // modifiers
-    bool _insert(container *htc, const char *s);
-    void _burst(container *htc);
+    bool _insert(_container *htc, const char *s);
+    void _burst(_container *htc);
 
 };
 
 /**
  * Namespace-scope swap function for hat tries.
  */
-void swap(hat_trie &, hat_trie&);
+void swap(hat_trie &, hat_trie &);
 
 }  // namespace stx
 

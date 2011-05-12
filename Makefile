@@ -1,6 +1,6 @@
 # List objects in order of DEPENDENCY. For example, if obj/main.o depends on
 # obj/matrix.o, list obj/matrix.o first.
-OBJECTS = obj/array-hash.o obj/hat-trie-node.o obj/hat-trie.o obj/main.o
+OBJECTS = obj/array-hash.o obj/hat-trie.o obj/main.o
 EXECUTABLE = bin/main
 
 # make variables
@@ -24,8 +24,9 @@ clean:
 
 depend:
 	makedepend src/*.cpp 2>/dev/null
-	echo "Now change src/*.o to obj/*.o in Makefile"
 	rm Makefile.bak
+	echo "========================================="
+	echo "Now change src/*.o to obj/*.o in Makefile"
 
 # List dependencies here. Order doesn't matter. makedepend src/*.cpp
 # works perfectly for this section.
@@ -43,8 +44,6 @@ depend:
 
 obj/MurmurHash3.o: src/MurmurHash3.h /usr/include/stdint.h
 obj/array-hash.o: src/array-hash.h /usr/include/stdint.h
-obj/hat-trie-node.o: src/hat-trie-node.h src/array-hash.h
-obj/hat-trie-node.o: /usr/include/stdint.h
 obj/hat-trie.o: src/hat-trie.h src/array-hash.h /usr/include/stdint.h
 obj/hat-trie.o: src/hat-trie-node.h
 obj/main.o: /usr/include/unistd.h /usr/include/_types.h

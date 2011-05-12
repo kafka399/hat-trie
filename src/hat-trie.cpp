@@ -28,8 +28,7 @@ hat_trie::hat_trie(const input_iterator &first, const input_iterator &last) {
     insert(first, last);
 }
 
-hat_trie::
-~hat_trie() {
+hat_trie::~hat_trie() {
     delete _root;
     _root = NULL;
 }
@@ -46,12 +45,12 @@ bool
 hat_trie::contains(const key_type &word) const {
     // Locate s in the trie's structure.
     const char *ps = word.c_str();
-    node_pointer n = _locate(ps);
+    _node_pointer n = _locate(ps);
 
     if (n.type == CONTAINER_POINTER) {
-        return ((container *) n.pointer)->contains(ps);
+        return ((_container *) n.p)->contains(ps);
     }
-    return n.pointer->is_word();
+    return n.p->word();
 }
 
 /**
@@ -120,12 +119,12 @@ hat_trie::insert(const key_type &word) {
 bool
 hat_trie::insert(const char *word) {
     const char *pos = word;
-    node_pointer n = _locate(pos);
+    _node_pointer n = _locate(pos);
     if (*pos == '\0') {
         // word was found in the trie's structure. Mark its location
         // as the end of a word.
-        if (n.pointer->is_word() == false) {
-            n.pointer->set_word(true);
+        if (n.p->word() == false) {
+            n.p->set_word(true);
             ++_size;
             return true;
         }
@@ -135,21 +134,21 @@ hat_trie::insert(const char *word) {
         // word was not found in the trie's structure. Either make a
         // new container for it or insert it into an already
         // existing container.
-        container *c = NULL;
+        _container *c = NULL;
         if (n.type == NODE_POINTER) {
             // Make a new container for word.
-            node *p = (node *) n.pointer;
+            _node *p = (_node *) n.p;
             int index = *pos;
-            c = new container(index);
+            c = new _container(index);
 
             // Insert the new container into the trie structure.
-            c->parent = p;
-            p->children[index] = c;
-            p->types[index] = CONTAINER_POINTER;
+            c->_parent = p;
+            p->_children[index] = c;
+            p->_types[index] = CONTAINER_POINTER;
             ++pos;
         } else if (n.type == CONTAINER_POINTER) {
             // The container for s already exists.
-            c = (container *) n.pointer;
+            c = (_container *) n.p;
         }
 
         // Insert the rest of word into the container.
@@ -210,7 +209,7 @@ hat_trie::begin() const {
     // is pretty ugly. See the doc comment for the iterator class
     // for a description of why.
     iterator result;
-    result = _least(_root, result.cached_word);
+    result = _least(_root, result._cached_word);
     return result;
 }
 
@@ -224,20 +223,20 @@ hat_trie::begin() const {
 hat_trie::iterator
 hat_trie::find(const key_type &s) const {
     const char *ps = s.c_str();
-    node_pointer n = _locate(ps);
+    _node_pointer n = _locate(ps);
 
     // Search for the word in the trie.
     iterator result;
     if ((n.type == CONTAINER_POINTER &&
-            ((container *) n.pointer)->contains(ps)) ||
-            n.pointer->is_word()) {
+            ((_container *) n.p)->contains(ps)) ||
+            n.p->word()) {
         // The word is in the trie. Find its location and initialize the
         // return iterator to that location.
         result = n;
-        result.cached_word = key_type(s.c_str(), ps);
+        result._cached_word = key_type(s.c_str(), ps);
         if (*ps != '\0') {
-            result.word = false;
-            result.container_iterator = ((container *) n.pointer)->store.find(ps);
+            result._word = false;
+            result._container_iterator = ((_container *) n.p)->_store.find(ps);
         }
 
     } else {
@@ -256,7 +255,7 @@ hat_trie::find(const key_type &s) const {
  * @param rhs  hat_trie object to swap data with
  */
 void
-hat_trie::swap(self &rhs) {
+hat_trie::swap(_self &rhs) {
     using std::swap;
     swap(_root, rhs._root);
     swap(_size, rhs._size);
@@ -279,7 +278,7 @@ hat_trie::end() const {
 void
 hat_trie::_init() {
     _size = 0;
-    _root = new node();
+    _root = new _node();
 }
 
 /**
@@ -289,33 +288,33 @@ hat_trie::_init() {
  *           <code>*s = '\0'</code>, @a s is in the trie part of this
  *           data structure. If not, @a s is either completed in a
  *           container or is not in the trie at all.
- * @return  a node_pointer to the location of @a s in the trie
+ * @return  a _node_pointer to the location of @a s in the trie
  */
-hat_trie::node_pointer
+hat_trie::_node_pointer
 hat_trie::_locate(const char *&s) const {
-    node *p = _root;
-    node_base *v = NULL;
+    _node *p = _root;
+    _node_base *v = NULL;
     while (*s) {
         int index = *s;
-        v = p->children[index];
+        v = p->_children[index];
         if (v) {
             ++s;
-            if (p->types[index] == NODE_POINTER) {
+            if (p->_types[index] == NODE_POINTER) {
                 // Keep moving down the trie structure.
-                p = (node *) v;
-            } else if (p->types[index] == CONTAINER_POINTER) {
+                p = (_node *) v;
+            } else if (p->_types[index] == CONTAINER_POINTER) {
                 // s should appear in the container v
-                return node_pointer(CONTAINER_POINTER, v);
+                return _node_pointer(CONTAINER_POINTER, v);
             }
         } else {
             // s should appear underneath this node
-            return node_pointer(NODE_POINTER, p);
+            return _node_pointer(NODE_POINTER, p);
         }
     }
 
     // If we get here, no container was found that could have held
     // s, meaning node n represents s in the trie.
-    return node_pointer(NODE_POINTER, p);
+    return _node_pointer(NODE_POINTER, p);
 }
 
 /**
@@ -332,7 +331,7 @@ hat_trie::_locate(const char *&s) const {
  *      otherwise
  */
 bool
-hat_trie::_insert(container *htc, const char *s) {
+hat_trie::_insert(_container *htc, const char *s) {
     // Try to insert s into the container.
     if (htc->insert(s)) {
         ++_size;
@@ -374,24 +373,24 @@ hat_trie::_insert(container *htc, const char *s) {
  * @param htc  container to burst
  */
 void
-hat_trie::_burst(container *htc) {
+hat_trie::_burst(_container *htc) {
     // Construct a new node.
-    node *result = new node(htc->ch());
-    result->set_word(htc->is_word());
+    _node *result = new _node(htc->ch());
+    result->set_word(htc->word());
 
     // Make a set of containers for the data in the old container and
     // add them to the new node.
-    ht_array_hash::iterator it;
-    for (it = htc->store.begin(); it != htc->store.end(); ++it) {
+    array_hash::iterator it;
+    for (it = htc->_store.begin(); it != htc->_store.end(); ++it) {
         int index = (*it)[0];
 
         // Do we need to make a new container?
-        if (result->children[index] == NULL) {
+        if (result->_children[index] == NULL) {
             // Make a new container and position it under the new node.
-            container *insertion = new container((*it)[0]);
-            insertion->parent = result;
-            result->children[index] = insertion;
-            result->types[index] = CONTAINER_POINTER;
+            _container *insertion = new _container((*it)[0]);
+            insertion->_parent = result;
+            result->_children[index] = insertion;
+            result->_types[index] = CONTAINER_POINTER;
 
             // Set the new container's word field.
             insertion->set_word(((*it)[1] == '\0'));
@@ -400,19 +399,19 @@ hat_trie::_burst(container *htc) {
         // Insert the rest of the word into a container.
         if ((*it)[1] != '\0') {
             // Insert the rest of the word into the right container.
-            ((container *) result->children[index])->insert((*it) + 1);
+            ((_container *) result->_children[index])->insert((*it) + 1);
         } else {
             // Mark this container as a word.
-            ((container *) result->children[index])->set_word(true);
+            ((_container *) result->_children[index])->set_word(true);
         }
     }
 
     // Position the new node in the trie.
-    node *parent = htc->parent;
-    result->parent = parent;
+    _node *p = htc->_parent;
+    result->_parent = p;
     int index = htc->ch();
-    parent->children[index] = result;
-    parent->types[index] = NODE_POINTER;
+    p->_children[index] = result;
+    p->_types[index] = NODE_POINTER;
     delete htc;
 }
 
@@ -420,37 +419,39 @@ hat_trie::_burst(container *htc) {
  * Recursively prints the contents of the trie.
  */
 void
-hat_trie::_print(std::ostream &out,
-                 const node_pointer &n,
-                 const key_type &space) const {
+hat_trie::_print(
+        std::ostream &out,
+        const _node_pointer &n,
+        const key_type &space) const {
     if (n.type == CONTAINER_POINTER) {
-        container *c = (container *) n.pointer;
+        _container *c = (_container *) n.p;
         if (c->ch() != '\0') {
             out << space << c->ch();
-            if (c->is_word()) {
+            if (c->word()) {
                 out << " ~";
             }
             out << std::endl;
         }
 
-        ht_array_hash::iterator it;
-        it = c->store.begin();
-        for (it = c->store.begin(); it != c->store.end(); ++it) {
+        array_hash::iterator it;
+        it = c->_store.begin();
+        for (it = c->_store.begin(); it != c->_store.end(); ++it) {
             out << space + "  " << *it << " ~" << std::endl;
         }
 
     } else if (n.type == NODE_POINTER) {
-        node *p = (node *)n.pointer;
+        _node *p = (_node *) n.p;
         if (p->ch() != '\0') {
             out << space << p->ch();
-            if (p->types[HT_ALPHABET_SIZE]) {
+            if (p->word()) {
                 out << " ~";
             }
             out << std::endl;
         }
         for (int i = 0; i < HT_ALPHABET_SIZE; ++i) {
-            if (p->children[i]) {
-                _print(out, node_pointer(p->types[i], p->children[i]), space + "  ");
+            if (p->_children[i]) {
+                _print(out, _node_pointer(p->_types[i],
+                       p->_children[i]), space + "  ");
             }
         }
     }
@@ -465,36 +466,22 @@ hat_trie::_print(std::ostream &out,
  * @return  a pointer to the next child under this node starting from
  *          @a pos, or NULL if this node has no children
  */
-hat_trie::node_pointer
-hat_trie::_next_child(node *p, size_t pos, key_type &word) {
-    node_pointer result;
+hat_trie::_node_pointer
+hat_trie::_next_child(_node *p, size_t pos, key_type &word) {
+    _node_pointer result;
 
     // Search for the next child under this node starting at pos.
-    for (int i = pos; i < HT_ALPHABET_SIZE && result.pointer == NULL; ++i) {
-        if (p->children[i]) {
+    for (int i = pos; i < HT_ALPHABET_SIZE && result.p == NULL; ++i) {
+        if (p->_children[i]) {
             // Found a child.
-            result.pointer = p->children[i];
-            result.type = p->types[i];
+            result.p = p->_children[i];
+            result.type = p->_types[i];
 
             // Add this motion to the word.
-            word += result.pointer->ch();
+            word += result.p->ch();
         }
     }
     return result;
-}
-
-/**
- * Finds the lexicographically least child under a node.
- *
- * @param p  parent node to search under
- * @param pos  starting position in the children array
- * @param word  cached word in the trie traversal
- * @return  a pointer to the next child under this node starting from
- *          @a pos, or NULL if this node has no children
- */
-hat_trie::node_pointer
-hat_trie::_least_child(node *p, key_type &word) {
-    return _next_child(p, 0, word);
 }
 
 /**
@@ -506,28 +493,28 @@ hat_trie::_least_child(node *p, key_type &word) {
  * @param word  cached word in the trie traversal
  * @return  a pointer to the next node in the trie that marks a word
  */
-hat_trie::node_pointer
-hat_trie::_next_word(node_pointer n, key_type &word) {
+hat_trie::_node_pointer
+hat_trie::_next_word(_node_pointer n, key_type &word) {
     // Stop early if we get a NULL pointer.
-    if (n.pointer == NULL) { return node_pointer(); }
+    if (n.p == NULL) { return _node_pointer(); }
 
-    node_pointer result;
+    _node_pointer result;
     if (n.type == NODE_POINTER) {
         // Move to the leftmost child under this node.
-        result = _least_child((node *) n.pointer, word);
+        result = _next_child((_node *) n.p, 0, word);
     }
 
-    if (result.pointer == NULL) {
+    if (result.p == NULL) {
         // This node has no children. Move up in the trie until
         // we can move right.
-        node_pointer next;
+        _node_pointer next;
         int pos;
-        while (n.pointer->parent && next.pointer == NULL) {
+        while (n.p->_parent && next.p == NULL) {
             // Looks like we can't move to the right. Move up a level
             // in the trie and try again.
             pos = _pop_back(word) + 1;
-            next = _next_child(n.pointer->parent, pos, word);
-            n = n.pointer->parent;
+            next = _next_child(n.p->_parent, pos, word);
+            n = n.p->_parent;
         }
         result = next;
     }
@@ -539,16 +526,16 @@ hat_trie::_next_word(node_pointer n, key_type &word) {
 /**
  * Finds the lexicographically least node starting from @a n.
  *
- * @param n  current position in the trie
+ * @param n     current position in the trie
  * @param word  cached word in the trie traversal
  * @return  lexicographically least node from @a n. This function
  *          may return @a n itself
  */
-hat_trie::node_pointer
-hat_trie::_least(node_pointer n, key_type &word) {
-    while (n.pointer && n.pointer->is_word() == false && n.type == NODE_POINTER) {
+hat_trie::_node_pointer
+hat_trie::_least(_node_pointer n, key_type &word) {
+    while (n.p && n.p->word() == false && n.type == NODE_POINTER) {
         // Find the leftmost child of this node and move in that direction.
-        n = _least_child((node *) n.pointer, word);
+        n = _next_child((_node *) n.p, 0, word);
     }
     return n;
 }
@@ -580,26 +567,26 @@ hat_trie::_pop_back(key_type &word) {
  */
 hat_trie::iterator&
 hat_trie::iterator::operator++() {
-    if (n.type == CONTAINER_POINTER) {
+    if (_position.type == CONTAINER_POINTER) {
         // If word is set, then this container represents a word as
         // well as storing words. The first iteration into the
         // container is over the word represented by the container.
-        if (word) {
+        if (_word) {
             // Move into the actual container by setting word to false.
-            word = false;
+            _word = false;
         } else {
             // Move the iterator over the container's elements forward.
-            ++container_iterator;
+            ++_container_iterator;
         }
 
         // If we aren't at the end of the container, stop here.
-        if (container_iterator != ((container *) n.pointer)->store.end()) {
+        if (_container_iterator != ((_container *) _position.p)->_store.end()) {
             return *this;
         }
     }
 
     // Move to the next node in the trie.
-    return (*this = hat_trie::_next_word(n, cached_word));
+    return (*this = hat_trie::_next_word(_position, _cached_word));
 }
 
 /**
@@ -643,13 +630,13 @@ hat_trie::iterator::operator--(int) {
  */
 hat_trie::key_type
 hat_trie::iterator::operator*() const {
-    if (word || n.type == NODE_POINTER) {
+    if (_word || _position.type == NODE_POINTER) {
         // Print the word that has been cached over the trie traversal.
-        return cached_word;
+        return _cached_word;
 
-    } else if (n.type == CONTAINER_POINTER) {
+    } else if (_position.type == CONTAINER_POINTER) {
         // Pull a word from the container.
-        return cached_word + *container_iterator;
+        return _cached_word + *_container_iterator;
     }
 
     // should never get here
@@ -666,7 +653,7 @@ hat_trie::iterator::operator*() const {
 bool
 hat_trie::iterator::operator==(const iterator &rhs) {
     // TODO does iterator comparison need to be on more than just pointer?
-    return n == rhs.n;
+    return _position == rhs._position;
 }
 
 /**
@@ -687,7 +674,8 @@ hat_trie::iterator::operator!=(const iterator &rhs) {
  * this function ensures that the iterator's internal iterator
  * across the elements in the container is properly initialized.
  */
-hat_trie::iterator::iterator(node_pointer n) {
+hat_trie::
+iterator::iterator(_node_pointer n) {
     operator=(n);
 }
 
@@ -699,11 +687,11 @@ hat_trie::iterator::iterator(node_pointer n) {
  * the elements in the container is properly initialized.
  */
 hat_trie::iterator &
-hat_trie::iterator::operator=(node_pointer n) {
-    this->n = n;
-    if (n.type == CONTAINER_POINTER) {
-        container_iterator = ((container *) n.pointer)->store.begin();
-        word = n.pointer->is_word();
+hat_trie::iterator::operator=(_node_pointer n) {
+    this->_position = n;
+    if (_position.type == CONTAINER_POINTER) {
+        _container_iterator = ((_container *) _position.p)->_store.begin();
+        _word = _position.p->word();
     }
     return *this;
 }

@@ -3,48 +3,220 @@
 namespace stx {
 
 // ----------
-// ht_array_hash
+// array_hash
 // ----------
 
 /**
  * Default constructor.
  */
-ht_array_hash::
-ht_array_hash() {
-    data = new char *[SLOT_COUNT];
-    for (int i = 0; i < SLOT_COUNT; ++i) {
-        data[i] = NULL;
+array_hash::array_hash(const array_hash_traits &aht) :
+        _traits(aht), _size(0) {
+    _data = new char *[_traits.slot_count];
+    for (int i = 0; i < _traits.slot_count; ++i) {
+        _data[i] = NULL;
     }
-    _size = 0;
-    ALLOCATION_CHUNK_SIZE = 32;
 }
 
 /**
  * Standard destructor.
  */
-ht_array_hash::
-~ht_array_hash() {
-    for (int i = 0; i < SLOT_COUNT; ++i) {
-        delete [] data[i];
+array_hash::~array_hash() {
+    for (int i = 0; i < _traits.slot_count; ++i) {
+        delete [] _data[i];
     }
-    delete [] data;
+    delete [] _data;
+}
+
+/**
+ * Inserts @a str into the table.
+ *
+ * @param str  string to insert
+ * @return  true if @a str is successfully inserted, false if @a str already
+ *          appears in the table
+ */
+bool
+array_hash::insert(const char *str) {
+    length_type length;
+    int slot = _hash(str, length);
+    char *p = _data[slot];
+    if (p) {
+        size_type occupied;
+        if (_search(str, p, length, occupied) != NULL) {
+            // str is already in the table. Nothing needs to be done.
+            return false;
+        }
+
+        // Resize the slot if it doesn't have enough space.
+        size_type current = *((size_type *)(p));
+        size_type required = occupied + sizeof(length_type) + length;
+        if (required > current) {
+            _grow_slot(slot, current, required);
+        }
+
+        // Position for writing to the slot.
+        p = _data[slot] + occupied - sizeof(length_type);
+
+    } else {
+        // Make a new slot for this string.
+        size_type required = sizeof(size_type) + 2 * sizeof(length_type) + length;
+        _grow_slot(slot, 0, required);
+
+        // Position for writing to the slot.
+        p = _data[slot] + sizeof(size_type);
+    }
+
+    // Write str into the slot.
+    _append_string(str, p, length);
+    ++_size;
+    return true;
+}
+
+/**
+ * Erases a string from the hash table.
+ *
+ * @param str  string to erase
+ */
+void
+array_hash::erase(const char *str) {
+    length_type length;
+    int slot = _hash(str, length);
+    char *p = _data[slot];
+    if (p) {
+        size_type occupied;
+        if ((p = _search(str, p, length, occupied)) != NULL) {
+            // Erase the old word by overwriting it.
+            int n = _traits.allocation_chunk_size - (p - _data[slot]);
+            memcpy(p, p + sizeof(length_type) + length, n);
+
+            // If that made the slot empty, erase the slot.
+            if (*((length_type *)(_data[slot] + sizeof(size_type))) == 0) {
+                delete [] _data[slot];
+                _data[slot] = NULL;
+            }
+        }
+    }
 }
 
 /**
  * Searches for @a str in the table.
  *
- * @param str     string to search for
- * @param length  length of @a str
- * @param p       slot in @a data that @a str goes into
+ * @param str  string to search for
+ * @return  true iff @a str is in the table
+ */
+bool array_hash::contains(const char *str) const {
+    // Determine which slot in the table should contain str.
+    length_type length;
+    char *p = _data[_hash(str, length)];
+
+    // Return true if p is in that slot.
+    if (p == NULL) {
+        return false;
+    }
+    size_type s;
+    return _search(str, p, length, s) != NULL;
+}
+
+/**
+ * Searches for @a str in the table.
+ *
+ * @param str  string to search for
+ * @return  iterator to @a str in the table, or @a end() if @a str
+ *          is not in the table
+ */
+array_hash::iterator
+array_hash::find(const char *str) const {
+    // Determine which slot in the table should contain str.
+    length_type length;
+    int slot = _hash(str, length);
+    char *p = _data[slot];
+
+    // Search for str in that slot.
+    if (p == NULL) {
+        return end();
+    }
+    size_type s;
+    p = _search(str, p, length, s);
+    return iterator(slot, p, _data, *this);
+}
+
+/**
+ * Gets the number of elements in the table.
+ */
+size_t
+array_hash::size() const {
+    return _size;
+}
+
+/**
+ * Gets an iterator to the first element in the table.
+ */
+array_hash::iterator
+array_hash::begin() const {
+    iterator result;
+    if (size() == 0) {
+        result = end();
+    } else {
+        result._data = _data;
+        while (result._data[result._slot] == NULL) {
+            ++result._slot;
+        }
+        result._p = result._data[result._slot] + sizeof(size_type);
+    }
+    return result;
+}
+
+/**
+ * Gets an iterator to one past the last element in the hash table.
+ */
+array_hash::iterator
+array_hash::end() const {
+    return iterator(_traits.slot_count, NULL, _data, *this);
+}
+
+/**
+ * Hashes @a str to an integer, its slot in the hash table.
+ *
+ * @param str     string to hash
+ * @param length  length of @a str. Calculated as this function runs
+ * @param seed    seed for the hash function
+ *
+ * @return  hashed value of @a str, its slot in the table
+ */
+int
+array_hash::_hash(const char *str, length_type& length, int seed) const {
+    int h = seed;
+    length = 0;
+    while (str[length]) {
+        // Hash this character.
+        h = h ^ ((h << 5) + (h >> 2) + str[length]);
+        ++length;
+    }
+
+    ++length;  // include space for the NULL terminator
+    return h & (_traits.slot_count - 1);  // same as h % _traits.slot_count
+                                          // if _traits.slot_count is a
+                                          // power of 2
+}
+
+/**
+ * Searches for @a str in the table.
+ *
+ * @param str       string to search for
+ * @param length    length of @a str
+ * @param p         slot in @a data that @a str goes into
  * @param occupied  number of bytes in the slot that are currently in use.
- *                  This value is only used when this function doesn't
- *                  find the string in question
+ *                  This value is only meaningful when this function doesn't
+ *                  find @a str
  *
  * @return  If @a str is found in the table, returns a pointer to the string
  *          and its corresponding length. If not, returns NULL.
  */
-char *ht_array_hash::
-_search(const char *str, length_type length, char *p, size_type &occupied) const {
+char *
+array_hash::_search(
+        const char *str,
+        char *p,
+        length_type length,
+        size_type &occupied) const {
     occupied = -1;
     char *start = p;
 
@@ -62,7 +234,7 @@ _search(const char *str, length_type length, char *p, size_type &occupied) const
             }
         }
         p += w;
-        w = *((length_type *)p);
+        w = *((length_type *) p);
     }
     occupied = p - start + sizeof(length_type);
     return NULL;
@@ -75,22 +247,22 @@ _search(const char *str, length_type length, char *p, size_type &occupied) const
  * @param current   current size of the slot
  * @param required  required size of the slot
  */
-void ht_array_hash::
-_grow_slot(int slot, size_type current, size_type required) {
+void
+array_hash::_grow_slot(int slot, size_type current, size_type required) {
     // Determine how much space the new slot needs.
     size_type new_size = current;
     while (new_size < required) {
-        new_size += ALLOCATION_CHUNK_SIZE;
+        new_size += _traits.allocation_chunk_size;
     }
 
     // Make a new slot and copy all the data over.
-    char *p = data[slot];
-    data[slot] = new char[new_size];
+    char *p = _data[slot];
+    _data[slot] = new char[new_size];
     if (p != NULL) {
-        memcpy(data[slot], p, current);
+        memcpy(_data[slot], p, current);
         delete [] p;
     }
-    *((size_type *)(data[slot])) = new_size;
+    *((size_type *)(_data[slot])) = new_size;
 }
 
 /**
@@ -101,9 +273,11 @@ _grow_slot(int slot, size_type current, size_type required) {
  *                should occupy
  * @param length  length of @a str
  */
-void ht_array_hash::
-_write_string(const char *str, char *p, length_type length) {
-    // Write data for s.
+void
+array_hash::_append_string(const char *str, char *p, length_type length) {
+    // Write the length of the string, the string itself, the NULL
+    // terminator, and a 0 after all of that (for the length of the
+    // next string).
     memcpy(p, &length, sizeof(length_type));
     p += sizeof(length_type);
     memcpy(p, str, length);
@@ -112,234 +286,61 @@ _write_string(const char *str, char *p, length_type length) {
     memcpy(p, &length, sizeof(length_type));
 }
 
-/**
- * Inserts @a str into the table.
- *
- * @param str  string to insert
- * @return  true if @a str is successfully inserted, false if @a str already
- *          appears in the table
- */
-bool ht_array_hash::
-insert(const char *str) {
-    length_type length;
-    int slot = _hash(str, length);
-    char *p = data[slot];
-    if (p) {
-        size_type occupied;
-        if (_search(str, length, p, occupied) != NULL) {
-            // str is already in the table. Nothing needs to be done.
-            return false;
-        }
-
-        // Resize the slot if it doesn't have enough space.
-        size_type current = *((size_type *)(p));
-        size_type required = occupied + sizeof(length_type) + length;
-        if (required > current) {
-            _grow_slot(slot, current, required);
-        }
-
-        // Position for writing to the slot.
-        p = data[slot] + occupied - sizeof(length_type);
-
-    } else {
-        // Make a new slot for this string.
-        size_type required = sizeof(size_type) + 2 * sizeof(length_type) + length;
-        _grow_slot(slot, 0, required);
-
-        // Position for writing to the slot.
-        p = data[slot] + sizeof(size_type);
-    }
-
-    // Write str into the slot.
-    _write_string(str, p, length);
-    ++_size;
-    return true;
-}
-
-/**
- * Erases a string from the hash table.
- *
- * @param str  string to erase
- */
-void ht_array_hash::
-erase(const char *str) {
-    length_type length;
-    int slot = _hash(str, length);
-    char *p = data[slot];
-    if (p) {
-        size_type occupied;
-        if ((p = _search(str, length, p, occupied)) != NULL) {
-            // Erase the old word by overwriting it.
-            int n = ALLOCATION_CHUNK_SIZE - (p - data[slot]);
-            memcpy(p, p + sizeof(length_type) + length, n);
-
-            // If that made the slot empty, erase the slot.
-            if (*((length_type *)(data[slot] + sizeof(size_type))) == 0) {
-                delete [] data[slot];
-                data[slot] = NULL;
-            }
-        }
-    }
-}
-
-/**
- * Searches for @a str in the table.
- *
- * @param str  string to search for
- * @return  true iff @a str is in the table
- */
-bool ht_array_hash::
-contains(const char *str) const {
-    // Determine which slot in the table should contain str.
-    length_type length;
-    char *p = data[_hash(str, length)];
-
-    // Return true if p is in that slot.
-    if (p == NULL) {
-        return false;
-    }
-    size_type s;
-    return _search(str, length, p, s) != NULL;
-}
-
-/**
- * Searches for @a str in the table.
- *
- * @param str  string to search for
- * @return  iterator to @a str in the table, or @a end() if @a str
- *          is not in the table
- */
-ht_array_hash::iterator
-ht_array_hash::
-find(const char *str) const {
-    // Determine which slot in the table should contain str.
-    length_type length;
-    int slot = _hash(str, length);
-    char *p = data[slot];
-
-    // Search for str in that slot.
-    if (p == NULL) {
-        return end();
-    }
-    size_type s;
-    p = _search(str, length, p, s);
-    return iterator(slot, p, data);
-}
-
-/**
- * Gets the number of elements in the table.
- */
-size_t ht_array_hash::
-size() const {
-    return _size;
-}
-
-/**
- * Gets an iterator to the first element in the table.
- */
-ht_array_hash::iterator
-ht_array_hash::
-begin() const {
-    iterator result;
-    if (size() == 0) {
-        result = end();
-    } else {
-        result.data = data;
-        while (result.data[result.slot] == NULL) {
-            ++result.slot;
-        }
-        result.p = result.data[result.slot] + sizeof(size_type);
-    }
-    return result;
-}
-
-/**
- * Gets an iterator to one past the last element in the hash table.
- */
-ht_array_hash::iterator
-ht_array_hash::
-end() const {
-    return iterator(SLOT_COUNT, NULL, data);
-}
-
-/**
- * Hashes @a str to an integer, its slot in the hash table.
- *
- * @param str     string to hash
- * @param length  length of @a str. Calculated as this function runs
- * @param seed    seed for the hash function
- *
- * @return  hashed value of @a str, its slot in the table
- */
-int ht_array_hash::
-_hash(const char *str, length_type& length, int seed) const {
-    int h = seed;
-    length = 0;
-    while (str[length]) {
-        // Hash this character.
-        h = h ^ ((h << 5) + (h >> 2) + str[length]);
-        ++length;
-    }
-
-    ++length;  // include space for the NULL terminator
-    return h & (SLOT_COUNT - 1);  // same as h % SLOT_COUNT if SLOT_COUNT
-                                  // is a power of 2
-}
-
 // --------------------
-// ht_array_hash::iterator
+// array_hash::iterator
 // --------------------
 
 /**
  * Standard default constructor.
  */
-ht_array_hash::
-iterator::iterator() :
-        slot(0), p(NULL), data(NULL) {
+array_hash::iterator::iterator() :
+        _slot(0), _p(NULL), _data(NULL) {
 
 }
 
 /**
  * Standard copy constructor.
  */
-ht_array_hash::
-iterator::iterator(const iterator& rhs) {
+array_hash::iterator::iterator(const iterator& rhs) {
     *this = rhs;
 }
 
 /**
- * Move this iterator forward to the next element in the array hash.
+ * Move this iterator forward to the next element in the table.
  *
  * @return  self-reference
  */
-ht_array_hash::iterator&
-ht_array_hash::
-iterator::operator++() {
+array_hash::iterator&
+array_hash::iterator::operator++() {
     // Move p to the next string in this slot.
-    if (p) {
-        p += *((length_type *)p) + sizeof(length_type);
-        if (*((length_type *)p) == 0) {
+    if (_p) {
+        _p += *((length_type *) _p) + sizeof(length_type);
+        if (*((length_type *) _p) == 0) {
             // Move down to the next slot.
-            ++slot;
-            while (slot < SLOT_COUNT && data[slot] == NULL) {
-                ++slot;
+            ++_slot;
+            while (_slot < _slot_count && _data[_slot] == NULL) {
+                ++_slot;
             }
 
-            if (slot == SLOT_COUNT) {
+            if (_slot == _slot_count) {
                 // We are at the end. Make this an end iterator
-                p = NULL;
+                _p = NULL;
             } else {
                 // Move to the first element in this slot.
-                p = data[slot] + sizeof(size_type);
+                _p = _data[_slot] + sizeof(size_type);
             }
         }
     }
     return *this;
 }
 
-ht_array_hash::iterator&
-ht_array_hash::
-iterator::operator--() {
+/**
+ * Move this iterator backward to the previous element in the table.
+ *
+ * @return  self-reference
+ */
+array_hash::iterator&
+array_hash::iterator::operator--() {
     // TODO
     return *this;
 }
@@ -349,10 +350,10 @@ iterator::operator--() {
  *
  * @return  character pointer to the string this iterator points to
  */
-const char *ht_array_hash::
-iterator::operator*() const {
-    if (p) {
-        return p + sizeof(length_type);
+const char *
+array_hash::iterator::operator*() const {
+    if (_p) {
+        return _p + sizeof(length_type);
     }
     return NULL;
 }
@@ -360,16 +361,16 @@ iterator::operator*() const {
 /**
  * Standard equality operator.
  */
-bool ht_array_hash::
-iterator::operator==(const iterator& rhs) {
-    return p == rhs.p;
+bool
+array_hash::iterator::operator==(const iterator& rhs) {
+    return _p == rhs._p;
 }
 
 /**
  * Standard inequality operator.
  */
-bool ht_array_hash::
-iterator::operator!=(const iterator& rhs) {
+bool
+array_hash::iterator::operator!=(const iterator& rhs) {
     return !operator==(rhs);
 }
 
