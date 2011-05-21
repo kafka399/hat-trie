@@ -225,6 +225,44 @@ hat_trie::insert(input_iterator first, const input_iterator &last){
 }
 
 /**
+ * Erases a word from the trie.
+ *
+ * @param pos  iterator to the word in the trie
+ */
+void
+hat_trie::erase(const iterator &pos) {
+
+}
+
+/**
+ * Erases a word from the trie.
+ *
+ * @param word  word to erase
+ * @return  number of words erased from the trie. In a set container,
+ *          either 1 if the word was removed from the trie or 0 if the
+ *          word doesn't appear in the trie
+ */
+size_t
+hat_trie::erase(const key_type &word) {
+
+}
+
+/**
+ * Erases several words from the trie.
+ *
+ * @param first, last  iterators specifying a range of words to remove
+ *                     from the trie. All words in the range [first,
+ *                     last) are removed
+ */
+void
+hat_trie::erase(iterator first, const iterator &last) {
+    while (first != last) {
+        erase(first);
+        ++first;
+    }
+}
+
+/**
  * Gets an iterator to the first element in the trie.
  *
  * If there are no elements in the trie, the iterator pointing to

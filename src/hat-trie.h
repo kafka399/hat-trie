@@ -116,7 +116,7 @@
 //      iterator upper_bound(const key_type &) const
 //      value_compare value_comp() const
 //
-//   additional interface:
+//   additions:
 //    * bool contains() const
 //      hat_trie prefix_match(const key_type &) const
 
@@ -187,16 +187,22 @@ class hat_trie {
     bool contains(const key_type &word) const;
     size_t count(const key_type &word) const;
     bool empty() const;
+    key_compare key_comp() const;
     size_t size() const;
     void print(std::ostream &out = std::cout) const { _print(out, _root); }
 
     // modifiers
     void clear();
+
     bool insert(const key_type &word);
     bool insert(const char *word);
     template <class input_iterator>
     void insert(input_iterator first, const input_iterator &last);
     iterator insert(const iterator &, const key_type &word);
+
+    void erase(const iterator &pos);
+    size_t erase(const key_type &word);
+    void erase(iterator first, const iterator &last);
 
     // iterators
     iterator begin() const;
