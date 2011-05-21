@@ -184,7 +184,8 @@ class hat_trie {
     virtual ~hat_trie();
 
     // accessors
-    bool contains(const key_type &s) const;
+    bool contains(const key_type &word) const;
+    size_t count(const key_type &word) const;
     bool empty() const;
     size_t size() const;
     void print(std::ostream &out = std::cout) const { _print(out, _root); }

@@ -75,6 +75,19 @@ hat_trie::contains(const key_type &word) const {
 }
 
 /**
+ * Gets the number of times a specific element appears in the trie.
+ *
+ * Set containers do not allow duplicate keys, so this function will
+ * either return 1 (if @a word is in the trie) or 0.
+ *
+ * @return  number of times @a word appears in the trie
+ */
+size_t
+hat_trie::count(const key_type &word) const {
+    return contains(word) ? 1 : 0;
+}
+
+/**
  * Determines whether this container is empty.
  *
  * @return  true iff this container has no data
