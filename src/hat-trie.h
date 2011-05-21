@@ -87,8 +87,38 @@
 //   NO! it accumulates!
 // TODO documentation that limits string length to 65k characters
 // TODO visual studio compatibility
-// TODO code structure in hat-trie-node.h
-// TODO decide which allocation scheme is better for array_hash
+// TODO document which allocation scheme is better for array_hash
+
+// INTERFACE (* for implemented, ? for see documentation)
+//   set interface:
+//    * iterator begin()
+//    * void clear()
+//    * size_t count(const key_type &) const
+//    * bool empty() const
+//    * iterator end()
+//      pair<iterator, iterator> equal_range(const key_type &) const
+//      void erase(iterator)
+//      void erase(const key_type &)
+//      void erase(iterator, iterator)
+//    * iterator find(const key_type &) const
+//      allocator_type get_allocator() csont
+//    ? pair<iterator, bool> insert(const key_type &)
+//    * iterator insert(iterator, const key_type &)
+//    * void insert(input_iterator first, input_iterator last)
+//      key_compare key_comp() const
+//      iterator lower_bound(const key_type &) const
+//      size_t max_size() const
+//      self_reference operator=(self)
+//      reverse_iterator rbegin()
+//      reverse_iterator rend()
+//    * size_t size() const
+//    * void swap(self &)
+//      iterator upper_bound(const key_type &) const
+//      value_compare value_comp() const
+//
+//   additional interface:
+//    * bool contains() const
+//      hat_trie prefix_match(const key_type &) const
 
 #ifndef HAT_TRIE_H
 #define HAT_TRIE_H
