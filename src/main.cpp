@@ -7,14 +7,13 @@
 
 #include <google/profiler.h>
 #include <boost/foreach.hpp>
+#define foreach BOOST_FOREACH
 
 #include "array-hash.h"
 #include "hat-trie.h"
 
 using namespace std;
 using namespace stx;
-
-#define foreach BOOST_FOREACH
 
 template <class T>
 void print(const T &t) {
@@ -25,20 +24,10 @@ void print(const T &t) {
 }
 
 template <>
-void print(const array_hash &ah) {
-    array_hash::iterator it;
+void print(const array_hash<string> &ah) {
+    array_hash<string>::iterator it;
     for (it = ah.begin(); it != ah.end(); ++it) {
         cout << *it << endl;
-    }
-}
-
-template <class A, class B>
-void assert_equals(const A &a, const B &b) {
-    assert(a.size() == b.size());
-    typename A::iterator ait = a.begin();
-    typename B::iterator bit = b.begin();
-    while (ait != a.end()) {
-        assert(string(*ait) == string(*bit));
     }
 }
 
@@ -51,8 +40,8 @@ void stl() {
 }
 
 void mine_c() {
-    //hat_trie ht;
-    array_hash ht;
+    hat_trie<string> ht;
+    //array_hash<string> ht;
 
     // read entire file into main memory
     FILE *f = stdin;
@@ -78,10 +67,10 @@ void mine_c() {
 }
 
 void mine() {
-    hat_trie ht;
+    //hat_trie ht;
     string reader;
     while (cin >> reader) {
-        ht.insert(reader);
+        //ht.insert(reader);
     }
 }
 
@@ -94,20 +83,6 @@ int main() {
     mine_c();
     //ProfilerStop();
 
-
-    string reader;
-    array_hash ah;
-    set<string> s;
-    while (cin >> reader) {
-        ah.insert(reader.c_str());
-        s.insert(reader);
-    }
-    while (!s.empty()) {
-        reader = *s.begin();
-        ah.erase(reader.c_str());
-        s.erase(reader);
-        assert_equals(s, ah);
-    }
     return 0;
 }
 

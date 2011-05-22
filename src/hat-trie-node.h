@@ -32,7 +32,7 @@ namespace stx {
 const int HT_ALPHABET_SIZE = 128;
 
 // forward declarations
-class hat_trie;
+template <class T> class hat_trie;
 class hat_trie_container;
 class hat_trie_node;
 
@@ -40,16 +40,14 @@ class hat_trie_node;
  * Base class for hat trie node types.
  */
 class hat_trie_node_base {
-    friend class hat_trie;
+    friend class hat_trie<std::string>;
 
   private:
     typedef hat_trie_node _node;
     typedef hat_trie_container _container;
 
   public:
-    hat_trie_node_base(char ch = '\0') : _ch(ch), _parent(NULL) {
-        set_word(false);
-    }
+    hat_trie_node_base(char ch = '\0') : _ch(ch), _parent(NULL) { }
     virtual ~hat_trie_node_base() { }
 
     // accessors
@@ -68,10 +66,12 @@ class hat_trie_node_base {
  * HAT-trie container type.
  */
 class hat_trie_container : public hat_trie_node_base {
-    friend class hat_trie;
+    friend class hat_trie<std::string>;
 
   public:
-    hat_trie_container(char ch = '\0') : hat_trie_node_base(ch) { }
+    hat_trie_container(char ch = '\0') : hat_trie_node_base(ch) {
+        set_word(false);
+    }
     ~hat_trie_container() { }
 
     // accessors
@@ -97,14 +97,14 @@ class hat_trie_container : public hat_trie_node_base {
 
   private:
     bool _word;
-    array_hash _store;
+    array_hash<std::string> _store;
 };
 
 /**
  * HAT-trie node type.
  */
 class hat_trie_node : public hat_trie_node_base {
-    friend class hat_trie;
+    friend class hat_trie<std::string>;
 
   private:
     typedef hat_trie_node_base _node_base;
@@ -114,6 +114,7 @@ class hat_trie_node : public hat_trie_node_base {
         for (int i = 0; i < HT_ALPHABET_SIZE; ++i) {
             _children[i] = NULL;
         }
+        set_word(false);
     }
     ~hat_trie_node() {
         for (int i = 0; i < HT_ALPHABET_SIZE; ++i) {
