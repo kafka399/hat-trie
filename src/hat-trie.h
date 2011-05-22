@@ -105,7 +105,7 @@
 //    ? pair<iterator, bool> insert(const key_type &)
 //    * iterator insert(iterator, const key_type &)
 //    * void insert(input_iterator first, input_iterator last)
-//      key_compare key_comp() const
+//    * key_compare key_comp() const
 //      iterator lower_bound(const key_type &) const
 //      size_t max_size() const
 //      self_reference operator=(self)
@@ -114,7 +114,7 @@
 //    * size_t size() const
 //    * void swap(self &)
 //      iterator upper_bound(const key_type &) const
-//      value_compare value_comp() const
+//    * value_compare value_comp() const
 //
 //   additions:
 //    * bool contains() const
@@ -169,10 +169,12 @@ class hat_trie {
 
   public:
     // STL types
-    typedef std::string     key_type;
-    typedef key_type        value_type;
-    typedef key_type&       reference;
-    typedef const key_type& const_reference;
+    typedef std::string      key_type;
+    typedef key_type         value_type;
+    typedef key_type &       reference;
+    typedef const key_type & const_reference;
+    typedef std::less<char>  key_compare;
+    typedef key_compare      value_compare;
 
     class iterator;
     typedef iterator const_iterator;
@@ -189,6 +191,7 @@ class hat_trie {
     bool empty() const;
     key_compare key_comp() const;
     size_t size() const;
+    value_compare value_comp() const;
     void print(std::ostream &out = std::cout) const { _print(out, _root); }
 
     // modifiers

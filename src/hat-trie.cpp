@@ -98,6 +98,17 @@ hat_trie::empty() const {
 }
 
 /**
+ * Gets the comparison object used to compare characters.
+ *
+ * @return  std::less<char>. This is actually a lie, but std::less<char>
+ *          is functionally equivalent
+ */
+hat_trie::key_compare
+hat_trie::key_comp() const {
+    return std::less<char>();
+}
+
+/**
  * Gets the number of distinct elements in the trie.
  *
  * @return  size of the trie
@@ -105,6 +116,18 @@ hat_trie::empty() const {
 size_t
 hat_trie::size() const {
     return _size;
+}
+
+/**
+ * Gets the comparison object used to compare characters.
+ *
+ * In a set, this function is equivalent to key_comp().
+ *
+ * @return  std::less<char>
+ */
+hat_trie::value_compare
+hat_trie::value_comp() const {
+    return key_comp();
 }
 
 /**
