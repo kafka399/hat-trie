@@ -231,6 +231,20 @@ class hat_trie {
 };
 */
 
+// TODO
+// this is such an interesting problem! how do we reference keys like this?
+
+template <class T> const std::string &ref(const T &t);
+template <class T> std::string &ref(T &t);
+
+const std::string &ref(const std::string &s) { return s; }
+std::string &ref(std::string &s) { return s; }
+
+template <class T>
+const std::string &ref(const std::pair<std::string, T> &p) {
+    return p.first;
+}
+
 /**
  * Trie-based data structure for managing sorted strings.
  */
@@ -391,7 +405,8 @@ class hat_trie {
      * @return  true if @a word is inserted into the trie, false if @a word
      *          was already in the trie
      */
-    bool insert(const key_type &word) {
+    bool insert(const key_type &key) {
+        std::string &word = ref(key);
         return insert(word.c_str());
     }
 
@@ -471,7 +486,8 @@ class hat_trie {
      *                     to the trie. All words in the range
      *                     [first, last) are added
      */
-    iterator insert(const iterator &, const key_type &word) {
+    iterator insert(const iterator &, const key_type &key) {
+        std::string &word = ref(key);
         insert(word);
         return find(word);
     }
@@ -551,8 +567,9 @@ class hat_trie {
      * @return  iterator to @a s in the trie. If @a s is not in the trie,
      *          returns an iterator to one past the last element
      */
-    iterator find(const key_type &s) const {
-        const char *ps = s.c_str();
+    iterator find(const key_type &key) const {
+        std::string &word = ref(key);
+        const char *ps = word.c_str();
         _node_pointer n = _locate(ps);
 
         // Search for the word in the trie.
@@ -563,7 +580,7 @@ class hat_trie {
             // The word is in the trie. Find its location and initialize the
             // return iterator to that location.
             result = n;
-            result._cached_word = key_type(s.c_str(), ps);
+            result._cached_word = std::string(word.c_str(), ps);
             if (*ps != '\0') {
                 result._word = false;
                 result._container_iterator = ((_container *) n.p)->_store.find(ps);
@@ -611,8 +628,10 @@ class hat_trie {
         friend class hat_trie;
 
       public:
+        /**
+         * Default constructor.
+         */
         iterator() { }
-
 
         /**
          * Moves the iterator forward.
@@ -727,7 +746,7 @@ class hat_trie {
 
         // Caches the word as we move up and down the trie and
         // implicitly caches the path we followed as well
-        key_type _cached_word;
+        std::string _cached_word;
 
         /**
          * Special-purpose conversion constructor.
