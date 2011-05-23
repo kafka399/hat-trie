@@ -234,8 +234,8 @@ class hat_trie {
 /**
  * Trie-based data structure for managing sorted strings.
  */
-template <>
-class hat_trie<std::string> {
+template <class T>
+class hat_trie {
 
   private:
     // types node_base values could point to. This is stored in
@@ -271,7 +271,7 @@ class hat_trie<std::string> {
   public:
     // STL types
     typedef size_t           size_type;
-    typedef std::string      key_type;
+    typedef T                key_type;
     typedef key_type         value_type;
     typedef key_type &       reference;
     typedef const key_type & const_reference;
@@ -640,8 +640,7 @@ class hat_trie<std::string> {
             }
 
             // Move to the next node in the trie.
-            return (*this = hat_trie<std::string>::
-                                _next_word(_position, _cached_word));
+            return (*this = hat_trie::_next_word(_position, _cached_word));
         }
 
         /**
@@ -723,7 +722,7 @@ class hat_trie<std::string> {
         _node_pointer _position;
 
         // Internal iterator across container types
-        array_hash<std::string>::iterator _container_iterator;
+        typename array_hash<key_type>::iterator _container_iterator;
         bool _word;
 
         // Caches the word as we move up and down the trie and
@@ -875,7 +874,7 @@ class hat_trie<std::string> {
 
         // Make a set of containers for the data in the old container and
         // add them to the new node.
-        array_hash<std::string>::iterator it;
+        typename array_hash<key_type>::iterator it;
         for (it = htc->_store.begin(); it != htc->_store.end(); ++it) {
             int index = (*it)[0];
 
@@ -1021,8 +1020,9 @@ class hat_trie<std::string> {
 /**
  * Recursively prints the contents of the trie.
  */
+template <class T>
 void
-hat_trie<std::string>::_print(
+hat_trie<T>::_print(
         std::ostream &out,
         const _node_pointer &n,
         const key_type &space) const {
@@ -1036,7 +1036,7 @@ hat_trie<std::string>::_print(
             out << std::endl;
         }
 
-        array_hash<std::string>::iterator it;
+        typename array_hash<key_type>::iterator it;
         it = c->_store.begin();
         for (it = c->_store.begin(); it != c->_store.end(); ++it) {
             out << space + "  " << *it << " ~" << std::endl;
@@ -1063,44 +1063,51 @@ hat_trie<std::string>::_print(
 /**
  * Namespace-scope swap function for hat tries.
  */
-void swap(hat_trie<std::string> &lhs, hat_trie<std::string> &rhs) {
-    lhs.swap(rhs);
-}
+//template <class T>
+//void swap(hat_trie<T> &lhs, hat_trie<T> &rhs) {
+    //lhs.swap(rhs);
+//}
 
 // --------------------
 // COMPARISON OPERATORS
 // --------------------
 
+template <class T>
 bool
-operator<(const stx::hat_trie<std::string> &lhs,
-          const stx::hat_trie<std::string> &rhs) {
+operator<(const stx::hat_trie<T> &lhs,
+          const stx::hat_trie<T> &rhs) {
     return std::lexicographical_compare(lhs.begin(), lhs.end(),
                                         rhs.begin(), rhs.end());
 }
+template <class T>
 bool
-operator==(const stx::hat_trie<std::string> &lhs,
-           const stx::hat_trie<std::string> &rhs) {
+operator==(const stx::hat_trie<T> &lhs,
+           const stx::hat_trie<T> &rhs) {
     return lhs.size() == rhs.size() &&
            std::equal(lhs.begin(), lhs.end(), rhs.begin());
 }
+template <class T>
 bool
-operator>(const stx::hat_trie<std::string> &lhs,
-          const stx::hat_trie<std::string> &rhs) {
+operator>(const stx::hat_trie<T> &lhs,
+          const stx::hat_trie<T> &rhs) {
     return rhs < lhs;
 }
+template <class T>
 bool
-operator<=(const stx::hat_trie<std::string> &lhs,
-           const stx::hat_trie<std::string> &rhs) {
+operator<=(const stx::hat_trie<T> &lhs,
+           const stx::hat_trie<T> &rhs) {
     return !(rhs < lhs);
 }
+template <class T>
 bool
-operator>=(const stx::hat_trie<std::string> &lhs,
-           const stx::hat_trie<std::string> &rhs) {
+operator>=(const stx::hat_trie<T> &lhs,
+           const stx::hat_trie<T> &rhs) {
     return !(lhs < rhs);
 }
+template <class T>
 bool
-operator!=(const stx::hat_trie<std::string> &lhs,
-           const stx::hat_trie<std::string> &rhs) {
+operator!=(const stx::hat_trie<T> &lhs,
+           const stx::hat_trie<T> &rhs) {
     return !(lhs == rhs);
 }
 
@@ -1109,11 +1116,15 @@ operator!=(const stx::hat_trie<std::string> &lhs,
 namespace std {
 
 /**
- * Template specialization of std::swap for hat_tries.
+ * Template overload of std::swap for hat_tries.
+ *
+ * According to the standard, this technically isn't allowed, but there
+ * is no way to solve this problem without breaking standard. Boost
+ * libraries do it (see smart pointer library).
  */
-template <>
+template <class T>
 void
-swap(stx::hat_trie<std::string> &lhs, stx::hat_trie<std::string> &rhs) {
+swap(stx::hat_trie<T> &lhs, stx::hat_trie<T> &rhs) {
     lhs.swap(rhs);
 }
 

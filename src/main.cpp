@@ -81,6 +81,9 @@ int main() {
     //stl();
     //mine();
     mine_c();
+    hat_trie<string> a;
+    hat_trie<string> b;
+    swap(a, b);
     //ProfilerStop();
 
     return 0;
