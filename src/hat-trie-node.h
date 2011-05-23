@@ -32,7 +32,8 @@ namespace stx {
 const int HT_ALPHABET_SIZE = 128;
 
 // forward declarations
-template <class T> class hat_trie;
+class hat_trie_traits;
+template <class T, class traits = hat_trie_traits> class hat_trie;
 class hat_trie_container;
 class hat_trie_node;
 
@@ -40,7 +41,7 @@ class hat_trie_node;
  * Base class for hat trie node types.
  */
 class hat_trie_node_base {
-    friend class hat_trie<std::string>;
+    friend class hat_trie<std::string, hat_trie_traits>;
 
   private:
     typedef hat_trie_node _node;
@@ -66,7 +67,7 @@ class hat_trie_node_base {
  * HAT-trie container type.
  */
 class hat_trie_container : public hat_trie_node_base {
-    friend class hat_trie<std::string>;
+    friend class hat_trie<std::string, hat_trie_traits>;
 
   public:
     hat_trie_container(char ch = '\0') : hat_trie_node_base(ch) {
@@ -104,7 +105,7 @@ class hat_trie_container : public hat_trie_node_base {
  * HAT-trie node type.
  */
 class hat_trie_node : public hat_trie_node_base {
-    friend class hat_trie<std::string>;
+    friend class hat_trie<std::string, hat_trie_traits>;
 
   private:
     typedef hat_trie_node_base _node_base;

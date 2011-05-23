@@ -63,7 +63,7 @@ void mine_c() {
         }
     }
     delete [] data;
-    //print(ht);
+    print(ht);
 }
 
 void mine() {
