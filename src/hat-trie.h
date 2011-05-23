@@ -138,13 +138,17 @@ namespace stx {
 class hat_trie_traits {
 
   public:
+    hat_trie_traits() {
+        burst_threshold = 16384;
+    }
+
     /**
      * A hat_trie container is burst when its size passes this
      * threshold. Higher values use less memory, but may be slower.
      *
      * Default 16384. Must be > 0 and <= 32,768.
      */
-    static const int burst_threshold = 16384;
+    size_t burst_threshold;
 
 };
 
@@ -166,7 +170,7 @@ class hat_trie {
     typedef iterator const_iterator;
 
     // constructors and destructors
-    hat_trie();
+    hat_trie(hat_trie_traits traits = hat_trie_traits());
     template <class input_iterator>
     hat_trie(const input_iterator &first, const input_iterator &last);
     virtual ~hat_trie();
@@ -230,8 +234,8 @@ class hat_trie {
 /**
  * Trie-based data structure for managing sorted strings.
  */
-template <class traits>
-class hat_trie<std::string, traits> {
+template <>
+class hat_trie<std::string> {
 
   private:
     // types node_base values could point to. This is stored in
@@ -280,7 +284,8 @@ class hat_trie<std::string, traits> {
     /**
      * Default constructor.
      */
-    hat_trie() {
+    hat_trie(const hat_trie_traits &traits = hat_trie_traits()) :
+            _traits(traits) {
         _init();
     }
 
@@ -290,7 +295,9 @@ class hat_trie<std::string, traits> {
      * @param first, last  iterators specifying a range of elements
      */
     template <class input_iterator>
-    hat_trie(const input_iterator &first, const input_iterator &last) {
+    hat_trie(const input_iterator &first, const input_iterator &last,
+             const hat_trie_traits &traits = hat_trie_traits()) :
+             _traits(traits) {
         _init();
         insert(first, last);
     }
@@ -563,6 +570,7 @@ class hat_trie<std::string, traits> {
         using std::swap;
         swap(_root, rhs._root);
         swap(_size, rhs._size);
+        swap(_traits, rhs._traits);
     }
 
     // TODO explain all the state an iterator maintains
@@ -614,8 +622,8 @@ class hat_trie<std::string, traits> {
             }
 
             // Move to the next node in the trie.
-            return (*this = hat_trie<std::string, hat_trie_traits>::
-                            _next_word(_position, _cached_word));
+            return (*this = hat_trie<std::string>::
+                                _next_word(_position, _cached_word));
         }
 
         /**
@@ -735,6 +743,7 @@ class hat_trie<std::string, traits> {
     };
 
   private:
+    hat_trie_traits _traits;
     _node *_root;  // pointer to the root of the trie
     size_type _size;  // number of distinct elements in the trie
 
@@ -803,7 +812,7 @@ class hat_trie<std::string, traits> {
         // Try to insert s into the container.
         if (htc->insert(s)) {
             ++_size;
-            if (htc->size() > traits::burst_threshold) {
+            if (htc->size() > _traits.burst_threshold) {
                 // The container has too many strings in it; burst the
                 // container into a node.
                 _burst(htc);
@@ -993,9 +1002,8 @@ class hat_trie<std::string, traits> {
 /**
  * Recursively prints the contents of the trie.
  */
-template <class traits>
 void
-hat_trie<std::string, traits>::_print(
+hat_trie<std::string>::_print(
         std::ostream &out,
         const _node_pointer &n,
         const key_type &space) const {
@@ -1036,7 +1044,7 @@ hat_trie<std::string, traits>::_print(
 /**
  * Namespace-scope swap function for hat tries.
  */
-void swap(hat_trie<std::string, hat_trie_traits> &lhs, hat_trie<std::string, hat_trie_traits> &rhs) {
+void swap(hat_trie<std::string> &lhs, hat_trie<std::string> &rhs) {
     lhs.swap(rhs);
 }
 
@@ -1045,35 +1053,35 @@ void swap(hat_trie<std::string, hat_trie_traits> &lhs, hat_trie<std::string, hat
 // --------------------
 
 bool
-operator<(const stx::hat_trie<std::string, hat_trie_traits> &lhs,
-          const stx::hat_trie<std::string, hat_trie_traits> &rhs) {
+operator<(const stx::hat_trie<std::string> &lhs,
+          const stx::hat_trie<std::string> &rhs) {
     return std::lexicographical_compare(lhs.begin(), lhs.end(),
                                         rhs.begin(), rhs.end());
 }
 bool
-operator==(const stx::hat_trie<std::string, hat_trie_traits> &lhs,
-                const stx::hat_trie<std::string, hat_trie_traits> &rhs) {
+operator==(const stx::hat_trie<std::string> &lhs,
+           const stx::hat_trie<std::string> &rhs) {
     return lhs.size() == rhs.size() &&
            std::equal(lhs.begin(), lhs.end(), rhs.begin());
 }
 bool
-operator>(const stx::hat_trie<std::string, hat_trie_traits> &lhs,
-          const stx::hat_trie<std::string, hat_trie_traits> &rhs) {
+operator>(const stx::hat_trie<std::string> &lhs,
+          const stx::hat_trie<std::string> &rhs) {
     return rhs < lhs;
 }
 bool
-operator<=(const stx::hat_trie<std::string, hat_trie_traits> &lhs,
-           const stx::hat_trie<std::string, hat_trie_traits> &rhs) {
+operator<=(const stx::hat_trie<std::string> &lhs,
+           const stx::hat_trie<std::string> &rhs) {
     return !(rhs < lhs);
 }
 bool
-operator>=(const stx::hat_trie<std::string, hat_trie_traits> &lhs,
-           const stx::hat_trie<std::string, hat_trie_traits> &rhs) {
+operator>=(const stx::hat_trie<std::string> &lhs,
+           const stx::hat_trie<std::string> &rhs) {
     return !(lhs < rhs);
 }
 bool
-operator!=(const stx::hat_trie<std::string, hat_trie_traits> &lhs,
-           const stx::hat_trie<std::string, hat_trie_traits> &rhs) {
+operator!=(const stx::hat_trie<std::string> &lhs,
+           const stx::hat_trie<std::string> &rhs) {
     return !(lhs == rhs);
 }
 
@@ -1086,8 +1094,7 @@ namespace std {
  */
 template <>
 void
-swap(stx::hat_trie<std::string, stx::hat_trie_traits> &lhs,
-     stx::hat_trie<std::string, stx::hat_trie_traits> &rhs) {
+swap(stx::hat_trie<std::string> &lhs, stx::hat_trie<std::string> &rhs) {
     lhs.swap(rhs);
 }
 

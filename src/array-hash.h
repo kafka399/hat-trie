@@ -38,13 +38,18 @@ namespace stx {
 class array_hash_traits {
 
   public:
+    array_hash_traits() {
+        slot_count = 512;
+        allocation_chunk_size = 32;
+    }
+
     /**
      * Number of slots in the hash table. Higher values use more
      * memory but may show faster access times.
      *
      * Default 512. Must be positive.
      */
-    static const int slot_count = 512;
+    int slot_count;
 
     /**
      * This value only affects the speed of the insert() operation.  When a
@@ -52,7 +57,7 @@ class array_hash_traits {
      * size until there is enough space for a word.  In general, higher values
      * use more memory but require fewer memory copy operations.  Try to guess
      * how many average characters your strings will use, then multiply that
-     * by (hat_trie_traits::burst_threshold / array_hash_traits::slot_count) to
+     * by (hat_trie__traits.burst_threshold / array_hash_traits::slot_count) to
      * get a good estimate for this value.
      *
      * If you want memory allocations to be exactly as big as they need to
@@ -62,7 +67,7 @@ class array_hash_traits {
      *
      * Default 32. Must be non-negative.
      */
-    static const int allocation_chunk_size = 32;
+    int allocation_chunk_size;
 
 };
 
@@ -103,14 +108,14 @@ class array_hash {
 };
 */
 
-template <class T, class traits = array_hash_traits>
+template <class T>
 class array_hash { };
 
 /**
  * Hash table container for unsorted strings.
  */
-template <class traits>
-class array_hash<std::string, traits> {
+template <>
+class array_hash<std::string> {
 
   private:
     typedef uint16_t length_type;
@@ -122,9 +127,10 @@ class array_hash<std::string, traits> {
     /**
      * Default constructor.
      */
-    array_hash() {
-        _data = new char *[traits::slot_count];
-        for (int i = 0; i < traits::slot_count; ++i) {
+    array_hash(const array_hash_traits &traits = array_hash_traits()) :
+            _traits(traits) {
+        _data = new char *[_traits.slot_count];
+        for (int i = 0; i < _traits.slot_count; ++i) {
             _data[i] = NULL;
         }
         _size = 0;
@@ -134,7 +140,7 @@ class array_hash<std::string, traits> {
      * Standard destructor.
      */
     ~array_hash() {
-        for (int i = 0; i < traits::slot_count; ++i) {
+        for (int i = 0; i < _traits.slot_count; ++i) {
             delete [] _data[i];
         }
         delete [] _data;
@@ -224,7 +230,7 @@ class array_hash<std::string, traits> {
             size_type occupied;
             if ((p = _search(str, p, length, occupied)) != NULL) {
                 // Erase the old word by overwriting it.
-                int n = traits::allocation_chunk_size - (p - _data[slot]);
+                int n = _traits.allocation_chunk_size - (p - _data[slot]);
                 memcpy(p, p + sizeof(length_type) + length, n);
                 --_size;
 
@@ -251,7 +257,7 @@ class array_hash<std::string, traits> {
             }
             result._p = result._data[result._slot] + sizeof(size_type);
         }
-        result._slot_count = traits::slot_count;
+        result._slot_count = _traits.slot_count;
         return result;
     }
 
@@ -259,7 +265,7 @@ class array_hash<std::string, traits> {
      * Gets an iterator to one past the last element in the hash table.
      */
     iterator end() const {
-        return iterator(traits::slot_count, NULL, _data, traits::slot_count);
+        return iterator(_traits.slot_count, NULL, _data, _traits.slot_count);
     }
 
     /**
@@ -281,7 +287,7 @@ class array_hash<std::string, traits> {
         }
         size_type s;
         p = _search(str, p, length, s);
-        return iterator(slot, p, _data, *this);
+        return iterator(slot, p, _data, _traits.slot_count);
     }
 
 
@@ -367,6 +373,7 @@ class array_hash<std::string, traits> {
     };
 
   private:
+    array_hash_traits _traits;
     size_t _size;
     char **_data;
 
@@ -389,9 +396,9 @@ class array_hash<std::string, traits> {
         }
 
         ++length;  // include space for the NULL terminator
-        return h & (traits::slot_count - 1);  // same as h %
-                                              // traits::slot_count if
-                                              // traits::slot_count is a
+        return h & (_traits.slot_count - 1);  // same as h %
+                                              // _traits.slot_count if
+                                              // _traits.slot_count is a
                                               // power of 2
     }
 
@@ -447,7 +454,7 @@ class array_hash<std::string, traits> {
         // Determine how much space the new slot needs.
         size_type new_size = current;
         while (new_size < required) {
-            new_size += traits::allocation_chunk_size;
+            new_size += _traits.allocation_chunk_size;
         }
 
         // Make a new slot and copy all the data over.

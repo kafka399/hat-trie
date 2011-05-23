@@ -42,10 +42,5 @@ depend:
 # ... then change src/*.o in this Makefile to obj/*.o.
 # DO NOT DELETE
 
-obj/main.o: /usr/include/unistd.h /usr/include/_types.h
-obj/main.o: /usr/include/sys/_types.h /usr/include/sys/cdefs.h
-obj/main.o: /usr/include/machine/_types.h /usr/include/i386/_types.h
-obj/main.o: /usr/include/sys/unistd.h /usr/include/sys/select.h
-obj/main.o: /usr/include/sys/appleapiopts.h /usr/include/sys/_structs.h
-obj/main.o: /usr/include/sys/_select.h src/array-hash.h src/hat-trie.h
-obj/main.o: src/hat-trie-node.h
+obj/main.o: src/array-hash.h 
+obj/main.o: src/hat-trie.h src/hat-trie-node.h
