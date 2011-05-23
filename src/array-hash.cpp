@@ -1,4 +1,7 @@
 #include "array-hash.h"
+#include <cassert>
+#include <iostream>
+using namespace std;
 
 namespace stx {
 
@@ -87,6 +90,7 @@ array_hash::erase(const char *str) {
             // Erase the old word by overwriting it.
             int n = _traits.allocation_chunk_size - (p - _data[slot]);
             memcpy(p, p + sizeof(length_type) + length, n);
+            --_size;
 
             // If that made the slot empty, erase the slot.
             if (*((length_type *)(_data[slot] + sizeof(size_type))) == 0) {
@@ -162,6 +166,7 @@ array_hash::begin() const {
         }
         result._p = result._data[result._slot] + sizeof(size_type);
     }
+    result._slot_count = _traits.slot_count;
     return result;
 }
 
