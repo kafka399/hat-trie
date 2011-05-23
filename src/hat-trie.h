@@ -284,8 +284,9 @@ class hat_trie<std::string> {
     /**
      * Default constructor.
      */
-    hat_trie(const hat_trie_traits &traits = hat_trie_traits()) :
-            _traits(traits) {
+    hat_trie(const hat_trie_traits &traits = hat_trie_traits(),
+             const array_hash_traits &ah_traits = array_hash_traits()) :
+            _traits(traits), _ah_traits(ah_traits) {
         _init();
     }
 
@@ -296,8 +297,9 @@ class hat_trie<std::string> {
      */
     template <class input_iterator>
     hat_trie(const input_iterator &first, const input_iterator &last,
-             const hat_trie_traits &traits = hat_trie_traits()) :
-             _traits(traits) {
+             const hat_trie_traits &traits = hat_trie_traits(),
+             const array_hash_traits &ah_traits = array_hash_traits()) :
+             _traits(traits), _ah_traits(ah_traits) {
         _init();
         insert(first, last);
     }
@@ -344,6 +346,22 @@ class hat_trie<std::string> {
         return _size;
     }
 
+    /**
+     * Gets the traits associated with this trie.
+     */
+    const hat_trie_traits &traits() const {
+        return _traits;
+    }
+
+    /**
+     * Gets the array hash traits associated with the hash tables in
+     * this trie.
+     */
+    const array_hash_traits &hash_traits() const {
+        return _ah_traits;
+    }
+
+    // TODO
     void print(std::ostream &out = std::cout) const { _print(out, _root); }
 
     /**
@@ -409,7 +427,7 @@ class hat_trie<std::string> {
                 // Make a new container for word.
                 _node *p = (_node *) n.p;
                 int index = *pos;
-                c = new _container(index);
+                c = new _container(index, _ah_traits);
 
                 // Insert the new container into the trie structure.
                 c->_parent = p;
@@ -744,6 +762,7 @@ class hat_trie<std::string> {
 
   private:
     hat_trie_traits _traits;
+    array_hash_traits _ah_traits;
     _node *_root;  // pointer to the root of the trie
     size_type _size;  // number of distinct elements in the trie
 
@@ -863,7 +882,7 @@ class hat_trie<std::string> {
             // Do we need to make a new container?
             if (result->_children[index] == NULL) {
                 // Make a new container and position it under the new node.
-                _container *insertion = new _container((*it)[0]);
+                _container *insertion = new _container((*it)[0], _ah_traits);
                 insertion->_parent = result;
                 result->_children[index] = insertion;
                 result->_types[index] = CONTAINER_POINTER;

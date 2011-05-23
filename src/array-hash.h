@@ -174,6 +174,13 @@ class array_hash<std::string> {
     }
 
     /**
+     * Gets the traits associated with this array hash.
+     */
+    const array_hash_traits &traits() const {
+        return _traits;
+    }
+
+    /**
      * Inserts @a str into the table.
      *
      * @param str  string to insert

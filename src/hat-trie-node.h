@@ -70,7 +70,9 @@ class hat_trie_container : public hat_trie_node_base {
     friend class hat_trie<std::string>;
 
   public:
-    hat_trie_container(char ch = '\0') : hat_trie_node_base(ch) {
+    hat_trie_container(char ch = '\0',
+            const array_hash_traits &ah_traits = array_hash_traits()) :
+            hat_trie_node_base(ch), _store(ah_traits) {
         set_word(false);
     }
     ~hat_trie_container() { }
