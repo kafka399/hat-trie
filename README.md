@@ -3,13 +3,20 @@ This project is intended to be a fully operational, standards compliant
 HAT-trie. It will eventually mirror the STL set interface, but for now,
 it is still _VERY_ much a work in progress.
 
-## Working
-Here is a list of the major operations that are working:
-
-* ``insert(record)``
-* ``exists(record)``
-* ``find(record)``
-* forward iteraton and iterator dereferencing
+## Implemented
+Here is a list of the major operations that are implemented:
+ 
+ * ``begin()``
+ * ``clear()``
+ * ``count(string)``
+ * ``empty()``
+ * ``end()``
+ * ``exists(string)``
+ * ``find(string)``
+ * ``insert(record)``
+ * ``size()``
+ * ``swap(hat_set &)``
+ * forward iteraton and iterator dereferencing
 
 In a ``hat_set``, ``record`` is a ``std::string``. In a ``hat_map``, ``record``
 is a ``pair<std::string, T>``.
@@ -22,13 +29,13 @@ your project. Some of the headers require ``stdint.h``, which isn't available
 by default on most Windows platforms. You can find a compatible version of the
 header on Google.
 
-All the classes are defined in namespace stx.
+All classes are defined in namespace stx.
 
 ### Example
 In the vast majority of cases, these classes are used in exactly the
 same way as their STL counterparts. Just replace ``set`` with ``hat_set``.
 
-    #include "hat_set"
+    #include "hat_set.h"
 
     using namespace stx;
 

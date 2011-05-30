@@ -26,12 +26,19 @@
  * HAT-trie. It will eventually mirror the STL set interface, but for now,
  * it is still _VERY_ much a work in progress.
  *
- * \section Working
- * Here is a list of the major operations that are working:
+ * \section Implemented
+ * Here is a list of the major operations that are implemented:
  *
+ * \li \c begin()
+ * \li \c clear()
+ * \li \c count(string)
+ * \li \c empty()
+ * \li \c end()
+ * \li \c exists(string)
+ * \li \c find(string)
  * \li \c insert(record)
- * \li \c exists(record)
- * \li \c find(record)
+ * \li \c size()
+ * \li \c swap(hat_set &)
  * \li forward iteraton and iterator dereferencing
  *
  * In a \c hat_set, \c record is a \c std::string. In a \c hat_map, \c record
@@ -45,13 +52,13 @@
  * available by default on most Windows platforms. You can find a compatible
  * version of the header on Google.
  *
- * All the classes are defined in namespace stx.
+ * All classes are defined in namespace stx.
  *
  * \subsection Example
  * In the vast majority of cases, these classes are used in exactly the
  * same way as their STL counterparts. Just replace \c set with \c hat_set.
  * \code
- * #include "hat_set"
+ * #include "hat_set.h"
  *
  * using namespace stx;
  *
