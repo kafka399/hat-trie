@@ -1,5 +1,7 @@
-# executable run script
+# executable files
 run
+bin
+obj
 
 # documentation files
 doc/*
