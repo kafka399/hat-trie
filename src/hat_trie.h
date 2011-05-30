@@ -42,8 +42,8 @@
 //      void erase(iterator, iterator)
 //    * iterator find(const key_type &) const
 //      allocator_type get_allocator() csont
-//    ? pair<iterator, bool> insert(const key_type &)
-//    * iterator insert(iterator, const key_type &)
+//    ? pair<iterator, bool> insert(const value_type &)
+//    * iterator insert(iterator, const value_type &)
 //    * void insert(input_iterator first, input_iterator last)
 //    * key_compare key_comp() const
 //      iterator lower_bound(const key_type &) const
@@ -222,10 +222,8 @@ class hat_trie {
   public:
     // STL types
     typedef size_t           size_type;
-    typedef T                key_type;
-    //typedef key_type         value_type;
-    //typedef key_type &       reference;
-    //typedef const key_type & const_reference;
+    typedef std::string      key_type;
+    typedef T                value_type;
     typedef std::less<char>  key_compare;
 
     class iterator;

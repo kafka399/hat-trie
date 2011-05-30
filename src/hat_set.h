@@ -103,12 +103,12 @@ class hat_set<std::string> {
 
   public:
     // STL types
-    typedef hat_trie::size_type     size_type;
-    typedef hat_trie::key_type      key_type;
-    typedef key_type                value_type;
+    typedef hat_trie::size_type         size_type;
+    typedef hat_trie::key_type          key_type;
+    typedef hat_trie::value_type        value_type;
 
-    typedef hat_trie::iterator      iterator;
-    typedef iterator                const_iterator;
+    typedef hat_trie::iterator          iterator;
+    typedef hat_trie::const_iterator    const_iterator;
 
     hat_set(const hat_trie_traits &traits = hat_trie_traits(),
             const array_hash_traits &ah_traits = array_hash_traits()) :
@@ -187,7 +187,7 @@ class hat_set<std::string> {
      * @return  true if @a word is inserted into the trie, false if @a word
      *          was already in the trie
      */
-    bool insert(const key_type &word) {
+    bool insert(const value_type &word) {
         return trie.insert(word);
     }
 
@@ -230,7 +230,7 @@ class hat_set<std::string> {
      * @param word  word to insert
      * @return iterator to @a word in the trie
      */
-    iterator insert(const iterator &pos, const key_type &word) {
+    iterator insert(const iterator &pos, const value_type &word) {
         return trie.insert(pos, word);
     }
 
