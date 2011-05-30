@@ -80,7 +80,7 @@ class array_hash {
     ~array_hash();
 
     // accessors
-    bool contains(const char *str) const;
+    bool exists(const char *str) const;
     iterator find(const char *str) const;
     size_t size() const;
 
@@ -146,14 +146,13 @@ class array_hash<std::string> {
         delete [] _data;
     }
 
-
     /**
      * Determines whether @a str is in the table.
      *
      * @param str  string to search for
      * @return  true iff @a str is in the table
      */
-    bool contains(const char *str) const {
+    bool exists(const char *str) const {
         // Determine which slot in the table should contain str.
         length_type length;
         char *p = _data[_hash(str, length)];
@@ -296,7 +295,6 @@ class array_hash<std::string> {
         p = _search(str, p, length, s);
         return iterator(slot, p, _data, _traits.slot_count);
     }
-
 
     class iterator : std::iterator<std::bidirectional_iterator_tag,
                                    const char *> {

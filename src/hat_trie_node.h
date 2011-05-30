@@ -24,7 +24,7 @@
 
 #include <bitset>
 
-#include "array-hash.h"
+#include "array_hash.h"
 
 namespace stx {
 
@@ -78,11 +78,11 @@ class hat_trie_container : public hat_trie_node_base {
     ~hat_trie_container() { }
 
     // accessors
-    bool contains(const char *p) const {
+    bool exists(const char *p) const {
         if (*p == '\0') {
             return word();
         }
-        return _store.contains(p);
+        return _store.exists(p);
     }
     size_t size() const { return _store.size(); }
     bool word() const { return _word; }

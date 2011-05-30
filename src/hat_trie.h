@@ -30,7 +30,7 @@
  * Here is a list of all the major operations that are working:
  *
  * \li \c insert(string)
- * \li \c contains(string)
+ * \li \c exists(string)
  * \li \c find(string)
  * \li forward iteration and iterator dereferencing
  *
@@ -117,7 +117,7 @@
 //    * value_compare value_comp() const
 //
 //   additions:
-//    * bool contains() const
+//    * bool exists() const
 //      hat_trie prefix_match(const key_type &) const
 
 #ifndef HAT_TRIE_H
@@ -126,8 +126,8 @@
 #include <iostream>  // for std::ostream
 #include <string>
 
-#include "array-hash.h"
-#include "hat-trie-node.h"
+#include "array_hash.h"
+#include "hat_trie_node.h"
 
 namespace stx {
 
@@ -176,8 +176,8 @@ class hat_trie {
     virtual ~hat_trie();
 
     // accessors
-    bool contains(const key_type &word) const;
-    size_t count(const key_type &word) const;
+    bool exists(const key_type &record) const;
+    size_t count(const key_type &record) const;
     bool empty() const;
     key_compare key_comp() const;
     size_type size() const;
@@ -187,7 +187,7 @@ class hat_trie {
     // modifiers
     void clear();
 
-    bool insert(const key_type &word);
+    bool insert(const key_type &record);
     bool insert(const char *word);
     template <class input_iterator>
     void insert(input_iterator first, const input_iterator &last);
@@ -231,14 +231,11 @@ class hat_trie {
 };
 */
 
-// TODO
-// this is such an interesting problem! how do we reference keys like this?
-
 template <class T> const std::string &ref(const T &t);
-template <class T> std::string &ref(T &t);
 
-const std::string &ref(const std::string &s) { return s; }
-std::string &ref(std::string &s) { return s; }
+const std::string &ref(const std::string &s) {
+    return s;
+}
 
 template <class T>
 const std::string &ref(const std::pair<std::string, T> &p) {
@@ -286,11 +283,10 @@ class hat_trie {
     // STL types
     typedef size_t           size_type;
     typedef T                key_type;
-    typedef key_type         value_type;
-    typedef key_type &       reference;
-    typedef const key_type & const_reference;
+    //typedef key_type         value_type;
+    //typedef key_type &       reference;
+    //typedef const key_type & const_reference;
     typedef std::less<char>  key_compare;
-    typedef key_compare      value_compare;
 
     class iterator;
     typedef iterator const_iterator;
@@ -331,13 +327,13 @@ class hat_trie {
      * @param word  word to search for
      * @return  true iff @a s is in the trie
      */
-    bool contains(const key_type &word) const {
+    bool exists(const key_type &word) const {
         // Locate s in the trie's structure.
         const char *ps = word.c_str();
         _node_pointer n = _locate(ps);
 
         if (n.type == CONTAINER_POINTER) {
-            return ((_container *) n.p)->contains(ps);
+            return ((_container *) n.p)->exists(ps);
         }
         return n.p->word();
     }
@@ -406,7 +402,7 @@ class hat_trie {
      *          was already in the trie
      */
     bool insert(const key_type &key) {
-        std::string &word = ref(key);
+        const std::string &word = ref(key);
         return insert(word.c_str());
     }
 
@@ -460,16 +456,11 @@ class hat_trie {
     }
 
     /**
-     * Inserts a word into the trie.
+     * Inserts several words into the trie.
      *
-     * In standard STL sets, this function can dramatically increase
-     * performance if @a position is set correctly. This performance
-     * gain is unachievable in a HAT-trie because the time required to
-     * verify that @a position points to the right place is just as
-     * expensive as a regular insert operation.
-     *
-     * @param word  word to insert
-     * @return iterator to @a word in the trie
+     * @param first, last  iterators specifying a range of words to add
+     *                     to the trie. All words in the range
+     *                     [first, last) are added
      */
     template <class input_iterator>
     void insert(input_iterator first, const input_iterator &last) {
@@ -482,12 +473,17 @@ class hat_trie {
     /**
      * Inserts several words into the trie.
      *
-     * @param first, last  iterators specifying a range of words to add
-     *                     to the trie. All words in the range
-     *                     [first, last) are added
+     * In standard STL sets, this function can dramatically increase
+     * performance if @a position is set correctly. This performance
+     * gain is unachievable in a HAT-trie because the time required to
+     * verify that @a position points to the right place is just as
+     * expensive as a regular insert operation.
+     *
+     * @param word  word to insert
+     * @return iterator to @a word in the trie
      */
     iterator insert(const iterator &, const key_type &key) {
-        std::string &word = ref(key);
+        const std::string &word = ref(key);
         insert(word);
         return find(word);
     }
@@ -559,7 +555,6 @@ class hat_trie {
         return iterator();
     }
 
-
     /**
      * Searches for @a s in the trie.
      *
@@ -568,14 +563,14 @@ class hat_trie {
      *          returns an iterator to one past the last element
      */
     iterator find(const key_type &key) const {
-        std::string &word = ref(key);
+        const std::string &word = ref(key);
         const char *ps = word.c_str();
         _node_pointer n = _locate(ps);
 
         // Search for the word in the trie.
         iterator result;
         if ((n.type == CONTAINER_POINTER &&
-                ((_container *) n.p)->contains(ps)) ||
+                ((_container *) n.p)->exists(ps)) ||
                 n.p->word()) {
             // The word is in the trie. Find its location and initialize the
             // return iterator to that location.
@@ -1078,14 +1073,6 @@ hat_trie<T>::_print(
         }
     }
 }
-
-/**
- * Namespace-scope swap function for hat tries.
- */
-//template <class T>
-//void swap(hat_trie<T> &lhs, hat_trie<T> &rhs) {
-    //lhs.swap(rhs);
-//}
 
 // --------------------
 // COMPARISON OPERATORS
