@@ -1065,22 +1065,5 @@ operator!=(const stx::hat_trie<T> &lhs,
 
 }  // namespace stx
 
-namespace std {
-
-/**
- * Template overload of std::swap for hat_tries.
- *
- * According to the standard, this technically isn't allowed, but there
- * is no way to solve this problem without breaking standard. Boost
- * libraries do it (see smart pointer library).
- */
-template <class T>
-void
-swap(stx::hat_trie<T> &lhs, stx::hat_trie<T> &rhs) {
-    lhs.swap(rhs);
-}
-
-}  // namespace std
-
 #endif  // HAT_TRIE_H
 

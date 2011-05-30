@@ -282,5 +282,19 @@ class hat_set<std::string> {
 
 }  // namespace stx
 
+namespace std {
+
+/**
+ * Template overload of std::swap for hat_sets.
+ *
+ * @param lhs, rhs  hat_set objects to swap
+ */
+template <>
+void swap(stx::hat_set<string> &lhs, stx::hat_set<string> &rhs) {
+    lhs.swap(rhs);
+}
+
+}
+
 #endif
 
