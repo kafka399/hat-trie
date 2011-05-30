@@ -34,6 +34,15 @@ namespace stx {
 /**
  * Provides a way to tune the performance characteristics of an
  * array hash table.
+ *
+ * \subsection Usage
+ * \code
+ * array_hash_traits traits;
+ * traits.burst_threshold = 8192;
+ * hat_set<string> rawr(traits);
+ * rawr.insert(...);
+ * ...
+ * \endcode
  */
 class array_hash_traits {
 
@@ -126,6 +135,8 @@ class array_hash<std::string> {
 
     /**
      * Default constructor.
+     *
+     * @param traits  array hash customization traits
      */
     array_hash(const array_hash_traits &traits = array_hash_traits()) :
             _traits(traits) {

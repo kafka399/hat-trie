@@ -74,6 +74,15 @@ namespace stx {
 /**
  * Provides a way to tune the performance characteristics of a
  * HAT-trie.
+ *
+ * \subsection Usage
+ * \code
+ * hat_trie_traits traits;
+ * traits.burst_threshold = 8192;
+ * hat_set<string> rawr(traits);
+ * rawr.insert(...);
+ * ...
+ * \endcode
  */
 class hat_trie_traits {
 
@@ -235,6 +244,14 @@ class hat_trie {
     hat_trie(const hat_trie_traits &traits = hat_trie_traits(),
              const array_hash_traits &ah_traits = array_hash_traits()) :
             _traits(traits), _ah_traits(ah_traits) {
+        _init();
+    }
+
+    /**
+     * Array hash traits constructor.
+     */
+    hat_trie(const array_hash_traits &ah_traits) :
+            _ah_traits(ah_traits) {
         _init();
     }
 

@@ -117,9 +117,23 @@ class hat_set<std::string> {
     typedef hat_trie::iterator          iterator;
     typedef hat_trie::const_iterator    const_iterator;
 
+    /**
+     * Default constructor.
+     *
+     * @param traits     hat trie customization traits
+     * @param ah_traits  array hash customization traits
+     */
     hat_set(const hat_trie_traits &traits = hat_trie_traits(),
             const array_hash_traits &ah_traits = array_hash_traits()) :
             trie(traits, ah_traits) { }
+
+    /**
+     * Default constructor.
+     *
+     * @param ah_traits  array hash customization traits
+     */
+    hat_set(const array_hash_traits &ah_traits) :
+            trie(ah_traits) { }
 
     /**
      * Searches for a word in the trie.

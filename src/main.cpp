@@ -40,7 +40,9 @@ void stl() {
 }
 
 void mine_c() {
-    hat_set<string> ht;
+    hat_trie_traits traits;
+    traits.burst_threshold = 4096;
+    hat_set<string> ht(traits);
     //array_hash<string> ht;
 
     // read entire file into main memory
@@ -63,7 +65,8 @@ void mine_c() {
         }
     }
     delete [] data;
-    print(ht);
+    //sleep(1000);
+    //print(ht);
 }
 
 void mine() {
