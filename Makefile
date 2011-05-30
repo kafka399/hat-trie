@@ -42,5 +42,4 @@ depend:
 # ... then change src/*.o in this Makefile to obj/*.o.
 # DO NOT DELETE
 
-obj/main.o: src/array-hash.h 
-obj/main.o: src/hat-trie.h src/hat-trie-node.h
+obj/main.o: src/array_hash.h src/hat_*.h

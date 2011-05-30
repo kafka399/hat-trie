@@ -9,8 +9,8 @@
 #include <boost/foreach.hpp>
 #define foreach BOOST_FOREACH
 
-#include "array-hash.h"
-#include "hat-trie.h"
+#include "array_hash.h"
+#include "hat_set.h"
 
 using namespace std;
 using namespace stx;
@@ -40,7 +40,7 @@ void stl() {
 }
 
 void mine_c() {
-    hat_trie<string> ht;
+    hat_set<string> ht;
     //array_hash<string> ht;
 
     // read entire file into main memory
@@ -81,9 +81,6 @@ int main() {
     //stl();
     //mine();
     mine_c();
-    hat_trie<string> a;
-    hat_trie<string> b;
-    swap(a, b);
     //ProfilerStop();
 
     return 0;
