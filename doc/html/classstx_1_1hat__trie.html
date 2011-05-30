@@ -40,7 +40,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div class="tabs2">
     <ul class="tablist">
       <li><a href="annotated.html"><span>Class&#160;List</span></a></li>
-      <li><a href="hierarchy.html"><span>Class&#160;Hierarchy</span></a></li>
       <li><a href="functions.html"><span>Class&#160;Members</span></a></li>
     </ul>
   </div>
@@ -82,10 +81,12 @@ Public Types</h2></td></tr>
 typedef <a class="el" href="classstx_1_1hat__trie_1_1iterator.html">iterator</a>&#160;</td><td class="memItemRight" valign="bottom"><b>const_iterator</b></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a69086b19f5a7e7d03301a195d45be4dd"></a><!-- doxytag: member="stx::hat_trie::key_compare" ref="a69086b19f5a7e7d03301a195d45be4dd" args="" -->
 typedef std::less&lt; char &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>key_compare</b></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9c01dbdcdbb05d3443248e2c5c8cd02f"></a><!-- doxytag: member="stx::hat_trie::key_type" ref="a9c01dbdcdbb05d3443248e2c5c8cd02f" args="" -->
-typedef T&#160;</td><td class="memItemRight" valign="bottom"><b>key_type</b></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="afbdb7e09511495ff8c66efd043e11a34"></a><!-- doxytag: member="stx::hat_trie::key_type" ref="afbdb7e09511495ff8c66efd043e11a34" args="" -->
+typedef std::string&#160;</td><td class="memItemRight" valign="bottom"><b>key_type</b></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8d907a22ddf598fc9ea79104ceaa8ce1"></a><!-- doxytag: member="stx::hat_trie::size_type" ref="a8d907a22ddf598fc9ea79104ceaa8ce1" args="" -->
 typedef size_t&#160;</td><td class="memItemRight" valign="bottom"><b>size_type</b></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2b2d47fbd48e05c6efb4a702367e0bc4"></a><!-- doxytag: member="stx::hat_trie::value_type" ref="a2b2d47fbd48e05c6efb4a702367e0bc4" args="" -->
+typedef T&#160;</td><td class="memItemRight" valign="bottom"><b>value_type</b></td></tr>
 <tr><td colspan="2"><h2><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classstx_1_1hat__trie.html#a353ca3f486ddd8beb4c1c09dcde8ac60">hat_trie</a> (const <a class="el" href="classstx_1_1hat__trie__traits.html">hat_trie_traits</a> &amp;traits=<a class="el" href="classstx_1_1hat__trie__traits.html">hat_trie_traits</a>(), const <a class="el" href="classstx_1_1array__hash__traits.html">array_hash_traits</a> &amp;ah_traits=<a class="el" href="classstx_1_1array__hash__traits.html">array_hash_traits</a>())</td></tr>
@@ -93,19 +94,20 @@ Public Member Functions</h2></td></tr>
 <tr><td class="memTemplItemLeft" align="right" valign="top">&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classstx_1_1hat__trie.html#adee8634865196288adcfd519109a661e">hat_trie</a> (const input_iterator &amp;first, const input_iterator &amp;last, const <a class="el" href="classstx_1_1hat__trie__traits.html">hat_trie_traits</a> &amp;traits=<a class="el" href="classstx_1_1hat__trie__traits.html">hat_trie_traits</a>(), const <a class="el" href="classstx_1_1array__hash__traits.html">array_hash_traits</a> &amp;ah_traits=<a class="el" href="classstx_1_1array__hash__traits.html">array_hash_traits</a>())</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="classstx_1_1hat__trie_1_1iterator.html">iterator</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classstx_1_1hat__trie.html#a1ca5a479d70f6eed3f181183d494a1da">begin</a> () const </td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classstx_1_1hat__trie.html#a8509d9740f69277027dd71893421c36b">clear</a> ()</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">size_type&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classstx_1_1hat__trie.html#affefb0c3840f5e512a8999104665691b">count</a> (const key_type &amp;word) const </td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classstx_1_1hat__trie.html#ac7cb5bd8f495ba686f5f77f45031721d">empty</a> () const </td></tr>
 <tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="classstx_1_1hat__trie_1_1iterator.html">iterator</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classstx_1_1hat__trie.html#abb0d14265f35bf306599a3a4339398df">end</a> () const </td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classstx_1_1hat__trie.html#a8c0f3977242c6337fe865384339e0669">erase</a> (<a class="el" href="classstx_1_1hat__trie_1_1iterator.html">iterator</a> first, const <a class="el" href="classstx_1_1hat__trie_1_1iterator.html">iterator</a> &amp;last)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">size_type&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classstx_1_1hat__trie.html#a6a5c66faf6edc21186c5a252bd98e24a">erase</a> (const key_type &amp;)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classstx_1_1hat__trie.html#a5809967ff9ec963acb34aa93f48ebc54">erase</a> (const <a class="el" href="classstx_1_1hat__trie_1_1iterator.html">iterator</a> &amp;)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classstx_1_1hat__trie.html#a8c0f3977242c6337fe865384339e0669">erase</a> (<a class="el" href="classstx_1_1hat__trie_1_1iterator.html">iterator</a> first, const <a class="el" href="classstx_1_1hat__trie_1_1iterator.html">iterator</a> &amp;last)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classstx_1_1hat__trie.html#a70c3f4afec46ecb2038e18312d6866cc">exists</a> (const key_type &amp;word) const </td></tr>
 <tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="classstx_1_1hat__trie_1_1iterator.html">iterator</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classstx_1_1hat__trie.html#acd9b3b8b30a932573cc5344748b0db21">find</a> (const key_type &amp;key) const </td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classstx_1_1array__hash__traits.html">array_hash_traits</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classstx_1_1hat__trie.html#a421a1c7f1b20fe11f2189c22b7f2e8d8">hash_traits</a> () const </td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classstx_1_1hat__trie.html#ab37569102313c40f5300113ad5ccf0a5">insert</a> (const char *word)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="classstx_1_1hat__trie_1_1iterator.html">iterator</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classstx_1_1hat__trie.html#a5023c98f701ddc73129ae699b6659249">insert</a> (const <a class="el" href="classstx_1_1hat__trie_1_1iterator.html">iterator</a> &amp;, const key_type &amp;key)</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classstx_1_1hat__trie.html#a89e764a2aab7cd7d08f189b032efa234">insert</a> (const key_type &amp;key)</td></tr>
 <tr><td class="memTemplParams" colspan="2">template&lt;class input_iterator &gt; </td></tr>
 <tr><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classstx_1_1hat__trie.html#a9dee429cc678a896412b0d08571c9731">insert</a> (input_iterator first, const input_iterator &amp;last)</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classstx_1_1hat__trie.html#ab37569102313c40f5300113ad5ccf0a5">insert</a> (const char *word)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classstx_1_1hat__trie.html#a89e764a2aab7cd7d08f189b032efa234">insert</a> (const key_type &amp;key)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a254e87649993589d910d9474ed7fa514"></a><!-- doxytag: member="stx::hat_trie::print" ref="a254e87649993589d910d9474ed7fa514" args="(std::ostream &amp;out=std::cout) const " -->
 void&#160;</td><td class="memItemRight" valign="bottom"><b>print</b> (std::ostream &amp;out=std::cout) const </td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">size_type&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classstx_1_1hat__trie.html#a7a7d532e725250cca08dca489cf084cc">size</a> () const </td></tr>
@@ -113,18 +115,24 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>print</b> (std::ostre
 <tr><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classstx_1_1hat__trie__traits.html">hat_trie_traits</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classstx_1_1hat__trie.html#a7f204928269bbe6dd2122088d1e5a4e5">traits</a> () const </td></tr>
 <tr><td colspan="2"><h2><a name="friends"></a>
 Friends</h2></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a22019db29c46af4b62406c5f95089c74"></a><!-- doxytag: member="stx::hat_trie::operator!=" ref="a22019db29c46af4b62406c5f95089c74" args="(const _self &amp;lhs, const _self &amp;rhs)" -->
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator!=</b> (const <a class="el" href="classstx_1_1hat__trie.html">_self</a> &amp;lhs, const <a class="el" href="classstx_1_1hat__trie.html">_self</a> &amp;rhs)</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0afd0260ec70c5515b10e51fea9f9450"></a><!-- doxytag: member="stx::hat_trie::operator&lt;" ref="a0afd0260ec70c5515b10e51fea9f9450" args="(const _self &amp;lhs, const _self &amp;rhs)" -->
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator&lt;</b> (const <a class="el" href="classstx_1_1hat__trie.html">_self</a> &amp;lhs, const <a class="el" href="classstx_1_1hat__trie.html">_self</a> &amp;rhs)</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a66f5f0e9c7682f5b1434a5ea13451395"></a><!-- doxytag: member="stx::hat_trie::operator&lt;=" ref="a66f5f0e9c7682f5b1434a5ea13451395" args="(const _self &amp;lhs, const _self &amp;rhs)" -->
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator&lt;=</b> (const <a class="el" href="classstx_1_1hat__trie.html">_self</a> &amp;lhs, const <a class="el" href="classstx_1_1hat__trie.html">_self</a> &amp;rhs)</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1533d9b8bc027d8a0f64ef7c9f9e687e"></a><!-- doxytag: member="stx::hat_trie::operator==" ref="a1533d9b8bc027d8a0f64ef7c9f9e687e" args="(const _self &amp;lhs, const _self &amp;rhs)" -->
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="classstx_1_1hat__trie.html">_self</a> &amp;lhs, const <a class="el" href="classstx_1_1hat__trie.html">_self</a> &amp;rhs)</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a41ebbc1ef666ebd52971c6b64a9fefb9"></a><!-- doxytag: member="stx::hat_trie::operator&gt;" ref="a41ebbc1ef666ebd52971c6b64a9fefb9" args="(const _self &amp;lhs, const _self &amp;rhs)" -->
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator&gt;</b> (const <a class="el" href="classstx_1_1hat__trie.html">_self</a> &amp;lhs, const <a class="el" href="classstx_1_1hat__trie.html">_self</a> &amp;rhs)</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae229a796f8050eac4dad042aabc38f64"></a><!-- doxytag: member="stx::hat_trie::operator&gt;=" ref="ae229a796f8050eac4dad042aabc38f64" args="(const _self &amp;lhs, const _self &amp;rhs)" -->
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator&gt;=</b> (const <a class="el" href="classstx_1_1hat__trie.html">_self</a> &amp;lhs, const <a class="el" href="classstx_1_1hat__trie.html">_self</a> &amp;rhs)</td></tr>
+<tr><td class="memTemplParams" colspan="2"><a class="anchor" id="a9fb7db2d7bd95a2ccbd886ef3bcf193f"></a><!-- doxytag: member="stx::hat_trie::operator!=" ref="a9fb7db2d7bd95a2ccbd886ef3bcf193f" args="(const hat_trie&lt; F &gt; &amp;lhs, const hat_trie&lt; F &gt; &amp;rhs)" -->
+template&lt;class F &gt; </td></tr>
+<tr><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator!=</b> (const <a class="el" href="classstx_1_1hat__trie.html">hat_trie</a>&lt; F &gt; &amp;lhs, const <a class="el" href="classstx_1_1hat__trie.html">hat_trie</a>&lt; F &gt; &amp;rhs)</td></tr>
+<tr><td class="memTemplParams" colspan="2"><a class="anchor" id="ac3c02d6720d27d63cd4e0a4362b767ea"></a><!-- doxytag: member="stx::hat_trie::operator&lt;" ref="ac3c02d6720d27d63cd4e0a4362b767ea" args="(const hat_trie&lt; F &gt; &amp;lhs, const hat_trie&lt; F &gt; &amp;rhs)" -->
+template&lt;class F &gt; </td></tr>
+<tr><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator&lt;</b> (const <a class="el" href="classstx_1_1hat__trie.html">hat_trie</a>&lt; F &gt; &amp;lhs, const <a class="el" href="classstx_1_1hat__trie.html">hat_trie</a>&lt; F &gt; &amp;rhs)</td></tr>
+<tr><td class="memTemplParams" colspan="2"><a class="anchor" id="a699bc5a51787da15f28718a46ef5dbd3"></a><!-- doxytag: member="stx::hat_trie::operator&lt;=" ref="a699bc5a51787da15f28718a46ef5dbd3" args="(const hat_trie&lt; F &gt; &amp;lhs, const hat_trie&lt; F &gt; &amp;rhs)" -->
+template&lt;class F &gt; </td></tr>
+<tr><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator&lt;=</b> (const <a class="el" href="classstx_1_1hat__trie.html">hat_trie</a>&lt; F &gt; &amp;lhs, const <a class="el" href="classstx_1_1hat__trie.html">hat_trie</a>&lt; F &gt; &amp;rhs)</td></tr>
+<tr><td class="memTemplParams" colspan="2"><a class="anchor" id="a1ad03b96e768ebe2bd5859293a53cf88"></a><!-- doxytag: member="stx::hat_trie::operator==" ref="a1ad03b96e768ebe2bd5859293a53cf88" args="(const hat_trie&lt; F &gt; &amp;lhs, const hat_trie&lt; F &gt; &amp;rhs)" -->
+template&lt;class F &gt; </td></tr>
+<tr><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="classstx_1_1hat__trie.html">hat_trie</a>&lt; F &gt; &amp;lhs, const <a class="el" href="classstx_1_1hat__trie.html">hat_trie</a>&lt; F &gt; &amp;rhs)</td></tr>
+<tr><td class="memTemplParams" colspan="2"><a class="anchor" id="aeafd3ea7172f24b936146b08a7801654"></a><!-- doxytag: member="stx::hat_trie::operator&gt;" ref="aeafd3ea7172f24b936146b08a7801654" args="(const hat_trie&lt; F &gt; &amp;lhs, const hat_trie&lt; F &gt; &amp;rhs)" -->
+template&lt;class F &gt; </td></tr>
+<tr><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator&gt;</b> (const <a class="el" href="classstx_1_1hat__trie.html">hat_trie</a>&lt; F &gt; &amp;lhs, const <a class="el" href="classstx_1_1hat__trie.html">hat_trie</a>&lt; F &gt; &amp;rhs)</td></tr>
+<tr><td class="memTemplParams" colspan="2"><a class="anchor" id="a6f9b658bd183a654ac58a135f51dcccf"></a><!-- doxytag: member="stx::hat_trie::operator&gt;=" ref="a6f9b658bd183a654ac58a135f51dcccf" args="(const hat_trie&lt; F &gt; &amp;lhs, const hat_trie&lt; F &gt; &amp;rhs)" -->
+template&lt;class F &gt; </td></tr>
+<tr><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator&gt;=</b> (const <a class="el" href="classstx_1_1hat__trie.html">hat_trie</a>&lt; F &gt; &amp;lhs, const <a class="el" href="classstx_1_1hat__trie.html">hat_trie</a>&lt; F &gt; &amp;rhs)</td></tr>
 </table>
 <hr/><a name="_details"></a><h2>Detailed Description</h2>
 <h3>template&lt;class T&gt;<br/>
@@ -253,6 +261,34 @@ template&lt;class T&gt; </div>
 
 </div>
 </div>
+<a class="anchor" id="affefb0c3840f5e512a8999104665691b"></a><!-- doxytag: member="stx::hat_trie::count" ref="affefb0c3840f5e512a8999104665691b" args="(const key_type &amp;word) const " -->
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class T&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">size_type <a class="el" href="classstx_1_1hat__trie.html">stx::hat_trie</a>&lt; T &gt;::count </td>
+          <td>(</td>
+          <td class="paramtype">const key_type &amp;&#160;</td>
+          <td class="paramname"> <em>word</em>&#160;)</td>
+          <td> const<code> [inline]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>Counts the number of times a word appears in the trie.</p>
+<p>In distinct containers, this number will either be 1 or 0.</p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table class="params">
+    <tr><td class="paramname">word</td><td>word to search for </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>number of times <em>word</em> appears in the trie </dd></dl>
+
+</div>
+</div>
 <a class="anchor" id="ac7cb5bd8f495ba686f5f77f45031721d"></a><!-- doxytag: member="stx::hat_trie::empty" ref="ac7cb5bd8f495ba686f5f77f45031721d" args="() const " -->
 <div class="memitem">
 <div class="memproto">
@@ -290,6 +326,42 @@ template&lt;class T&gt; </div>
 <div class="memdoc">
 <p>Gets an iterator to one past the last element in the trie.</p>
 <dl class="return"><dt><b>Returns:</b></dt><dd>iterator to one past the last element in the trie </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a8c0f3977242c6337fe865384339e0669"></a><!-- doxytag: member="stx::hat_trie::erase" ref="a8c0f3977242c6337fe865384339e0669" args="(iterator first, const iterator &amp;last)" -->
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class T&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="classstx_1_1hat__trie.html">stx::hat_trie</a>&lt; T &gt;::erase </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classstx_1_1hat__trie_1_1iterator.html">iterator</a>&#160;</td>
+          <td class="paramname"> <em>first</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classstx_1_1hat__trie_1_1iterator.html">iterator</a> &amp;&#160;</td>
+          <td class="paramname"> <em>last</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td><code> [inline]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>Erases several words from the trie.</p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table class="params">
+    <tr><td class="paramname">first,last</td><td>iterators specifying a range of words to remove from the trie. All words in the range [first, last) are removed </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -343,42 +415,6 @@ template&lt;class T&gt; </div>
   </dd>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>number of words erased from the trie. In a set container, either 1 if the word was removed from the trie or 0 if the word doesn't appear in the trie </dd></dl>
-
-</div>
-</div>
-<a class="anchor" id="a8c0f3977242c6337fe865384339e0669"></a><!-- doxytag: member="stx::hat_trie::erase" ref="a8c0f3977242c6337fe865384339e0669" args="(iterator first, const iterator &amp;last)" -->
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;class T&gt; </div>
-      <table class="memname">
-        <tr>
-          <td class="memname">void <a class="el" href="classstx_1_1hat__trie.html">stx::hat_trie</a>&lt; T &gt;::erase </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="classstx_1_1hat__trie_1_1iterator.html">iterator</a>&#160;</td>
-          <td class="paramname"> <em>first</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const <a class="el" href="classstx_1_1hat__trie_1_1iterator.html">iterator</a> &amp;&#160;</td>
-          <td class="paramname"> <em>last</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td><code> [inline]</code></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-<p>Erases several words from the trie.</p>
-<dl><dt><b>Parameters:</b></dt><dd>
-  <table class="params">
-    <tr><td class="paramname">first,last</td><td>iterators specifying a range of words to remove from the trie. All words in the range [first, last) are removed </td></tr>
-  </table>
-  </dd>
-</dl>
 
 </div>
 </div>
@@ -494,6 +530,35 @@ template&lt;class input_iterator &gt; </div>
 
 </div>
 </div>
+<a class="anchor" id="a89e764a2aab7cd7d08f189b032efa234"></a><!-- doxytag: member="stx::hat_trie::insert" ref="a89e764a2aab7cd7d08f189b032efa234" args="(const key_type &amp;key)" -->
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class T&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">bool <a class="el" href="classstx_1_1hat__trie.html">stx::hat_trie</a>&lt; T &gt;::insert </td>
+          <td>(</td>
+          <td class="paramtype">const key_type &amp;&#160;</td>
+          <td class="paramname"> <em>key</em>&#160;)</td>
+          <td><code> [inline]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>Inserts a word into the trie.</p>
+<p>According to the standard, this function should return a pair&lt;iterator, bool&gt; rather than just a bool. However, timing tests on both versions of this function showed significant slowdown on the pair-returning version -- several orders of magnitude. We believe deviating from the standard in the face of such significant slowdown is a worthy sacrifice for blazing fast insertion times. And besides, who uses the iterator return value anyway? =)</p>
+<p>Note: for a more in-depth discussion of rationale, see the HTML documentation.</p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table class="params">
+    <tr><td class="paramname">word</td><td>word to insert</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>true if <em>word</em> is inserted into the trie, false if <em>word</em> was already in the trie </dd></dl>
+
+</div>
+</div>
 <a class="anchor" id="ab37569102313c40f5300113ad5ccf0a5"></a><!-- doxytag: member="stx::hat_trie::insert" ref="ab37569102313c40f5300113ad5ccf0a5" args="(const char *word)" -->
 <div class="memitem">
 <div class="memproto">
@@ -557,35 +622,6 @@ template&lt;class T&gt; </div>
   </dd>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>iterator to <em>word</em> in the trie </dd></dl>
-
-</div>
-</div>
-<a class="anchor" id="a89e764a2aab7cd7d08f189b032efa234"></a><!-- doxytag: member="stx::hat_trie::insert" ref="a89e764a2aab7cd7d08f189b032efa234" args="(const key_type &amp;key)" -->
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;class T&gt; </div>
-      <table class="memname">
-        <tr>
-          <td class="memname">bool <a class="el" href="classstx_1_1hat__trie.html">stx::hat_trie</a>&lt; T &gt;::insert </td>
-          <td>(</td>
-          <td class="paramtype">const key_type &amp;&#160;</td>
-          <td class="paramname"> <em>key</em>&#160;)</td>
-          <td><code> [inline]</code></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-<p>Inserts a word into the trie.</p>
-<p>According to the standard, this function should return a pair&lt;iterator, bool&gt; rather than just a bool. However, timing tests on both versions of this function showed significant slowdown on the pair-returning version -- several orders of magnitude. We believe deviating from the standard in the face of such significant slowdown is a worthy sacrifice for blazing fast insertion times. And besides, who uses the iterator return value anyway? =)</p>
-<p>Note: for a more in-depth discussion of rationale, see the HTML documentation.</p>
-<dl><dt><b>Parameters:</b></dt><dd>
-  <table class="params">
-    <tr><td class="paramname">word</td><td>word to insert</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="return"><dt><b>Returns:</b></dt><dd>true if <em>word</em> is inserted into the trie, false if <em>word</em> was already in the trie </dd></dl>
 
 </div>
 </div>
@@ -673,7 +709,7 @@ template&lt;class T&gt; </div>
 </iframe>
 </div>
 
-<hr class="footer"/><address class="footer"><small>Generated on Mon May 30 2011 15:31:36 for hat-trie by&#160;
+<hr class="footer"/><address class="footer"><small>Generated on Mon May 30 2011 16:59:11 for hat-trie by&#160;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.7.2 </small></address>
 </body>
