@@ -125,6 +125,18 @@ class hat_set<std::string> {
     }
 
     /**
+     * Counts the number of times a word appears in the trie.
+     *
+     * In set containers, this number will either be 1 or 0.
+     *
+     * @param word  word to search for
+     * @return  number of times @a word appears in the trie
+     */
+    size_type count(const key_type &word) const {
+        return trie.count(word);
+    }
+
+    /**
      * Determines whether this set is empty.
      *
      * @return  true iff the container has no data

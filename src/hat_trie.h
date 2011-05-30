@@ -277,6 +277,18 @@ class hat_trie {
     }
 
     /**
+     * Counts the number of times a word appears in the trie.
+     *
+     * In distinct containers, this number will either be 1 or 0.
+     *
+     * @param word  word to search for
+     * @return  number of times @a word appears in the trie
+     */
+    size_type count(const key_type &word) const {
+        return exists(word) ? 1 : 0;
+    }
+
+    /**
      * Determines whether this container is empty.
      *
      * @return  true iff this container has no data
