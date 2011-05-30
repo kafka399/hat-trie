@@ -3,9 +3,6 @@ run
 bin
 obj
 
-# documentation files
-doc/*
-
 # google profiling tools
 prof*
 

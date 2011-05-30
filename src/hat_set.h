@@ -19,6 +19,65 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * \mainpage
+ *
+ * This project is intended to be a fully operational, standards compliant
+ * HAT-trie. It will eventually mirror the STL set interface, but for now,
+ * it is still _VERY_ much a work in progress.
+ *
+ * \section Working
+ * Here is a list of the major operations that are working:
+ *
+ * \li \c insert(record)
+ * \li \c exists(record)
+ * \li \c find(record)
+ * \li forward iteraton and iterator dereferencing
+ *
+ * In a \c hat_set, \c record is a \c std::string. In a \c hat_map, \c record
+ * is a \c pair<std::string, T>.
+ *
+ * \section Usage
+ *
+ * \subsection Installation
+ * Copy all the headers into a directory in your PATH and include \c hat_set.h
+ * in your project. Some of the headers require \c stdint.h, which isn't
+ * available by default on most Windows platforms. You can find a compatible
+ * version of the header on Google.
+ *
+ * All the classes are defined in namespace stx.
+ *
+ * \subsection Example
+ * In the vast majority of cases, these classes are used in exactly the
+ * same way as their STL counterparts. Just replace \c set with \c hat_set.
+ * \code
+ * #include "hat_set"
+ *
+ * using namespace stx;
+ *
+ * int main() {
+ *     hat_set<string> trie;
+ *     trie.insert("hello world");
+ *     cout << *trie.begin() << endl;
+ *     return 0;
+ * }
+ * \endcode
+ *
+ * Prints \c hello world.
+ *
+ * \section Extensions
+ * There are a few non-standard extensions to the hat\_trie interface:
+ *
+ * \li \c exists(string) -- returns true iff there is a record in the trie
+ * with a matching key
+ *
+ * \section Deviations
+ * The hat\_trie interface differs from the standard in a few ways:
+ *
+ * \li \c insert(record) -- returns a \c bool rather than a \c pair<iterator,
+ * bool>. See the HTML documentation for rationale.
+ */
+
 #ifndef HAT_SET_H
 #define HAT_SET_H
 
@@ -176,38 +235,6 @@ class hat_set<std::string> {
     }
 
     /**
-     * Erases a word from the trie.
-     *
-     * @param pos  iterator to the word in the trie
-     */
-    void erase(const iterator &pos) {
-        trie.erase(pos);
-    }
-
-    /**
-     * Erases a word from the trie.
-     *
-     * @param word  word to erase
-     * @return  number of words erased from the trie. In a set container,
-     *          either 1 if the word was removed from the trie or 0 if the
-     *          word doesn't appear in the trie
-     */
-    size_type erase(const key_type &word) {
-        return trie.erase(word);
-    }
-
-    /**
-     * Erases several words from the trie.
-     *
-     * @param first, last  iterators specifying a range of words to remove
-     *                     from the trie. All words in the range [first,
-     *                     last) are removed
-     */
-    void erase(const iterator &first, const iterator &last) {
-        trie.erase(first, last);
-    }
-
-    /**
      * Gets an iterator to the first element in the trie.
      *
      * If there are no elements in the trie, the iterator pointing to
@@ -244,7 +271,7 @@ class hat_set<std::string> {
      *
      * @param rhs  hat_set object to swap data with
      */
-    void swap(hat_set &rhs) {
+    void swap(_self &rhs) {
         trie.swap(rhs.trie);
     }
 

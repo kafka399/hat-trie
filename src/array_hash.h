@@ -25,7 +25,7 @@
 #define ARRAY_HASH_H
 
 #include <cstring>
-#include <stdint.h>  // TODO generalize this to windows platforms
+#include <stdint.h>
 #include <utility>
 #include <iterator>
 

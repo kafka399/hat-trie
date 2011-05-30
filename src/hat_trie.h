@@ -19,66 +19,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- * \mainpage
- *
- * This project is intended to be a fully operational, standards compliant
- * HAT-trie. It will eventually mirror the STL set interface, but for now,
- * it is still VERY much a work in progress.
- *
- * \section Working
- * Here is a list of all the major operations that are working:
- *
- * \li \c insert(string)
- * \li \c exists(string)
- * \li \c find(string)
- * \li forward iteration and iterator dereferencing
- *
- * \section Usage
- *
- * \subsection Installation
- * Copy all the headers into a directory in your PATH and include hat-trie.h
- * in your project. It is designed to be a drop-in replacement for an STL set,
- * with a few changes.
- *
- * Note: some of the headers require \c inttypes.h, which isn't available by
- * default on Windows platforms. You can find a compatible version of the
- * header on Google.
- *
- * \subsection Declaration
- *
- * \li size of the alphabet (defined as the set of possible characters)
- * \li \c indexof(char) function that indexes characters in the alphabet
- *
- * \c indexof()should return an integer in [0, \c HT_ALPHABET_SIZE) that is
- * unique for each character in the alphabet.
- *
- * Here is an example \c indexof() function that indexes alphanumeric
- * characters:
- *
- * \code
- * int alphanumeric_index(char ch) {
- *     if (ch >= '0' && ch <= '9') {
- *         return ch - '0';
- *     }
- *     return ch - 'a' + 10;
- * }
- * \endcode
- *
- * In this case, the first 10 index values are the characters 0-9, and the
- * next 26 index values are the characters a-z. Note that any value outside
- * the range [0, \c HT_ALPHABET_SIZE) indicates an invalid character. If a
- * hat_trie finds an invalid character, an \c unindexed_character exception
- * is thrown.
- *
- * To declare a hat_trie that supports this alphabet:
- *
- * \code
- * hat_trie ht;
- * ht.insert(...);
- * \endcode
- */
-
 // TODO
 // what if bursting gives you a container that still has more elements than
 // BURST_THRESHOLD? I think bursting this one lazily (on the next time you
@@ -1022,12 +962,18 @@ class hat_trie {
 
   public:
     // comparison operators
-    friend bool operator<(const _self &lhs, const _self &rhs);
-    friend bool operator>(const _self &lhs, const _self &rhs);
-    friend bool operator<=(const _self &lhs, const _self &rhs);
-    friend bool operator>=(const _self &lhs, const _self &rhs);
-    friend bool operator==(const _self &lhs, const _self &rhs);
-    friend bool operator!=(const _self &lhs, const _self &rhs);
+    template <class F>
+    friend bool operator<(const hat_trie<F> &lhs, const hat_trie<F> &rhs);
+    template <class F>
+    friend bool operator>(const hat_trie<F> &lhs, const hat_trie<F> &rhs);
+    template <class F>
+    friend bool operator<=(const hat_trie<F> &lhs, const hat_trie<F> &rhs);
+    template <class F>
+    friend bool operator>=(const hat_trie<F> &lhs, const hat_trie<F> &rhs);
+    template <class F>
+    friend bool operator==(const hat_trie<F> &lhs, const hat_trie<F> &rhs);
+    template <class F>
+    friend bool operator!=(const hat_trie<F> &lhs, const hat_trie<F> &rhs);
 
 };
 
