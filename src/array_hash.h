@@ -96,6 +96,7 @@ class array_hash {
     // modifiers
     bool insert(const char *str);
     void erase(const char *str);
+    void erase(iterator);
 
     iterator begin() const;
     iterator end() const;
@@ -246,18 +247,18 @@ class array_hash<std::string> {
         if (p) {
             size_type occupied;
             if ((p = _search(str, p, length, occupied)) != NULL) {
-                // Erase the old word by overwriting it.
-                int n = _traits.allocation_chunk_size - (p - _data[slot]);
-                memcpy(p, p + sizeof(length_type) + length, n);
-                --_size;
-
-                // If that made the slot empty, erase the slot.
-                if (*((length_type *)(_data[slot] + sizeof(size_type))) == 0) {
-                    delete [] _data[slot];
-                    _data[slot] = NULL;
-                }
+                _erase_word(p, slot);
             }
         }
+    }
+
+    /**
+     * Erases a string from the hash table.
+     *
+     * @param pos  iterator to the string to erase
+     */
+    void erase(const iterator &pos) {
+        _erase_word(pos._p, pos._slot);
     }
 
     /**
@@ -501,6 +502,28 @@ class array_hash<std::string> {
         p += length;
         length = 0;
         memcpy(p, &length, sizeof(length_type));
+    }
+
+    /**
+     * Erases a word from a slot in the table.
+     *
+     * @param p     word to erase
+     * @param slot  slot @a p is in
+     */
+    void _erase_word(char *p, int slot) {
+        int length = *(length_type *)(p);
+        size_type size = *((size_type *)_data[slot]);
+
+        // Erase the word by overwriting it.
+        int n = size - (p - _data[slot]);
+        memcpy(p, p + sizeof(length_type) + length, n);
+
+        // If that made the slot empty, erase the slot.
+        if (*((length_type *)(_data[slot] + sizeof(size_type))) == 0) {
+            delete [] _data[slot];
+            _data[slot] = NULL;
+        }
+        --_size;
     }
 
 };

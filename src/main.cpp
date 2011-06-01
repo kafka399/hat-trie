@@ -39,11 +39,67 @@ void stl() {
     }
 }
 
+template <class A, class B>
+void assert_equals(const A &a, const B &b) {
+    set<string> x;
+    set<string> y;
+
+    typename A::iterator it = a.begin();
+    while (it != a.end()) {
+        x.insert(*it);
+        ++it;
+    }
+
+    typename B::iterator bit = b.begin();
+    while (bit != b.end()) {
+        y.insert(*bit);
+        ++bit;
+    }
+
+    if (x != y) {
+        set<string>::iterator xit = x.begin();
+        set<string>::iterator yit = y.begin();
+        while (xit != x.end() && yit != y.end()) {
+            if (*xit != *yit) {
+                cout << *xit << " " << *yit << endl;
+                assert(false);
+            }
+            ++xit;
+            ++yit;
+        }
+    }
+    assert(x == y);
+}
+
+void erase_test() {
+    array_hash<string> ah;
+    set<string> s;
+    string reader;
+    while (cin >> reader) {
+        ah.insert(reader.c_str());
+        s.insert(reader);
+        //cout << "INSERTED " << reader << endl;
+    }
+
+    //assert_equals(s, ah);
+    while (!s.empty()) {
+        array_hash<string>::iterator it = ah.begin();
+        for ( ; it != ah.end(); ++it) {
+            if (strlen(*it) == 0) {
+                assert(false);
+            }
+            //cout << *it << endl;
+        }
+
+        cout << "ERASING " << *s.begin() << endl;
+        ah.erase(s.begin()->c_str());
+        s.erase(*s.begin());
+        assert_equals(s, ah);
+    }
+}
+
 void mine_c() {
-    hat_trie_traits traits;
-    traits.burst_threshold = 4096;
-    hat_set<string> ht(traits);
-    //array_hash<string> ht;
+    array_hash<string> ht;
 
     // read entire file into main memory
     FILE *f = stdin;
@@ -66,14 +122,14 @@ void mine_c() {
     }
     delete [] data;
     //sleep(1000);
-    //print(ht);
+    print(ht);
 }
 
 void mine() {
-    //hat_trie ht;
+    hat_set<string> ht;
     string reader;
     while (cin >> reader) {
-        //ht.insert(reader);
+        ht.insert(reader);
     }
 }
 
@@ -83,7 +139,8 @@ int main() {
     //ProfilerStart("profile/prof.prof");
     //stl();
     //mine();
-    mine_c();
+    //mine_c();
+    erase_test();
     //ProfilerStop();
 
     return 0;
