@@ -96,6 +96,15 @@ class hat_trie_container : public hat_trie_node_base {
         }
         return _store.insert(p);
     }
+    bool erase(const char *p) {
+        if (*p == '\0') {
+            bool b = word();
+            set_word(false);
+            return b;
+        } else {
+            return _store.erase(p);
+        }
+    }
     void set_word(bool b) { _word = b; }
 
   private:
@@ -132,7 +141,7 @@ class hat_trie_node : public hat_trie_node_base {
     void set_word(bool b) { _types[HT_ALPHABET_SIZE] = b; }
 
   private:
-    std::bitset<HT_ALPHABET_SIZE + 1> _types;  // extra bit is an end of word flag
+    std::bitset<HT_ALPHABET_SIZE + 1> _types;  // +1 is an end of word flag
     _node_base *_children[HT_ALPHABET_SIZE];  // untyped pointers to children
 };
 

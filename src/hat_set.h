@@ -185,6 +185,15 @@ class hat_set<std::string> {
     }
 
     /**
+     * Erases a word from the trie.
+     *
+     * @param word  word to erase
+     */
+    void erase(const key_type &word) {
+        trie.erase(word);
+    }
+
+    /**
      * Inserts several words into the trie.
      *
      * In standard STL sets, this function can dramatically increase
@@ -242,7 +251,7 @@ class hat_set<std::string> {
         trie.swap(rhs.trie);
     }
 
-  private:
+  public:
     hat_trie trie;
 
 };

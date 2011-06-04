@@ -407,7 +407,7 @@ class hat_trie {
                 int index = *pos;
                 c = new _container(index, _ah_traits);
 
-                // Insert the new container into the trie structure.
+                // Insert the new container into the trie's structure.
                 c->_parent = p;
                 p->_children[index] = c;
                 p->_types[index] = CONTAINER_POINTER;
@@ -447,14 +447,13 @@ class hat_trie {
      * expensive as a regular insert operation.
      *
      * @param word  word to insert
-     * @return iterator to @a word in the trie
+     * @return  iterator to @a word in the trie
      */
     iterator insert(const iterator &, const key_type &key) {
         const std::string &word = ref(key);
         insert(word);
         return find(word);
     }
-
 
     /**
      * Erases a word from the trie.
@@ -469,11 +468,69 @@ class hat_trie {
      * Erases a word from the trie.
      *
      * @param word  word to erase
-     * @return  number of words erased from the trie. In a set container,
-     *          either 1 if the word was removed from the trie or 0 if the
-     *          word doesn't appear in the trie
+     * @return  number of words erased from the trie. In a distinct
+     *          container, either 1 if the word was removed from the
+     *          trie or 0 if the word doesn't appear in the trie
      */
-    size_type erase(const key_type &) {
+    size_type erase(const key_type &key) {
+        using namespace std;
+        const char *ps = ref(key).c_str();
+        _node_pointer n = _locate(ps);
+        _node *current = NULL;
+
+        if (n.type == CONTAINER_POINTER) {
+            _container *c = (_container *)n.p;
+            if (c->erase(ps)) {
+                if (c->size() == 0 && c->word() == false) {
+                    // Erase the container.
+                    current = c->_parent;
+                    delete c;
+
+                    // Mark the container's slot in its parent's _children
+                    // array as NULL.
+                    for (int i = 0; i < HT_ALPHABET_SIZE && c; ++i) {
+                        if (current->_children[i] == c) {
+                            current->_children[i] = NULL;
+                            c = NULL;  // stop the loop
+                        }
+                    }
+                }
+            }
+        } else {
+            current = (_node *) n.p;
+            current->set_word(false);
+        }
+
+        while (current && current != _root && current->word() == false) {
+            // Erase all the nodes that aren't words and don't
+            // have any children above the erased node or container.
+            // Start by determining whether the current node has any
+            // children.
+            bool children = false;
+            for (int i = 0; i < HT_ALPHABET_SIZE && !children; ++i) {
+                children |= (bool)current->_children[i];
+            }
+
+            // If the current node doesn't have any children and isn't a
+            // word, delete it.
+            if (children) {
+                _node *tmp = current;
+                current = current->_parent;
+                delete tmp;
+
+                // Mark the slot in current's parent's _children array
+                // as NULL.
+                for (int i = 0; i < HT_ALPHABET_SIZE; ++i) {
+                    if (current->_children[i] == tmp) {
+                        current->_children[i] = NULL;
+                        break;
+                    }
+                }
+            } else {
+                // Stop the while loop.
+                current = NULL;
+            }
+        }
         return 0;
     }
 
@@ -766,7 +823,8 @@ class hat_trie {
      *           <code>*s = '\0'</code>, @a s is in the trie part of this
      *           data structure. If not, @a s is either completed in a
      *           container or is not in the trie at all.
-     * @return  a _node_pointer to the location of @a s in the trie
+     * @return  a _node_pointer to the location where @a s should appear
+     *          in the trie
      */
     _node_pointer _locate(const char *&s) const {
         _node *p = _root;
@@ -905,7 +963,7 @@ class hat_trie {
         // Search for the next child under this node starting at pos.
         for (int i = pos; i < HT_ALPHABET_SIZE && result.p == NULL; ++i) {
             if (p->_children[i]) {
-                // Found a child.
+                // Move to the child we just found.
                 result.p = p->_children[i];
                 result.type = p->_types[i];
 
@@ -922,7 +980,7 @@ class hat_trie {
      * This node may be either a node or a container (that is itself a word
      * or has a word in it).
      *
-     * @param n
+     * @param n  node to start from
      * @param word  cached word in the trie traversal
      * @return  a pointer to the next node in the trie that marks a word
      */

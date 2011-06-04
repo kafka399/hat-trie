@@ -240,7 +240,7 @@ class array_hash<std::string> {
      *
      * @param str  string to erase
      */
-    void erase(const char *str) {
+    size_type erase(const char *str) {
         length_type length;
         int slot = _hash(str, length);
         char *p = _data[slot];
@@ -248,8 +248,10 @@ class array_hash<std::string> {
             size_type occupied;
             if ((p = _search(str, p, length, occupied)) != NULL) {
                 _erase_word(p, slot);
+                return 1;
             }
         }
+        return 0;
     }
 
     /**

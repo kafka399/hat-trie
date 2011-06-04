@@ -4,6 +4,7 @@
 #include <set>
 #include <string>
 #include <unistd.h>  // for sleep()
+#include <vector>
 
 #include <google/profiler.h>
 #include <boost/foreach.hpp>
@@ -16,18 +17,18 @@ using namespace std;
 using namespace stx;
 
 template <class T>
-void print(const T &t) {
+void print(const T &t, const string &space = "") {
     // use boost's foreach function! woot!
     foreach (const string &s, t) {
-        cout << s << '\n';
+        cout << space + s << '\n';
     }
 }
 
 template <>
-void print(const array_hash<string> &ah) {
+void print(const array_hash<string> &ah, const string &space) {
     array_hash<string>::iterator it;
     for (it = ah.begin(); it != ah.end(); ++it) {
-        cout << *it << endl;
+        cout << space + *it << endl;
     }
 }
 
@@ -62,47 +63,70 @@ void assert_equals(const A &a, const B &b) {
         while (xit != x.end() && yit != y.end()) {
             if (*xit != *yit) {
                 cout << *xit << " " << *yit << endl;
-                assert(false);
+                assert(*xit == *yit);
             }
             ++xit;
             ++yit;
         }
     }
+    if (x.size() != y.size()) {
+        cout << "CONTENTS OF X:" << endl;
+        print(x, "  ");
+        cout << "CONTENTS OF Y:" << endl;
+        print(y, "  ");
+        assert(x.size() == y.size());
+    }
     assert(x == y);
 }
 
 void erase_test() {
-    array_hash<string> ah;
+    hat_set<string> ah;
     set<string> s;
     string reader;
     while (cin >> reader) {
         ah.insert(reader.c_str());
         s.insert(reader);
-        //cout << "INSERTED " << reader << endl;
+        cout << "INSERTED " << reader << endl;
     }
+    vector<string> all(s.begin(), s.end());
 
     //assert_equals(s, ah);
+    int count = 0;
     while (!s.empty()) {
-        array_hash<string>::iterator it = ah.begin();
+        hat_set<string>::iterator it = ah.begin();
         for ( ; it != ah.end(); ++it) {
-            if (strlen(*it) == 0) {
+            if ((*it).length() == 0) {
                 assert(false);
             }
             //cout << *it << endl;
         }
+        //ah.trie.print();
 
         cout << "ERASING " << *s.begin() << endl;
-        ah.erase(s.begin()->c_str());
+        ah.erase(*s.begin());
+        //cout << "ERASED" << endl;
+        //ah.trie.print();
         s.erase(*s.begin());
         assert_equals(s, ah);
+
+        if (++count == 10) {
+            // Insert 5 random words from all.
+            for (int i = 0; i < 5; ++i) {
+                int r = rand() % all.size();
+                cout << "INSERTING " << all[r] << endl;
+                ah.insert(all[r]);
+                s.insert(all[r]);
+            }
+            count = 0;
+        }
     }
 }
 
 void mine_c() {
-    array_hash<string> ht;
+    hat_set<string> ht;
 
     // read entire file into main memory
-    FILE *f = stdin;
+    FILE *f = fopen("/Users/chris/hat trie/inputs/distinct", "r");
     fseek(f, 0, SEEK_END);
     int size = ftell(f);
     char *data = new char[size];
@@ -122,7 +146,7 @@ void mine_c() {
     }
     delete [] data;
     //sleep(1000);
-    print(ht);
+    //print(ht);
 }
 
 void mine() {
@@ -139,8 +163,8 @@ int main() {
     //ProfilerStart("profile/prof.prof");
     //stl();
     //mine();
-    //mine_c();
-    erase_test();
+    mine_c();
+    //erase_test();
     //ProfilerStop();
 
     return 0;
