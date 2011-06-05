@@ -139,6 +139,14 @@ void mine_c() {
         }
     }
     delete [] data;
+    //ht.trie.print();
+
+    while (!ht.empty()) {
+        cout << "ERASING " << *ht.begin() << endl;
+        ht.erase(*ht.begin());
+        //ht.trie.print();
+    }
+
     //sleep(1000);
     //print(ht);
 }
@@ -157,8 +165,8 @@ int main() {
     ProfilerStart("profile/prof.prof");
     //stl();
     //mine();
-    //mine_c();
-    erase_test();
+    mine_c();
+    //erase_test();
     ProfilerStop();
 
     return 0;

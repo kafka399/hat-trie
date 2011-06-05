@@ -206,8 +206,8 @@ class hat_set<std::string> {
      *
      * @param word  word to erase
      */
-    void erase(const key_type &word) {
-        trie.erase(word);
+    size_type erase(const key_type &word) {
+        return trie.erase(word);
     }
 
     /**

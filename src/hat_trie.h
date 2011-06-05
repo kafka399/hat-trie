@@ -88,7 +88,7 @@ class hat_trie_traits {
 
   public:
     hat_trie_traits() {
-        burst_threshold = 16384;
+        burst_threshold = 4;
     }
 
     /**
@@ -441,10 +441,11 @@ class hat_trie {
      * Inserts several words into the trie.
      *
      * In standard STL sets, this function can dramatically increase
-     * performance if @a position is set correctly. This performance
+     * performance if the iterator is set correctly. This performance
      * gain is unachievable in a HAT-trie because the time required to
-     * verify that @a position points to the right place is just as
-     * expensive as a regular insert operation.
+     * verify that the iterator points to the right place is just as
+     * expensive as a regular insert operation. This function is
+     * provided to meet the standard, but that's about it.
      *
      * @param word  word to insert
      * @return  iterator to @a word in the trie
@@ -458,7 +459,8 @@ class hat_trie {
     /**
      * Erases a word from the trie.
      *
-     * @param pos  iterator to the word in the trie
+     * @param pos  iterator to the word in the trie. Must point to a word
+     *             that exists somewhere in the trie.
      */
     void erase(const iterator &pos) {
         _node *current = NULL;
@@ -488,8 +490,9 @@ class hat_trie {
             current = (_node *) pos._position.p;
             current->set_word(false);
         }
+        --_size;
 
-        _erase_empty_parents(current);
+        _erase_empty_nodes(current);
     }
 
     /**
@@ -504,30 +507,41 @@ class hat_trie {
         const char *ps = ref(key).c_str();
         _node_pointer n = _locate(ps);
         _node *current = NULL;
+        int result = 0;
 
         if (n.type == CONTAINER_POINTER) {
+            // The word is either in a container or is represented by the
+            // container itself.
             _container *c = (_container *)n.p;
-            if (c->erase(ps) && c->size() == 0 && c->word() == false) {
-                // Erase the container.
-                current = c->_parent;
-                delete c;
+            result = c->erase(ps);
+            if (result > 0) {
+                if (c->size() == 0 && c->word() == false) {
+                    // Erase the container.
+                    current = c->_parent;
+                    delete c;
 
-                // Mark the container's slot in its parent's _children
-                // array as NULL.
-                for (int i = 0; i < HT_ALPHABET_SIZE; ++i) {
-                    if (current->_children[i] == c) {
-                        current->_children[i] = NULL;
-                        break;
+                    // Mark the container's slot in its parent's _children
+                    // array as NULL.
+                    for (int i = 0; i < HT_ALPHABET_SIZE; ++i) {
+                        if (current->_children[i] == c) {
+                            current->_children[i] = NULL;
+                            break;
+                        }
                     }
                 }
             }
+
         } else {
+            // The word is represented by a node in the trie. Set the word
+            // field on the node to false.
             current = (_node *) n.p;
             current->set_word(false);
+            result = 1;
         }
 
-        _erase_empty_parents(current);
-        return 0;
+        _erase_empty_nodes(current);
+        _size -= result;
+        return result;
     }
 
     /**
@@ -875,7 +889,15 @@ class hat_trie {
         return false;
     }
 
-    void _erase_empty_parents(_node *current) {
+    /**
+     * Starting from @a current, erases all the empty nodes up the trie.
+     *
+     * A node is empty if it doesn't represent a word and it has no
+     * children.
+     *
+     * @param current  node to start from
+     */
+    void _erase_empty_nodes(_node *current) {
         while (current && current != _root && current->word() == false) {
             // Erase all the nodes that aren't words and don't
             // have any children above the erased node or container.
@@ -888,7 +910,7 @@ class hat_trie {
 
             // If the current node doesn't have any children and isn't a
             // word, delete it.
-            if (children) {
+            if (children == false) {
                 _node *tmp = current;
                 current = current->_parent;
                 delete tmp;

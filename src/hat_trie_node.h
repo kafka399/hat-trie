@@ -96,11 +96,11 @@ class hat_trie_container : public hat_trie_node_base {
         }
         return _store.insert(p);
     }
-    bool erase(const char *p) {
+    size_t erase(const char *p) {
         if (*p == '\0') {
             bool b = word();
             set_word(false);
-            return b;
+            return b ? 1 : 0;
         } else {
             return _store.erase(p);
         }
