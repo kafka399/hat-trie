@@ -38,7 +38,8 @@ namespace stx {
  * \subsection Usage
  * \code
  * array_hash_traits traits;
- * traits.burst_threshold = 8192;
+ * traits.slot_count = 256;
+ * traits.allocation_chunk_size = 64;
  * hat_set<string> rawr(traits);
  * rawr.insert(...);
  * ...

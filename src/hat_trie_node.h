@@ -65,29 +65,64 @@ class hat_trie_node_base {
 
 /**
  * HAT-trie container type.
+ *
+ * Most of the words in a HAT-trie are stored in array hash tables. This
+ * class is a wrapper around an array hash table that makes it look like
+ * a node in a HAT-trie. Technically, the only functionality added to
+ * the hash tables is a "word" element -- a boolean value that indicates
+ * whether the container itself represents a word.
  */
 class hat_trie_container : public hat_trie_node_base {
     friend class hat_trie<std::string>;
 
   public:
+    /// Default constructor.
     hat_trie_container(char ch = '\0',
             const array_hash_traits &ah_traits = array_hash_traits()) :
             hat_trie_node_base(ch), _store(ah_traits) {
         set_word(false);
     }
+
+    /// Destructor.
     ~hat_trie_container() { }
 
-    // accessors
+    /**
+     * Determines whether the given string exists inside this container.
+     *
+     * @a p can either appear in the array hash table inside this container
+     * or it can be represented by this container itself.
+     *
+     * @param p  string to check
+     */
     bool exists(const char *p) const {
         if (*p == '\0') {
+            // p is represented by this container
             return word();
         }
+        // p is inside the internal array hash table
         return _store.exists(p);
     }
+
+    /// Accessor for the size field inside the internal array hash table
     size_t size() const { return _store.size(); }
+
+    /// Getter for the word field inside this container
     bool word() const { return _word; }
 
-    // modifiers
+    /// Setter  for the word field inside this container
+    void set_word(bool b) { _word = b; }
+
+    /**
+     * Inserts a word into this container.
+     *
+     * If @a p is an empty string, this container should represent it.
+     * Otherwise, @a p should be passed down to the internal array hash
+     * table.
+     *
+     * @param p  word to insert
+     * @return  true if the word was successfully inserted, false if the
+     *          word was already in this container
+     */
     bool insert(const char *p) {
         if (*p == '\0') {
             bool b = word();
@@ -96,19 +131,34 @@ class hat_trie_container : public hat_trie_node_base {
         }
         return _store.insert(p);
     }
+
+    /**
+     * Erases a word from this container.
+     *
+     * If @a p is an empty string, this container represents it. Otherwise,
+     * it could be inside the internal array hash table.
+     *
+     * @param p  word to erase
+     * @return  number of words that were erased. In distinct containers,
+     *          this is either 0 or 1.
+     */
     size_t erase(const char *p) {
         if (*p == '\0') {
             bool b = word();
             set_word(false);
             return b ? 1 : 0;
-        } else {
-            return _store.erase(p);
         }
+        return _store.erase(p);
     }
+
+    /**
+     * Erases a word from this container.
+     *
+     * @param pos  iterator to a word inside the internal array hash table
+     */
     void erase(const array_hash<std::string>::iterator &pos) {
         _store.erase(pos);
     }
-    void set_word(bool b) { _word = b; }
 
   private:
     bool _word;
@@ -117,6 +167,9 @@ class hat_trie_container : public hat_trie_node_base {
 
 /**
  * HAT-trie node type.
+ *
+ * Represents a node in the HAT-trie hierarchy of nodes. Nodes can
+ * represent a word and have children.
  */
 class hat_trie_node : public hat_trie_node_base {
     friend class hat_trie<std::string>;
@@ -125,22 +178,26 @@ class hat_trie_node : public hat_trie_node_base {
     typedef hat_trie_node_base _node_base;
 
   public:
+    /// Default constructor.
     hat_trie_node(char ch = '\0') : _node_base(ch) {
         for (int i = 0; i < HT_ALPHABET_SIZE; ++i) {
             _children[i] = NULL;
         }
         set_word(false);
     }
+
+    /// Destructor. Recursively deletes all the active nodes underneath
+    /// this node.
     ~hat_trie_node() {
         for (int i = 0; i < HT_ALPHABET_SIZE; ++i) {
             delete _children[i];
         }
     }
 
-    // accessors
+    /// Getter for the word field inside this node
     bool word() const { return _types[HT_ALPHABET_SIZE]; }
 
-    // modifiers
+    /// Setter for the word field inside this node
     void set_word(bool b) { _types[HT_ALPHABET_SIZE] = b; }
 
   private:

@@ -37,9 +37,9 @@
 //    * bool empty() const
 //    * iterator end()
 //      pair<iterator, iterator> equal_range(const key_type &) const
-//      void erase(iterator)
-//      void erase(const key_type &)
-//      void erase(iterator, iterator)
+//    * void erase(iterator)
+//    * void erase(const key_type &)
+//    * void erase(iterator, iterator)
 //    * iterator find(const key_type &) const
 //      allocator_type get_allocator() csont
 //    ? pair<iterator, bool> insert(const value_type &)
@@ -72,8 +72,7 @@
 namespace stx {
 
 /**
- * Provides a way to tune the performance characteristics of a
- * HAT-trie.
+ * Provides a way to tune the performance characteristics of a HAT-trie.
  *
  * \subsection Usage
  * \code
@@ -88,7 +87,7 @@ class hat_trie_traits {
 
   public:
     hat_trie_traits() {
-        burst_threshold = 4;
+        burst_threshold = 2;
     }
 
     /**
@@ -338,7 +337,38 @@ class hat_trie {
         return _ah_traits;
     }
 
-    // TODO
+    /**
+     * Prints the hierarchical structure of the trie.
+     *
+     * The output is indented to indicate trie depth. Words are marked
+     * by a ~, and containers are marked by a *. For example, a trie with
+     * a @a burst_threshold of 2 with the words the, their, there, they're,
+     * train, trust, truth, bear, and breath would produce this output:
+     *
+     *   b *
+     *     reath ~
+     *     ear ~
+     *   t
+     *     h
+     *      e ~
+     *        r *
+     *          e ~
+     *        y *
+     *          `re ~
+     *        i *
+     *          r ~
+     *     r
+     *       a *
+     *         in ~
+     *       u *
+     *         st ~
+     *         th ~
+     *
+     * (This isn't exactly right because of the particular bursting
+     * algorithm this implementation uses, but it is a good example.)
+     *
+     * @param out  output stream to print to. cout by default
+     */
     void print(std::ostream &out = std::cout) const { _print(out, _root); }
 
     /**
@@ -514,19 +544,17 @@ class hat_trie {
             // container itself.
             _container *c = (_container *)n.p;
             result = c->erase(ps);
-            if (result > 0) {
-                if (c->size() == 0 && c->word() == false) {
-                    // Erase the container.
-                    current = c->_parent;
-                    delete c;
+            if (result > 0 && c->size() == 0 && c->word() == false) {
+                // Erase the container.
+                current = c->_parent;
+                delete c;
 
-                    // Mark the container's slot in its parent's _children
-                    // array as NULL.
-                    for (int i = 0; i < HT_ALPHABET_SIZE; ++i) {
-                        if (current->_children[i] == c) {
-                            current->_children[i] = NULL;
-                            break;
-                        }
+                // Mark the container's slot in its parent's _children
+                // array as NULL.
+                for (int i = 0; i < HT_ALPHABET_SIZE; ++i) {
+                    if (current->_children[i] == c) {
+                        current->_children[i] = NULL;
+                        break;
                     }
                 }
             }
@@ -813,9 +841,49 @@ class hat_trie {
     _node *_root;  // pointer to the root of the trie
     size_type _size;  // number of distinct elements in the trie
 
-    void _print(std::ostream &,
-                const _node_pointer &,
-                const key_type & = "") const;
+    /**
+     * Recursively prints the contents of the trie.
+     *
+     * See the doc comment on print()
+     *
+     * @param out  output stream to print to
+     * @param n  node to start recursing from
+     * @param space  spaces to indent this level of the trie
+     */
+    void _print(std::ostream &out,
+                const _node_pointer &n,
+                const std::string &space = "") const {
+        if (n.type == CONTAINER_POINTER) {
+            _container *c = (_container *) n.p;
+            if (c->ch() != '\0') {
+                out << space << c->ch() << " *";
+                if (c->word()) {
+                    out << "~";
+                }
+                out << std::endl;
+            }
+
+            typename array_hash<key_type>::iterator it;
+            it = c->_store.begin();
+            for (it = c->_store.begin(); it != c->_store.end(); ++it) {
+                out << space + "  " << *it << " ~" << std::endl;
+            }
+
+        } else if (n.type == NODE_POINTER) {
+            _node *p = (_node *) n.p;
+            out << space << p->ch();
+            if (p->word()) {
+                out << " ~";
+            }
+            out << std::endl;
+            for (int i = 0; i < HT_ALPHABET_SIZE; ++i) {
+                if (p->_children[i]) {
+                    _print(out, _node_pointer(p->_types[i],
+                           p->_children[i]), space + "  ");
+                }
+            }
+        }
+    }
 
     /**
      * Initializes all the fields in a hat_trie as if it had just been
@@ -938,18 +1006,21 @@ class hat_trie {
      * structure will look like this:
      *
      *   BEFORE
-     *   t (container - top letter = t)
-     *     an ~ (word in the container)
-     *     ree ~ (word in the container)
-     *     rust ~ (word in the container)
+     *   t *
+     *     an ~
+     *     ree ~
+     *     rust ~
      *
      *   AFTER
-     *   t (node)
-     *     a (container - top letter = a)
-     *       n ~ (word in the container)
-     *     r (container - top letter = r)
-     *       ust ~ (word in the container)
-     *       ee ~ (word in the container)
+     *   t
+     *     a *
+     *       n ~
+     *     r *
+     *       ust ~
+     *       ee ~
+     *
+     * Note: see the doc comment on print() if this notation doesn't make
+     * sense.
      *
      * The burst operation is described in detail by the paper that
      * originally described burst tries, freely available on the Internet.
@@ -981,13 +1052,7 @@ class hat_trie {
             }
 
             // Insert the rest of the word into a container.
-            if ((*it)[1] != '\0') {
-                // Insert the rest of the word into the right container.
-                ((_container *) result->_children[index])->insert((*it) + 1);
-            } else {
-                // Mark this container as a word.
-                ((_container *) result->_children[index])->set_word(true);
-            }
+            ((_container *)result->_children[index])->insert(*it + 1);
         }
 
         // Position the new node in the trie.
@@ -1112,49 +1177,6 @@ class hat_trie {
     friend bool operator!=(const hat_trie<F> &lhs, const hat_trie<F> &rhs);
 
 };
-
-/**
- * Recursively prints the contents of the trie.
- */
-template <class T>
-void
-hat_trie<T>::_print(
-        std::ostream &out,
-        const _node_pointer &n,
-        const key_type &space) const {
-    if (n.type == CONTAINER_POINTER) {
-        _container *c = (_container *) n.p;
-        if (c->ch() != '\0') {
-            out << space << c->ch();
-            if (c->word()) {
-                out << " ~";
-            }
-            out << std::endl;
-        }
-
-        typename array_hash<key_type>::iterator it;
-        it = c->_store.begin();
-        for (it = c->_store.begin(); it != c->_store.end(); ++it) {
-            out << space + "  " << *it << " ~" << std::endl;
-        }
-
-    } else if (n.type == NODE_POINTER) {
-        _node *p = (_node *) n.p;
-        if (p->ch() != '\0') {
-            out << space << p->ch();
-            if (p->word()) {
-                out << " ~";
-            }
-            out << std::endl;
-        }
-        for (int i = 0; i < HT_ALPHABET_SIZE; ++i) {
-            if (p->_children[i]) {
-                _print(out, _node_pointer(p->_types[i],
-                       p->_children[i]), space + "  ");
-            }
-        }
-    }
-}
 
 // --------------------
 // COMPARISON OPERATORS

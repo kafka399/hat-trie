@@ -159,16 +159,26 @@ void mine() {
     }
 }
 
+void printsert(hat_set<string> &ht, const string& s) {
+    cout << "INSERTING " << s << endl;
+    ht.insert(s);
+    ht.print();
+}
+
+void printrase(hat_set<string> &ht, const string& s) {
+    cout << "ERASING " << s << endl;
+    ht.erase(s);
+    ht.print();
+}
+
 int main() {
     std::ios_base::sync_with_stdio(false);  // speed up reading from stdin
 
     ProfilerStart("profile/prof.prof");
     //stl();
-    //mine();
     mine_c();
     //erase_test();
     ProfilerStop();
-
     return 0;
 }
 

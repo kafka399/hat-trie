@@ -62,7 +62,7 @@ class hat_set<std::string> {
             trie(traits, ah_traits) { }
 
     /**
-     * Default constructor.
+     * Array hash traits constructor.
      *
      * @param ah_traits  array hash customization traits
      */
@@ -260,7 +260,43 @@ class hat_set<std::string> {
         trie.swap(rhs.trie);
     }
 
-  public:
+    /**
+     * Prints the hierarchical structure of the trie.
+     *
+     * The output is indented to indicate trie depth. Words are marked
+     * by a ~, and containers are marked by a *. For example, a trie with
+     * a @a burst_threshold of 2 with the words the, their, there, they're,
+     * train, trust, truth, bear, and breath would produce this output:
+     *
+     *   b *
+     *     reath ~
+     *     ear ~
+     *   t
+     *     h
+     *      e ~
+     *        r *
+     *          e ~
+     *        y *
+     *          `re ~
+     *        i *
+     *          r ~
+     *     r
+     *       a *
+     *         in ~
+     *       u *
+     *         st ~
+     *         th ~
+     *
+     * (This isn't exactly right because of the particular bursting
+     * algorithm this implementation uses, but it is a good example.)
+     *
+     * @param out  output stream to print to. cout by default
+     */
+    void print() {
+        trie.print();
+    }
+
+  private:
     hat_trie trie;
 
 };
