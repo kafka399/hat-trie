@@ -69,13 +69,6 @@ void assert_equals(const A &a, const B &b) {
             ++yit;
         }
     }
-    if (x.size() != y.size()) {
-        cout << "CONTENTS OF X:" << endl;
-        print(x, "  ");
-        cout << "CONTENTS OF Y:" << endl;
-        print(y, "  ");
-        assert(x.size() == y.size());
-    }
     assert(x == y);
 }
 
@@ -102,11 +95,11 @@ void erase_test() {
         }
         //ah.trie.print();
 
-        cout << "ERASING " << *s.begin() << endl;
-        ah.erase(*s.begin());
+        cout << "ERASING " << *ah.begin() << endl;
         //cout << "ERASED" << endl;
         //ah.trie.print();
-        s.erase(*s.begin());
+        s.erase(*ah.begin());
+        ah.erase(ah.begin());
         assert_equals(s, ah);
 
         if (++count == 10) {
@@ -126,7 +119,8 @@ void mine_c() {
     hat_set<string> ht;
 
     // read entire file into main memory
-    FILE *f = fopen("/Users/chris/hat trie/inputs/distinct", "r");
+    //FILE *f = fopen("/Users/chris/hat trie/inputs/distinct", "r");
+    FILE *f = stdin;
     fseek(f, 0, SEEK_END);
     int size = ftell(f);
     char *data = new char[size];
@@ -160,12 +154,12 @@ void mine() {
 int main() {
     std::ios_base::sync_with_stdio(false);  // speed up reading from stdin
 
-    //ProfilerStart("profile/prof.prof");
+    ProfilerStart("profile/prof.prof");
     //stl();
     //mine();
-    mine_c();
-    //erase_test();
-    //ProfilerStop();
+    //mine_c();
+    erase_test();
+    ProfilerStop();
 
     return 0;
 }

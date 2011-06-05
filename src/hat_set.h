@@ -185,15 +185,6 @@ class hat_set<std::string> {
     }
 
     /**
-     * Erases a word from the trie.
-     *
-     * @param word  word to erase
-     */
-    void erase(const key_type &word) {
-        trie.erase(word);
-    }
-
-    /**
      * Inserts several words into the trie.
      *
      * In standard STL sets, this function can dramatically increase
@@ -208,6 +199,24 @@ class hat_set<std::string> {
      */
     iterator insert(const iterator &pos, const value_type &word) {
         return trie.insert(pos, word);
+    }
+
+    /**
+     * Erases a word from the trie.
+     *
+     * @param word  word to erase
+     */
+    void erase(const key_type &word) {
+        trie.erase(word);
+    }
+
+    /**
+     * Erases a word from the trie.
+     *
+     * @param pos  iterator to the word to erase
+     */
+    void erase(const iterator &pos) {
+        trie.erase(pos);
     }
 
     /**

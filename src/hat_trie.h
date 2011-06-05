@@ -460,8 +460,36 @@ class hat_trie {
      *
      * @param pos  iterator to the word in the trie
      */
-    void erase(const iterator &) {
+    void erase(const iterator &pos) {
+        _node *current = NULL;
+        if (pos._position.type == CONTAINER_POINTER) {
+            _container *c = (_container *)pos._position.p;
+            if (pos._word) {
+                c->erase("");
+            } else {
+                c->erase(pos._container_iterator);
+            }
 
+            if (c->size() == 0 && c->word() == false) {
+                current = c->_parent;
+                delete c;
+
+                // Mark the container's slot in its parent's _children
+                // array as NULL.
+                for (int i = 0; i < HT_ALPHABET_SIZE; ++i) {
+                    if (current->_children[i] == c) {
+                        current->_children[i] = NULL;
+                        break;
+                    }
+                }
+            }
+
+        } else {
+            current = (_node *) pos._position.p;
+            current->set_word(false);
+        }
+
+        _erase_empty_parents(current);
     }
 
     /**
@@ -473,26 +501,23 @@ class hat_trie {
      *          trie or 0 if the word doesn't appear in the trie
      */
     size_type erase(const key_type &key) {
-        using namespace std;
         const char *ps = ref(key).c_str();
         _node_pointer n = _locate(ps);
         _node *current = NULL;
 
         if (n.type == CONTAINER_POINTER) {
             _container *c = (_container *)n.p;
-            if (c->erase(ps)) {
-                if (c->size() == 0 && c->word() == false) {
-                    // Erase the container.
-                    current = c->_parent;
-                    delete c;
+            if (c->erase(ps) && c->size() == 0 && c->word() == false) {
+                // Erase the container.
+                current = c->_parent;
+                delete c;
 
-                    // Mark the container's slot in its parent's _children
-                    // array as NULL.
-                    for (int i = 0; i < HT_ALPHABET_SIZE && c; ++i) {
-                        if (current->_children[i] == c) {
-                            current->_children[i] = NULL;
-                            c = NULL;  // stop the loop
-                        }
+                // Mark the container's slot in its parent's _children
+                // array as NULL.
+                for (int i = 0; i < HT_ALPHABET_SIZE; ++i) {
+                    if (current->_children[i] == c) {
+                        current->_children[i] = NULL;
+                        break;
                     }
                 }
             }
@@ -501,36 +526,7 @@ class hat_trie {
             current->set_word(false);
         }
 
-        while (current && current != _root && current->word() == false) {
-            // Erase all the nodes that aren't words and don't
-            // have any children above the erased node or container.
-            // Start by determining whether the current node has any
-            // children.
-            bool children = false;
-            for (int i = 0; i < HT_ALPHABET_SIZE && !children; ++i) {
-                children |= (bool)current->_children[i];
-            }
-
-            // If the current node doesn't have any children and isn't a
-            // word, delete it.
-            if (children) {
-                _node *tmp = current;
-                current = current->_parent;
-                delete tmp;
-
-                // Mark the slot in current's parent's _children array
-                // as NULL.
-                for (int i = 0; i < HT_ALPHABET_SIZE; ++i) {
-                    if (current->_children[i] == tmp) {
-                        current->_children[i] = NULL;
-                        break;
-                    }
-                }
-            } else {
-                // Stop the while loop.
-                current = NULL;
-            }
-        }
+        _erase_empty_parents(current);
         return 0;
     }
 
@@ -877,6 +873,39 @@ class hat_trie {
             return true;
         }
         return false;
+    }
+
+    void _erase_empty_parents(_node *current) {
+        while (current && current != _root && current->word() == false) {
+            // Erase all the nodes that aren't words and don't
+            // have any children above the erased node or container.
+            // Start by determining whether the current node has any
+            // children.
+            bool children = false;
+            for (int i = 0; i < HT_ALPHABET_SIZE && !children; ++i) {
+                children |= (bool)current->_children[i];
+            }
+
+            // If the current node doesn't have any children and isn't a
+            // word, delete it.
+            if (children) {
+                _node *tmp = current;
+                current = current->_parent;
+                delete tmp;
+
+                // Mark the slot in current's parent's _children array
+                // as NULL.
+                for (int i = 0; i < HT_ALPHABET_SIZE; ++i) {
+                    if (current->_children[i] == tmp) {
+                        current->_children[i] = NULL;
+                        break;
+                    }
+                }
+            } else {
+                // Stop the while loop.
+                current = NULL;
+            }
+        }
     }
 
     /**

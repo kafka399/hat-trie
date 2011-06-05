@@ -105,6 +105,9 @@ class hat_trie_container : public hat_trie_node_base {
             return _store.erase(p);
         }
     }
+    void erase(const array_hash<std::string>::iterator &pos) {
+        _store.erase(pos);
+    }
     void set_word(bool b) { _word = b; }
 
   private:
