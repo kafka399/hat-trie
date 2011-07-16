@@ -1,7 +1,0 @@
-digraph G
-{
-  edge [fontname="FreeSans.ttf",fontsize="10",labelfontname="FreeSans.ttf",labelfontsize="10"];
-  node [fontname="FreeSans.ttf",fontsize="10",shape=record];
-  rankdir=LR;
-  Node1 [label="stx::hat_set\< std::string \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classstx_1_1hat__set_3_01std_1_1string_01_4.html"];
-}
