@@ -6,8 +6,5 @@ obj
 # google profiling tools
 prof*
 
-# input files
-inputs
-
-# documentation
-doc
+# documentation files
+doc/html

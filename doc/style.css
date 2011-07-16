@@ -635,10 +635,9 @@ div.summary a
 
 div.header
 {
-        background-image:url('nav_h.png');
-        background-repeat:repeat-x;
 	background-color: #F9FAFC;
 	margin:  0px;
+    border-top: 1px solid #C4CFE5;
 	border-bottom: 1px solid #C4CFE5;
 }
 
