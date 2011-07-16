@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
-<title>hat-trie: Main Page</title>
+<title>hat-trie: Class Members - Variables</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
 <script type="text/javaScript" src="search/search.js"></script>
@@ -16,8 +16,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="navigation" id="top">
   <div class="tabs">
     <ul class="tablist">
-      <li class="current"><a href="index.html"><span>Main&#160;Page</span></a></li>
-      <li><a href="annotated.html"><span>Classes</span></a></li>
+      <li><a href="index.html"><span>Main&#160;Page</span></a></li>
+      <li class="current"><a href="annotated.html"><span>Classes</span></a></li>
       <li><a href="files.html"><span>Files</span></a></li>
       <li id="searchli">
         <div id="MSearchBox" class="MSearchBoxInactive">
@@ -37,61 +37,31 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
       </li>
     </ul>
   </div>
-</div>
-<div class="header">
-  <div class="headertitle">
-<h1>hat-trie Documentation</h1>  </div>
+  <div class="tabs2">
+    <ul class="tablist">
+      <li><a href="annotated.html"><span>Class&#160;List</span></a></li>
+      <li class="current"><a href="functions.html"><span>Class&#160;Members</span></a></li>
+    </ul>
+  </div>
+  <div class="tabs2">
+    <ul class="tablist">
+      <li><a href="functions.html"><span>All</span></a></li>
+      <li><a href="functions_func.html"><span>Functions</span></a></li>
+      <li class="current"><a href="functions_vars.html"><span>Variables</span></a></li>
+    </ul>
+  </div>
 </div>
 <div class="contents">
-<h3 class="version">alpha </h3><p>This project is intended to be a fully operational, standards compliant HAT-trie. It will eventually mirror the STL set interface, but for now, it is still _VERY_ much a work in progress.</p>
-<h2><a class="anchor" id="Implemented"></a>
-Implemented</h2>
-<p>Here is a list of the major operations that are implemented:</p>
-<ul>
-<li><code>begin()</code> </li>
-<li><code>clear()</code> </li>
-<li><code>count(string)</code> </li>
-<li><code>empty()</code> </li>
-<li><code>end()</code> </li>
-<li><code>exists(string)</code> </li>
-<li><code>find(string)</code> </li>
-<li><code>insert(record)</code> </li>
-<li><code>size()</code> </li>
-<li><code>swap(hat_set &amp;)</code> </li>
-<li>forward iteraton and iterator dereferencing</li>
-</ul>
-<p>In a <code>hat_set</code>, <code>record</code> is a <code>std::string</code>. In a <code>hat_map</code>, <code>record</code> is a <code>pair&lt;std::string, T&gt;</code>.</p>
-<h2><a class="anchor" id="Usage"></a>
-Usage</h2>
-<h3><a class="anchor" id="Installation"></a>
-Installation</h3>
-<p>Copy all the headers into a directory in your PATH and include <code><a class="el" href="hat__set_8h_source.html">hat_set.h</a></code> in your project. Some of the headers require <code>stdint.h</code>, which isn't available by default on most Windows platforms. You can find a compatible version of the header on Google.</p>
-<p>All classes are defined in namespace stx.</p>
-<h3><a class="anchor" id="Example"></a>
-Example</h3>
-<p>In the vast majority of cases, these classes are used in exactly the same way as their STL counterparts. Just replace <code>set</code> with <code>hat_set</code>. </p>
-<div class="fragment"><pre class="fragment"><span class="preprocessor"> #include &quot;hat_set.h&quot;</span>
-
- <span class="keyword">using namespace </span>stx;
-
- <span class="keywordtype">int</span> main() {
-     hat_set&lt;string&gt; trie;
-     trie.insert(<span class="stringliteral">&quot;hello world&quot;</span>);
-     cout &lt;&lt; *trie.begin() &lt;&lt; endl;
-     <span class="keywordflow">return</span> 0;
- }
-</pre></div><p>Prints <code>hello</code> world.</p>
-<h2><a class="anchor" id="Extensions"></a>
-Extensions</h2>
-<p>There are a few non-standard extensions to the hat interface:</p>
-<ul>
-<li><code>exists(string)</code> -- returns true iff there is a record in the trie with a matching key</li>
-</ul>
-<h2><a class="anchor" id="Deviations"></a>
-Deviations</h2>
-<p>The hat interface differs from the standard in a few ways:</p>
-<ul>
-<li><code>insert(record)</code> -- returns a <code>bool</code> rather than a <code>pair&lt;iterator</code>, bool&gt;. See the HTML documentation for rationale. </li>
+&#160;<ul>
+<li>allocation_chunk_size
+: <a class="el" href="classstx_1_1array__hash__traits.html#a9407bed034f73acccaefa98edfab536c">stx::array_hash_traits</a>
+</li>
+<li>burst_threshold
+: <a class="el" href="classstx_1_1hat__trie__traits.html#a2f02ea08f0c5df34a8b505aa2123333c">stx::hat_trie_traits</a>
+</li>
+<li>slot_count
+: <a class="el" href="classstx_1_1array__hash__traits.html#ad577b8612db3284bb585aa9ba80b6e16">stx::array_hash_traits</a>
+</li>
 </ul>
 </div>
 <!--- window showing the filter options -->

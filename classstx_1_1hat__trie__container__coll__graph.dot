@@ -1,0 +1,12 @@
+digraph G
+{
+  edge [fontname="FreeSans.ttf",fontsize="10",labelfontname="FreeSans.ttf",labelfontsize="10"];
+  node [fontname="FreeSans.ttf",fontsize="10",shape=record];
+  Node1 [label="stx::hat_trie_container",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled" fontcolor="black"];
+  Node2 -> Node1 [dir=back,color="midnightblue",fontsize="10",style="solid",fontname="FreeSans.ttf"];
+  Node2 [label="stx::hat_trie_node_base",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classstx_1_1hat__trie__node__base.html"];
+  Node3 -> Node2 [dir=back,color="darkorchid3",fontsize="10",style="dashed",label="_parent",fontname="FreeSans.ttf"];
+  Node3 [label="stx::hat_trie_node",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classstx_1_1hat__trie__node.html"];
+  Node2 -> Node3 [dir=back,color="midnightblue",fontsize="10",style="solid",fontname="FreeSans.ttf"];
+  Node2 -> Node3 [dir=back,color="darkorchid3",fontsize="10",style="dashed",label="_children",fontname="FreeSans.ttf"];
+}
