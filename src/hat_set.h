@@ -70,6 +70,19 @@ class hat_set<std::string> {
             trie(ah_traits) { }
 
     /**
+     * Builds a HAT set from the data in [first, last).
+     *
+     * @param first, last  iterators specifying a range of elements to
+     *                     initialize the tree with
+     */
+    template <class input_iterator>
+    hat_set(const input_iterator &first, const input_iterator &last,
+            const hat_trie_traits &traits = hat_trie_traits(),
+            const array_hash_traits &ah_traits = array_hash_traits()) :
+        trie(first, last, traits, ah_traits)
+    { }
+
+    /**
      * Searches for a word in the trie.
      *
      * @param word  word to search for
