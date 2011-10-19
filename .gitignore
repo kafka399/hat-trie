@@ -2,6 +2,7 @@
 run
 bin
 obj
+main.cpp
 
 # google profiling tools
 prof*
