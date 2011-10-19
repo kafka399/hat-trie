@@ -39,17 +39,17 @@ template <>
 class hat_set<std::string> {
 
   private:
-    typedef hat_trie<std::string> hat_trie;
+    typedef hat_trie<std::string> hat_trie_type;
     typedef hat_set<std::string>  _self;
 
   public:
     // STL types
-    typedef hat_trie::size_type         size_type;
-    typedef hat_trie::key_type          key_type;
-    typedef hat_trie::value_type        value_type;
+    typedef hat_trie_type::size_type         size_type;
+    typedef hat_trie_type::key_type          key_type;
+    typedef hat_trie_type::value_type        value_type;
 
-    typedef hat_trie::iterator          iterator;
-    typedef hat_trie::const_iterator    const_iterator;
+    typedef hat_trie_type::iterator          iterator;
+    typedef hat_trie_type::const_iterator    const_iterator;
 
     /**
      * Default constructor.
@@ -310,7 +310,7 @@ class hat_set<std::string> {
     }
 
   private:
-    hat_trie trie;
+    hat_trie_type trie;
 
 };
 
