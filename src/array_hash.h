@@ -160,6 +160,45 @@ class array_hash<std::string> {
     }
 
     /**
+     * Copy constructor.
+     */
+    array_hash(const array_hash<std::string> &rhs) {
+        _data = NULL;
+        operator=(rhs);
+    }
+
+    /**
+     * Assignment operator.
+     */
+    array_hash<std::string>& operator=(const array_hash<std::string> &rhs) {
+        if (this != &rhs) {
+            _traits = rhs._traits;
+            _size = rhs._size;
+
+            // Empty the current data array
+            if (_data) {
+                for (int i = 0; i < _traits.slot_count; ++i) {
+                    delete [] _data[i];
+                }
+                delete [] _data;
+            }
+
+            // Copy the data from the other array hash
+            _data = new char *[_traits.slot_count];
+            for (int i = 0; i < _traits.slot_count; ++i) {
+                if (rhs._data[i]) {
+                    size_t space = *rhs._data[i];
+                    _data[i] = new char[space];
+                    memcpy(_data[i], rhs._data[i], space);
+                } else {
+                    _data[i] = NULL;
+                }
+            }
+        }
+        return *this;
+    }
+
+    /**
      * Determines whether @a str is in the table.
      *
      * @param str  string to search for
