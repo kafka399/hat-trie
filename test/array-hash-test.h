@@ -23,14 +23,15 @@ class arrayHashTest {
     static void testExists();
     static void testFind();
     static void testCopyConstructor();
+    static void testTraits();
 
-    static std::set<std::string> testdata();
+    static std::set<std::string> getTestData();
 
     template <class A, class B>
     static void assert_equal(const A& a, const B& b);
     template <class A>
     static std::set<std::string> setify(const A& a);
-    static stx::array_hash<std::string> hashify(const std::set<std::string> &s);
+    static stx::array_hash<std::string> hashify(const std::set<std::string> &s = getTestData());
 };
 
 #endif  // ARRAY_HASH_TEST_H_

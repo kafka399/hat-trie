@@ -45,19 +45,22 @@ namespace stx {
  * ...
  * \endcode
  */
-class array_hash_traits {
-
+class array_hash_traits
+{
   public:
-    array_hash_traits() {
-        slot_count = 512;
-        allocation_chunk_size = 32;
+    array_hash_traits(
+        int slot_count = 512,
+        int allocation_chunk_size = 32) :
+            slot_count(slot_count),
+            allocation_chunk_size(allocation_chunk_size)
+    {
     }
 
     /**
      * Number of slots in the hash table. Higher values use more
      * memory but may show faster access times.
      *
-     * Default 512. Must be positive.
+     * Default 512. Must be a positive power of 2.
      */
     int slot_count;
 
@@ -512,8 +515,12 @@ class array_hash<std::string> {
     void _grow_slot(int slot, size_type current, size_type required) {
         // Determine how much space the new slot needs.
         size_type new_size = current;
-        while (new_size < required) {
-            new_size += _traits.allocation_chunk_size;
+        if (_traits.allocation_chunk_size == 0) {
+            new_size = required;
+        } else {
+            while (new_size < required) {
+                new_size += _traits.allocation_chunk_size;
+            }
         }
 
         // Make a new slot and copy all the data over.

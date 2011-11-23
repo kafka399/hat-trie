@@ -1,10 +1,3 @@
-/*
- * array-hash-test.cpp
- *
- *  Created on: Nov 22, 2011
- *      Author: chris
- */
-
 // standard headers
 #include <iostream>
 
@@ -20,7 +13,9 @@ cute::suite arrayHashTest::suite() {
     cute::suite result;
     result.push_back(CUTE(testEmptyFind));
     result.push_back(CUTE(testExists));
+    result.push_back(CUTE(testFind));
     result.push_back(CUTE(testCopyConstructor));
+    result.push_back(CUTE(testTraits));
     return result;
 }
 
@@ -28,6 +23,7 @@ void arrayHashTest::testEmptyFind() {
     array_hash<string> ah;
     ASSERT(ah.find("") == ah.end());
     ASSERT(ah.find("hello") == ah.end());
+    ASSERT(ah.begin() == ah.end());
 }
 
 void arrayHashTest::testExists() {
@@ -40,23 +36,42 @@ void arrayHashTest::testFind() {
 }
 
 void arrayHashTest::testCopyConstructor() {
-    array_hash<string> a;
-    a.insert("a");
-    a.insert("b");
-    a.insert("c");
-    a.insert("d");
-    a.insert("e");
+    array_hash<string> a = hashify();
     array_hash<string> b(a);
     assert_equal(a, b);
 }
 
-set<string> arrayHashTest::testdata() {
+void arrayHashTest::testTraits() {
+    // Make an array hash with default values, then some more
+    // array hashes with varying traits
+    array_hash<string> a = hashify();
+    array_hash_traits btraits(2, 0);
+    array_hash<string> b(btraits);
+    array_hash_traits ctraits(1048576, 700);
+    array_hash<string> c(ctraits);
+
+    // Copy the data to all the test array hashes
+    array_hash<string>::iterator it;
+    for (it = a.begin(); it != a.end(); ++it) {
+        b.insert(*it);
+        c.insert(*it);
+    }
+
+    // Make sure all the hashes have the same values
+    assert_equal(a, b);
+    assert_equal(a, c);
+}
+
+//------------------------------------------------------------------------------
+// private accessory functions
+//------------------------------------------------------------------------------
+
+set<string> arrayHashTest::getTestData() {
     static set<string> result;
     result.insert("hello");
     result.insert("chris");
     result.insert("");
     result.insert("abcd");
-
     return result;
 }
 
@@ -80,10 +95,9 @@ set<string> arrayHashTest::setify(const A& a) {
     return set<string>(a.begin(), a.end());
 }
 
-array_hash<string> arrayHashTest::hashify(const set<string> &s) {
+array_hash<string> arrayHashTest::hashify(const set<string> &data) {
     // Create the array hash
     array_hash<string> ah;
-    set<string> data = testdata();
     set<string>::iterator it;
     for (it = data.begin(); it != data.end(); ++it) {
         ah.insert(it->c_str());
