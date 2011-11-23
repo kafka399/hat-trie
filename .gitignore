@@ -1,11 +1,18 @@
-# executable files
+# executable files and ouput directories
 run
-bin
-obj
+bin/
+obj/
 main.cpp
+Debug*/
 
-# google profiling tools
-prof*
+# eclipse project files
+.*project
 
 # documentation files
-doc/html
+doc/html/
+
+# unit testing files
+cute/
+
+# boost files
+boost/
