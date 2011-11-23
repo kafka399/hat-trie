@@ -16,6 +16,8 @@ cute::suite arrayHashTest::suite() {
     result.push_back(CUTE(testFind));
     result.push_back(CUTE(testCopyConstructor));
     result.push_back(CUTE(testTraits));
+    result.push_back(CUTE(testErase));
+    result.push_back(CUTE(testIteration));
     return result;
 }
 
@@ -27,12 +29,11 @@ void arrayHashTest::testEmptyFind() {
 }
 
 void arrayHashTest::testExists() {
-    // Make sure the data in the array hash and the
-    // set are the same
+    // TODO
 }
 
 void arrayHashTest::testFind() {
-
+    // TODO
 }
 
 void arrayHashTest::testCopyConstructor() {
@@ -60,6 +61,14 @@ void arrayHashTest::testTraits() {
     // Make sure all the hashes have the same values
     assert_equal(a, b);
     assert_equal(a, c);
+}
+
+void arrayHashTest::testErase() {
+    // TODO
+}
+
+void arrayHashTest::testIteration() {
+    // TODO
 }
 
 //------------------------------------------------------------------------------
