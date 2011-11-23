@@ -10,7 +10,7 @@
 using namespace std;
 
 cute::suite trieTest::suite() {
-	cute::suite result;
+    cute::suite result;
 
-	return result;
+    return result;
 }

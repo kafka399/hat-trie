@@ -12,7 +12,7 @@
 
 class trieTest {
   public:
-	static cute::suite suite();
+    static cute::suite suite();
 };
 
 #endif /* TRIE_TEST_H_ */

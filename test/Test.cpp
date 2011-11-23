@@ -7,13 +7,13 @@
 #include "trie-test.h"
 
 void runSuite() {
-	cute::ide_listener lis;
+    cute::ide_listener lis;
 
-	// Set up the array hash suite
-	cute::makeRunner(lis)(arrayHashTest::suite(), "array hash");
+    // Set up the array hash suite
+    cute::makeRunner(lis)(arrayHashTest::suite(), "array hash");
 
-	// Set up the hat trie suite
-	cute::makeRunner(lis)(trieTest::suite(), "hat trie");
+    // Set up the hat trie suite
+    cute::makeRunner(lis)(trieTest::suite(), "hat trie");
 }
 
 int main() {
