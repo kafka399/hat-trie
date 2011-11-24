@@ -20,10 +20,12 @@
 using namespace stx;
 using namespace std;
 
-struct Data {
+struct Data
+{
     set<string> data;
 
-    Data() {
+    Data()
+    {
         data.insert("");
         data.insert("a");
         data.insert("ab");
@@ -34,20 +36,23 @@ struct Data {
 BOOST_FIXTURE_TEST_SUITE(ArrayHash, Data)
 
 template <class A, class B>
-void check_equal(const A& a, const B& b) {
+void check_equal(const A& a, const B& b)
+{
     set<string> x(a.begin(), a.end());
     set<string> y(b.begin(), b.end());
     BOOST_REQUIRE(x == y);
 }
 
-CASE(testConstructor) {
+CASE(testConstructor)
+{
     array_hash<string> ah;
     BOOST_CHECK(ah.find("") == ah.end());
     BOOST_CHECK(ah.begin() == ah.end());
     BOOST_CHECK(ah.size() == 0);
 }
 
-CASE(testExists) {
+CASE(testExists)
+{
     set<string> inserted;
     array_hash<string> ah;
     for (set<string>::iterator sit = data.begin(); sit != data.end(); ++sit) {
@@ -65,7 +70,8 @@ CASE(testExists) {
     }
 }
 
-CASE(testFind) {
+CASE(testFind)
+{
     array_hash<string> ah(data.begin(), data.end());
     for (array_hash<string>::iterator it = ah.begin(); it != ah.end(); ++it) {
         // this performs a pointer comparison on the C-strings.
@@ -76,13 +82,15 @@ CASE(testFind) {
     }
 }
 
-CASE(testCopyConstructor) {
+CASE(testCopyConstructor)
+{
     array_hash<string> a(data.begin(), data.end());
     array_hash<string>b(a);
     BOOST_REQUIRE(a == b);
 }
 
-CASE(testTraits) {
+CASE(testTraits)
+{
     // Make an array hash with default values, then some more
     // array hashes with varying traits
     array_hash<string> a(data.begin(), data.end());
@@ -103,7 +111,8 @@ CASE(testTraits) {
     check_equal(a, c);
 }
 
-CASE(testEraseByString) {
+CASE(testEraseByString)
+{
     array_hash<string> ah(data.begin(), data.end());
     set<string> _data(data);
 
@@ -121,7 +130,8 @@ CASE(testEraseByString) {
     }
 }
 
-CASE(testEraseByIterator) {
+CASE(testEraseByIterator)
+{
     array_hash<string> ah(data.begin(), data.end());
     set<string> _data(data);
 
@@ -139,7 +149,8 @@ CASE(testEraseByIterator) {
     }
 }
 
-CASE(testAssnOperator) {
+CASE(testAssnOperator)
+{
     array_hash<string> ah;
     ah.insert("hello");
     ah.insert("world");
@@ -148,7 +159,8 @@ CASE(testAssnOperator) {
     check_equal(ah, data);
 }
 
-CASE(testInsert) {
+CASE(testInsert)
+{
     array_hash<string> ah;
     for (set<string>::iterator it = data.begin(); it != data.end(); ++it) {
         BOOST_CHECK(ah.insert(*it));
@@ -158,7 +170,8 @@ CASE(testInsert) {
     }
 }
 
-CASE(testReverseIteration) {
+CASE(testReverseIteration)
+{
     stack<string> st;
 
     // Initialize the stack
