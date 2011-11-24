@@ -48,7 +48,8 @@ namespace stx {
 class array_hash_traits
 {
 public:
-    array_hash_traits(int slot_count = 512, int allocation_chunk_size = 32)
+    array_hash_traits(int slot_count = 512, int allocation_chunk_size = 32) :
+        slot_count(slot_count), allocation_chunk_size(allocation_chunk_size)
     {
     }
 
@@ -486,8 +487,7 @@ public:
         // const iterator
         typedef const char * reference;
 
-        iterator() :
-                _slot(0), _p(NULL), _data(NULL)
+        iterator() : _slot(0), _p(NULL), _data(NULL)
         {
         }
 
@@ -529,6 +529,26 @@ public:
         {
             throw "not implemented";
             return *this;
+        }
+
+        /**
+         * Postfix increment operator.
+         */
+        iterator operator++(int)
+        {
+            iterator result = *this;
+            operator++();
+            return result;
+        }
+
+        /**
+         * Postfix decrement operator.
+         */
+        iterator operator--(int)
+        {
+            iterator result = *this;
+            operator--();
+            return result;
         }
 
         /**
