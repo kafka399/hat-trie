@@ -1,43 +1,48 @@
 # List objects in order of DEPENDENCY. For example, if obj/main.o depends on
 # obj/matrix.o, list obj/matrix.o first.
-TESTOBJECTS = obj/array-hash-test.o obj/trie-test.o obj/Test.o 
-TESTEXE = bin/test
+OBJECTS = 
 EXE = bin/main
+
+TESTOBJS = obj/array_hash_test.o
+TESTEXE = bin/test
 
 # make variables
 OFLAGS   = -O0
-CXX      = gcc-4.2
-CXXFLAGS = -Wall -c -Icute/ -Iboost/ $(OFLAGS)
-LDFLAGS  = -lstdc++
+CXX      = gcc-4.2 --coverage
+CXXFLAGS = -Wall -c $(OFLAGS) 
+LDFLAGS  = -lboost_unit_test_framework-mt -lstdc++
 
 COMPILE.cpp = $(CXX) $(CXXFLAGS)
 
-all: cover
+all: test
 
 main: $(OBJECTS)
 	$(CXX) $(OFLAGS) $(OBJECTS) -o $(EXE) $(LDFLAGS)
 
-cover: $(TESTOBJECTS)
-#	rm -f *.gcov obj/*.gcno obj/*.gcda
-	$(CXX) --coverage -o $(TESTEXE) $(LDFLAGS) $(TESTOBJECTS)
-	./bin/test > /dev/null
-	gcov -o obj test/array-hash-test.cpp > /dev/null
+test: $(TESTOBJS)
+	$(CXX) $(OFLAGS) $(TESTOBJS) -o $(TESTEXE) $(LDFLAGS)
+
+cover: $(TESTOBJS)
+	$(CXX) --coverage -o $(TESTEXE) $(LDFLAGS) $(TESTOBJS)
+	./$(TESTEXE)
+	gcov -o obj test/array_hash_test.cpp > /dev/null
 	rm `ls *.gcov | grep -v array_hash.h.gcov`
 
+obj/%.o: src/%.cpp
+	$(COMPILE.cpp) -o $@ $<
+
 obj/%.o: test/%.cpp
-	$(COMPILE.cpp) --coverage -o $@ $<
+	$(COMPILE.cpp) -o $@ $<
 
 clean:
-	rm -f $(OBJECTS) $(EXECUTABLE) $(TESTEXE) $(TESTOBJECTS) *.gcov
+	rm -f $(OBJECTS) $(EXE)
+	rm -f $(TESTOBJS) $(TESTEXE)
 
 depend:
 	makedepend src/*.cpp 2>/dev/null
-	rm Makefile.bak
-	echo "========================================="
-	echo "Now change src/*.o to obj/*.o in Makefile"
+	echo "Now replace src/*.o with obj/*.o in Makefile"
 
-# List dependencies here. Order doesn't matter. makedepend src/*.cpp
-# works perfectly for this section.
+# List dependencies here. Order doesn't matter.
 # Ex:
 #   obj/main.o: src/main.* src/matrix.*
 #
@@ -48,9 +53,4 @@ depend:
 # Run this command:
 # 	makedepend src/*.cpp
 # ... then change src/*.o in this Makefile to obj/*.o.
-# DO NOT DELETE
-
-obj/Test.o: test/array-hash-test.h src/array_hash.h 
-obj/Test.o: test/trie-test.h
-obj/array-hash-test.o: test/array-hash-test.h src/array_hash.h
-obj/trie-test.o: test/trie-test.h
+obj/array_hash_test.o: src/array_hash.h test/array_hash_test.cpp

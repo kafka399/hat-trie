@@ -154,6 +154,27 @@ class array_hash<std::string> {
     }
 
     /**
+     * Iterator range constructor.
+     */
+    template <class Iterator>
+    array_hash(Iterator first, const Iterator& last,
+            const array_hash_traits& traits = array_hash_traits()) :
+            _traits(traits) {
+        // Initialize the array hash
+        _data = new char *[_traits.slot_count];
+        for (int i = 0; i < _traits.slot_count; ++i) {
+            _data[i] = NULL;
+        }
+        _size = 0;
+
+        // Insert the data in the iterator range
+        while (first != last) {
+            insert(*first);
+            ++first;
+        }
+    }
+
+    /**
      * Standard destructor.
      */
     ~array_hash() {
@@ -280,6 +301,17 @@ class array_hash<std::string> {
     }
 
     /**
+     * Inserts @a str into the table.
+     *
+     * @param str  string to insert
+     * @return  true iff @a str is successfully inserted, false if @a str
+     *          already appears in the table
+     */
+    bool insert(const std::string& str) {
+        return insert(str.c_str());
+    }
+
+    /**
      * Erases a string from the hash table.
      *
      * @param str  string to erase
@@ -304,7 +336,11 @@ class array_hash<std::string> {
      * @param pos  iterator to the string to erase
      */
     void erase(const iterator &pos) {
-        _erase_word(pos._p, pos._slot);
+        // Only erase if the iterator does not point to the end
+        // of the collection
+        if (pos._p) {
+            _erase_word(pos._p, pos._slot);
+        }
     }
 
     /**
@@ -366,6 +402,28 @@ class array_hash<std::string> {
         size_type s;
         p = _search(str, p, length, s);
         return iterator(slot, p, _data, _traits.slot_count);
+    }
+
+    /**
+     * Equality operator.
+     */
+    bool operator==(const array_hash<std::string>& rhs) {
+        if (size() == rhs.size()) {
+            // don't want to do a memory comparison because traits
+            // may differ
+            iterator me = begin();
+            iterator they = rhs.begin();
+            iterator stop = end();
+            while (me != stop) {
+                if (strcmp(*me, *they) != 0) {
+                    return false;
+                }
+                ++me;
+                ++they;
+            }
+            return true;
+        }
+        return false;
     }
 
     class iterator : public std::iterator<std::bidirectional_iterator_tag,
