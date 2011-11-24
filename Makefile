@@ -1,26 +1,34 @@
 # List objects in order of DEPENDENCY. For example, if obj/main.o depends on
 # obj/matrix.o, list obj/matrix.o first.
-OBJECTS = obj/main.o
-EXECUTABLE = bin/main
+TESTOBJECTS = obj/array-hash-test.o obj/trie-test.o obj/Test.o 
+TESTEXE = bin/test
+EXE = bin/main
 
 # make variables
-OFLAGS   = -O2
-CXX      = clang++
-CXXFLAGS = -Wall -Wextra -c -I/opt/local/include -stdlib=libc++ $(OFLAGS)
-LDFLAGS  = -lprofiler -stdlib=libc++
+OFLAGS   = -O0
+CXX      = gcc-4.2
+CXXFLAGS = -Wall -c -Icute/ -Iboost/ $(OFLAGS)
+LDFLAGS  = -lstdc++
 
 COMPILE.cpp = $(CXX) $(CXXFLAGS)
 
-all: main
+all: cover
 
 main: $(OBJECTS)
-	$(CXX) $(OFLAGS) $(OBJECTS) -o $(EXECUTABLE) $(LDFLAGS)
+	$(CXX) $(OFLAGS) $(OBJECTS) -o $(EXE) $(LDFLAGS)
 
-obj/%.o: src/%.cpp
-	$(COMPILE.cpp) -o $@ $<
+cover: $(TESTOBJECTS)
+#	rm -f *.gcov obj/*.gcno obj/*.gcda
+	$(CXX) --coverage -o $(TESTEXE) $(LDFLAGS) $(TESTOBJECTS)
+	./bin/test > /dev/null
+	gcov -o obj test/array-hash-test.cpp > /dev/null
+	rm `ls *.gcov | grep -v array_hash.h.gcov`
+
+obj/%.o: test/%.cpp
+	$(COMPILE.cpp) --coverage -o $@ $<
 
 clean:
-	rm -f $(OBJECTS) $(EXECUTABLE)
+	rm -f $(OBJECTS) $(EXECUTABLE) $(TESTEXE) $(TESTOBJECTS) *.gcov
 
 depend:
 	makedepend src/*.cpp 2>/dev/null
@@ -42,4 +50,7 @@ depend:
 # ... then change src/*.o in this Makefile to obj/*.o.
 # DO NOT DELETE
 
-obj/main.o: src/array_hash.h src/hat_*.h
+obj/Test.o: test/array-hash-test.h src/array_hash.h 
+obj/Test.o: test/trie-test.h
+obj/array-hash-test.o: test/array-hash-test.h src/array_hash.h
+obj/trie-test.o: test/trie-test.h

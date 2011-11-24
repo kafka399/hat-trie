@@ -16,24 +16,48 @@ cute::suite arrayHashTest::suite() {
     result.push_back(CUTE(testFind));
     result.push_back(CUTE(testCopyConstructor));
     result.push_back(CUTE(testTraits));
-    result.push_back(CUTE(testErase));
-    result.push_back(CUTE(testIteration));
+    result.push_back(CUTE(testEraseString));
+    result.push_back(CUTE(testAssnOperator));
+    result.push_back(CUTE(testInsert));
     return result;
 }
 
 void arrayHashTest::testEmptyFind() {
     array_hash<string> ah;
     ASSERT(ah.find("") == ah.end());
-    ASSERT(ah.find("hello") == ah.end());
+    ASSERT(ah.find("hello world") == ah.end());
     ASSERT(ah.begin() == ah.end());
 }
 
 void arrayHashTest::testExists() {
-    // TODO
+    set<string> data = getTestData();
+    set<string> inserted;
+    array_hash<string> ah;
+    for (set<string>::iterator sit = data.begin(); sit != data.end(); ++sit) {
+        // insert the data into the array hash
+        ah.insert(sit->c_str());
+        inserted.insert(*sit);
+
+        // make sure the inserted data is the only data that appears
+        // in the array hash
+        set<string>::iterator it;
+        for (it = data.begin(); it != data.end(); ++it) {
+            ASSERT_EQUAL(inserted.find(*it) != inserted.end(),
+                    ah.exists(it->c_str()));
+        }
+    }
 }
 
 void arrayHashTest::testFind() {
-    // TODO
+    array_hash<string> ah = hashify();
+    array_hash<string>::iterator it;
+    for (it = ah.begin(); it != ah.end(); ++it) {
+        // this performs a pointer comparison on the C-strings.
+        // this is what we want because the iterators should
+        // dereference to not only the same value, but the same
+        // location in memory
+        ASSERT(*(ah.find(*it)) == *it);
+    }
 }
 
 void arrayHashTest::testCopyConstructor() {
@@ -63,12 +87,42 @@ void arrayHashTest::testTraits() {
     assert_equal(a, c);
 }
 
-void arrayHashTest::testErase() {
-    // TODO
+void arrayHashTest::testEraseString() {
+    array_hash<string> ah = hashify();
+    set<string> data = getTestData();
+
+    while (data.empty() == false) {
+        ASSERT_EQUAL(1, ah.erase(data.begin()->c_str()));
+        data.erase(data.begin());
+        assert_equal(ah, data);
+    }
+
+    // Make sure the return value for erase is OK
+    data = getTestData();
+    for (set<string>::iterator it = data.begin(); it != data.end(); ++it) {
+        ASSERT_EQUAL(0, ah.erase(it->c_str()));
+    }
 }
 
-void arrayHashTest::testIteration() {
-    // TODO
+void arrayHashTest::testAssnOperator() {
+    array_hash<string> ah;
+    ah.insert("hello");
+    ah.insert("world");
+
+    ah = hashify();
+    set<string> set = getTestData();
+    assert_equal(ah, set);
+}
+
+void arrayHashTest::testInsert() {
+    array_hash<string> ah;
+    set<string> data = getTestData();
+    for (set<string>::iterator it = data.begin(); it != data.end(); ++it) {
+        ASSERT(ah.insert(it->c_str()));
+    }
+    for (set<string>::iterator it = data.begin(); it != data.end(); ++it) {
+        ASSERT(!ah.insert(it->c_str()));
+    }
 }
 
 //------------------------------------------------------------------------------

@@ -16,3 +16,6 @@ cute/
 
 # boost files
 boost/
+
+# coverage files
+*.gcov

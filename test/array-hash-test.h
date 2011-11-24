@@ -24,8 +24,9 @@ class arrayHashTest {
     static void testFind();
     static void testCopyConstructor();
     static void testTraits();
-    static void testErase();
-    static void testIteration();
+    static void testEraseString();
+    static void testAssnOperator();
+    static void testInsert();
 
     static std::set<std::string> getTestData();
 
