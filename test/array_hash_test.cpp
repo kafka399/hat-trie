@@ -52,7 +52,7 @@ CASE(testExists) {
     array_hash<string> ah;
     for (set<string>::iterator sit = data.begin(); sit != data.end(); ++sit) {
         // keep track of what has been inserted already
-        ah.insert(sit->c_str());
+        ah.insert(*sit);
         inserted.insert(*sit);
 
         // make sure the inserted data is the only data that appears
@@ -60,8 +60,7 @@ CASE(testExists) {
         set<string>::iterator it;
         for (it = data.begin(); it != data.end(); ++it) {
             BOOST_REQUIRE_EQUAL(
-                    inserted.find(*it) != inserted.end(),
-                    ah.exists(it->c_str()));
+                    inserted.find(*it) != inserted.end(), ah.exists(*it));
         }
     }
 }
@@ -110,7 +109,7 @@ CASE(testEraseByString) {
 
     // Erase values from the hash
     while (data.empty() == false) {
-        BOOST_CHECK_EQUAL(1, ah.erase(data.begin()->c_str()));
+        BOOST_CHECK_EQUAL(1, ah.erase(*data.begin()));
         data.erase(data.begin());
         check_equal(ah, data);
     }
@@ -118,7 +117,7 @@ CASE(testEraseByString) {
     // Make sure empty erase works too
     data = _data;
     for (set<string>::iterator it = data.begin(); it != data.end(); ++it) {
-        BOOST_CHECK_EQUAL(0, ah.erase(it->c_str()));
+        BOOST_CHECK_EQUAL(0, ah.erase(*it));
     }
 }
 
@@ -128,14 +127,14 @@ CASE(testEraseByIterator) {
 
     // Erase values from the hash
     while (data.empty() == false) {
-        ah.erase(ah.find(data.begin()->c_str()));
+        ah.erase(ah.find(*data.begin()));
         data.erase(data.begin());
         check_equal(ah, data);
     }
 
     // Make sure empty erase works too
     for (set<string>::iterator it = _data.begin(); it != _data.end(); ++it) {
-        ah.erase(ah.find(it->c_str()));
+        ah.erase(ah.find(*it));
         check_equal(ah, data);
     }
 }
@@ -152,10 +151,10 @@ CASE(testAssnOperator) {
 CASE(testInsert) {
     array_hash<string> ah;
     for (set<string>::iterator it = data.begin(); it != data.end(); ++it) {
-        BOOST_CHECK(ah.insert(it->c_str()));
+        BOOST_CHECK(ah.insert(*it));
     }
     for (set<string>::iterator it = data.begin(); it != data.end(); ++it) {
-        BOOST_CHECK(!ah.insert(it->c_str()));
+        BOOST_CHECK(!ah.insert(*it));
     }
 }
 

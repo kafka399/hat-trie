@@ -243,6 +243,13 @@ class array_hash<std::string> {
     }
 
     /**
+     * Determines whether @a str is in the table.
+     */
+    bool exists(const std::string& str) const {
+        return exists(str.c_str());
+    }
+
+    /**
      * Gets the number of elements in the table.
      */
     size_t size() const {
@@ -312,9 +319,10 @@ class array_hash<std::string> {
     }
 
     /**
-     * Erases a string from the hash table.
+     * Erases a string from the table.
      *
      * @param str  string to erase
+     * @return  instances of @a str that were erased
      */
     size_type erase(const char *str) {
         length_type length;
@@ -328,6 +336,16 @@ class array_hash<std::string> {
             }
         }
         return 0;
+    }
+
+    /**
+     * Erases a string from the table.
+     *
+     * @param str  string to erase
+     * @return  instances of @a str that were erased
+     */
+    size_type erase(const std::string& str) {
+        return erase(str.c_str());
     }
 
     /**
@@ -402,6 +420,17 @@ class array_hash<std::string> {
         size_type s;
         p = _search(str, p, length, s);
         return iterator(slot, p, _data, _traits.slot_count);
+    }
+
+    /**
+     * Searches for @a str in the table.
+     *
+     * @param str  string to search for
+     * @return  iterator to @a str in the table, or @a end() if @a str
+     *          is not in the table
+     */
+    iterator find(const std::string& str) const {
+        return find(str.c_str());
     }
 
     /**
