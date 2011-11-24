@@ -137,6 +137,7 @@ class array_hash<std::string> {
 
   public:
     class iterator;
+    typedef std::reverse_iterator<iterator> reverse_iterator;
 
     /**
      * Default constructor.
@@ -332,6 +333,20 @@ class array_hash<std::string> {
     }
 
     /**
+     * Gets a reverse iterator to the first element in reverse order.
+     */
+    reverse_iterator rbegin() const {
+        return reverse_iterator(end());
+    }
+
+    /**
+     * Gets a reverse iterator to the last element in reverse order.
+     */
+    reverse_iterator rend() const {
+        return reverse_iterator(begin());
+    }
+
+    /**
      * Searches for @a str in the table.
      *
      * @param str  string to search for
@@ -353,11 +368,15 @@ class array_hash<std::string> {
         return iterator(slot, p, _data, _traits.slot_count);
     }
 
-    class iterator : std::iterator<std::bidirectional_iterator_tag,
-                                   const char *> {
+    class iterator : public std::iterator<std::bidirectional_iterator_tag,
+                                          const char *> {
         friend class array_hash;
 
       public:
+        // correct the STL's assumption that this iterator is not a
+        // const iterator
+        typedef const char * reference;
+
         iterator() : _slot(0), _p(NULL), _data(NULL) { }
 
         /**
@@ -394,6 +413,7 @@ class array_hash<std::string> {
          * @return  self-reference
          */
         iterator& operator--() {
+            throw "not implemented";
             return *this;
         }
 
@@ -430,8 +450,7 @@ class array_hash<std::string> {
         int _slot_count;
 
         iterator(int slot, char *p, char **data, int slot_count) :
-                 _slot(slot), _p(p), _data(data),
-                 _slot_count(slot_count) { }
+             _slot(slot), _p(p), _data(data), _slot_count(slot_count) { }
     };
 
   private:

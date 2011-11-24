@@ -27,6 +27,7 @@ class arrayHashTest {
     static void testEraseString();
     static void testAssnOperator();
     static void testInsert();
+    static void testReverseIteration();
 
     static std::set<std::string> getTestData();
 
@@ -34,7 +35,8 @@ class arrayHashTest {
     static void assert_equal(const A& a, const B& b);
     template <class A>
     static std::set<std::string> setify(const A& a);
-    static stx::array_hash<std::string> hashify(const std::set<std::string> &s = getTestData());
+    static stx::array_hash<std::string> hashify(
+        const std::set<std::string> &s = getTestData());
 };
 
 #endif  // ARRAY_HASH_TEST_H_

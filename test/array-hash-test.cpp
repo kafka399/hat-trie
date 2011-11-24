@@ -1,5 +1,6 @@
 // standard headers
 #include <iostream>
+#include <stack>
 
 // cute headers
 #include "cute.h"
@@ -19,6 +20,7 @@ cute::suite arrayHashTest::suite() {
     result.push_back(CUTE(testEraseString));
     result.push_back(CUTE(testAssnOperator));
     result.push_back(CUTE(testInsert));
+    result.push_back(CUTE(testReverseIteration));
     return result;
 }
 
@@ -123,6 +125,24 @@ void arrayHashTest::testInsert() {
     for (set<string>::iterator it = data.begin(); it != data.end(); ++it) {
         ASSERT(!ah.insert(it->c_str()));
     }
+}
+
+void arrayHashTest::testReverseIteration() {
+    stack<string> st;
+
+    // Initialize the stack
+    array_hash<string> ah = hashify();
+    for (array_hash<string>::iterator it = ah.begin(); it != ah.end(); ++it) {
+        st.push(*it);
+    }
+
+    // Make sure the reverse iterator produces the same
+    // values in reverse order
+    for (array_hash<string>::reverse_iterator it = ah.rbegin(); it != ah.rend(); ++it) {
+        ASSERT_EQUAL(st.top(), *it);
+        st.pop();
+    }
+
 }
 
 //------------------------------------------------------------------------------

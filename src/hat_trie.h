@@ -750,7 +750,6 @@ class hat_trie {
             return result;
         }
 
-
         /**
          * Iterator dereference operator.
          *
