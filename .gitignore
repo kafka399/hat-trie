@@ -7,6 +7,7 @@ Debug*/
 
 # eclipse project files
 .*project
+.settings/
 
 # documentation files
 doc/html/
