@@ -138,6 +138,8 @@ class array_hash<std::string> {
   public:
     class iterator;
     typedef std::reverse_iterator<iterator> reverse_iterator;
+    typedef iterator const_iterator;
+    typedef reverse_iterator const_reverse_iterator;
 
     /**
      * Default constructor.
