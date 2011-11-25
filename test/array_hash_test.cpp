@@ -10,12 +10,17 @@
 
 #define CASE BOOST_AUTO_TEST_CASE
 
-#include <boost/test/unit_test.hpp>
 #include <string>
 #include <set>
 #include <stack>
 
+#include <boost/test/unit_test.hpp>
+#include <boost/foreach.hpp>
+
 #include "../src/array_hash.h"
+
+#define foreach BOOST_FOREACH
+#define reverse_foreach BOOST_REVERSE_FOREACH
 
 using namespace stx;
 using namespace std;
@@ -55,17 +60,15 @@ CASE(testExists)
 {
     set<string> inserted;
     array_hash<string> ah;
-    for (set<string>::iterator sit = data.begin(); sit != data.end(); ++sit) {
+    foreach (const string& str, data) {
         // keep track of what has been inserted already
-        ah.insert(*sit);
-        inserted.insert(*sit);
+        ah.insert(str);
+        inserted.insert(str);
 
         // make sure the inserted data is the only data that appears
         // in the array hash
-        set<string>::iterator it;
-        for (it = data.begin(); it != data.end(); ++it) {
-            BOOST_REQUIRE_EQUAL(
-                    inserted.find(*it) != inserted.end(), ah.exists(*it));
+        foreach (const string& s, data) {
+            BOOST_REQUIRE_EQUAL(inserted.find(s) != inserted.end(), ah.exists(s));
         }
     }
 }
@@ -100,10 +103,9 @@ CASE(testTraits)
     array_hash<string> c(ctraits);
 
     // Copy the data to all the test array hashes
-    array_hash<string>::iterator it;
-    for (it = a.begin(); it != a.end(); ++it) {
-        b.insert(*it);
-        c.insert(*it);
+    foreach (const string& str, a) {
+        b.insert(str);
+        c.insert(str);
     }
 
     // Make sure all the hashes have the same values
@@ -125,8 +127,8 @@ CASE(testEraseByString)
 
     // Make sure empty erase works too
     data = _data;
-    for (set<string>::iterator it = data.begin(); it != data.end(); ++it) {
-        BOOST_CHECK_EQUAL(0, ah.erase(*it));
+    foreach (const string& str, data) {
+        BOOST_CHECK_EQUAL(0, ah.erase(str));
     }
 }
 
@@ -143,8 +145,8 @@ CASE(testEraseByIterator)
     }
 
     // Make sure empty erase works too
-    for (set<string>::iterator it = _data.begin(); it != _data.end(); ++it) {
-        ah.erase(ah.find(*it));
+    foreach (const string& str, _data) {
+        ah.erase(ah.find(str));
         check_equal(ah, data);
     }
 }
@@ -162,11 +164,11 @@ CASE(testAssnOperator)
 CASE(testInsert)
 {
     array_hash<string> ah;
-    for (set<string>::iterator it = data.begin(); it != data.end(); ++it) {
-        BOOST_CHECK(ah.insert(*it));
+    foreach (const string& str, data) {
+        BOOST_CHECK(ah.insert(str));
     }
-    for (set<string>::iterator it = data.begin(); it != data.end(); ++it) {
-        BOOST_CHECK(!ah.insert(*it));
+    foreach (const string& str, data) {
+        BOOST_CHECK(!ah.insert(str));
     }
 }
 
@@ -175,8 +177,8 @@ CASE(testReverseIteration)
     // Initialize the stack
     array_hash<string> ah(data.begin(), data.end());
     stack<string> st;
-    for (array_hash<string>::iterator it = ah.begin(); it != ah.end(); ++it) {
-        st.push(*it);
+    foreach (const string& str, ah) {
+        st.push(str);
     }
 
     // Make sure the reverse iterator produces the same
