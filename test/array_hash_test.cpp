@@ -172,10 +172,9 @@ CASE(testInsert)
 
 CASE(testReverseIteration)
 {
-    stack<string> st;
-
     // Initialize the stack
     array_hash<string> ah(data.begin(), data.end());
+    stack<string> st;
     for (array_hash<string>::iterator it = ah.begin(); it != ah.end(); ++it) {
         st.push(*it);
     }
@@ -186,6 +185,17 @@ CASE(testReverseIteration)
         BOOST_CHECK_EQUAL(st.top(), *it);
         st.pop();
     }
+}
+
+CASE(testIteratorBounds)
+{
+    array_hash<string> ah(data.begin(), data.end());
+    array_hash<string>::const_iterator it = ah.begin();
+    --it;
+    BOOST_CHECK(it == ah.begin());
+    it = ah.end();
+    ++it;
+    BOOST_CHECK(it == ah.end());
 }
 
 CASE(testEquality)

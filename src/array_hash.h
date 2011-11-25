@@ -19,8 +19,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// TODO backwards iteration
-
 #ifndef ARRAY_HASH_H
 #define ARRAY_HASH_H
 
@@ -28,10 +26,6 @@
 #include <stdint.h>
 #include <utility>
 #include <iterator>
-
-// TODO
-#include <iostream>
-using namespace std;
 
 namespace stx {
 
@@ -123,7 +117,7 @@ public:
  };
  */
 
-template<class T>
+template <class T>
 class array_hash
 {
 };
@@ -131,7 +125,7 @@ class array_hash
 /**
  * Hash table container for unsorted strings.
  */
-template<>
+template <>
 class array_hash<std::string>
 {
 private:
@@ -162,7 +156,7 @@ public:
     /**
      * Iterator range constructor.
      */
-    template<class Iterator>
+    template <class Iterator>
     array_hash(Iterator first, const Iterator& last,
             const array_hash_traits& traits = array_hash_traits()) :
             _traits(traits)
@@ -506,6 +500,8 @@ public:
         /**
          * Move this iterator forward to the next element in the table.
          *
+         * Calling this function on an end() iterator does nothing.
+         *
          * @return  self-reference
          */
         iterator& operator++()
@@ -535,6 +531,8 @@ public:
         /**
          * Move this iterator backward to the previous element in the table.
          *
+         * Calling this function on a begin iterator does nothing.
+         *
          * @return  self-reference
          */
         iterator& operator--()
@@ -553,6 +551,7 @@ public:
                     _p = prev;
                 } else {
                     // Move back to the previous occupied slot
+                    int tmp = _slot;
                     --_slot;
                     while (_slot >= 0 && _data[_slot] == NULL) {
                         --_slot;
@@ -561,10 +560,7 @@ public:
                     if (_slot < 0) {
                         // We are at the beginning. Make this a begin
                         // iterator
-                        while (_data[_slot] == NULL) {
-                            ++_slot;
-                        }
-                        _p = _data[_slot] + sizeof(size_type);
+                        _slot = tmp;
                         return *this;
                     }
                 }
