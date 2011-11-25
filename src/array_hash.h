@@ -141,6 +141,8 @@ public:
     /**
      * Default constructor.
      *
+     * O(1)
+     *
      * @param traits  array hash customization traits
      */
     array_hash(const array_hash_traits &traits = array_hash_traits()) :
@@ -151,6 +153,8 @@ public:
 
     /**
      * Iterator range constructor.
+     *
+     * O(n) where n is the number of elements between first and last
      */
     template <class Iterator>
     array_hash(Iterator first, const Iterator& last,
@@ -176,6 +180,8 @@ public:
 
     /**
      * Copy constructor.
+     *
+     * O(n) where n = traits.slot_count
      */
     array_hash(const array_hash<std::string> &rhs)
     {
@@ -185,6 +191,8 @@ public:
 
     /**
      * Assignment operator.
+     *
+     * O(n) where n = traits.slot_count
      */
     array_hash<std::string>& operator=(const array_hash<std::string> &rhs)
     {
@@ -215,6 +223,8 @@ public:
     /**
      * Determines whether @a str is in the table.
      *
+     * O(m) where m is the length of @a str
+     *
      * @param str  string to search for
      * @return  true iff @a str is in the table
      */
@@ -234,6 +244,8 @@ public:
 
     /**
      * Determines whether @a str is in the table.
+     *
+     * O(m) where m is the length of @a str
      */
     bool exists(const std::string& str) const
     {
@@ -242,6 +254,8 @@ public:
 
     /**
      * Gets the number of elements in the table.
+     *
+     * O(1)
      */
     size_t size() const
     {
@@ -250,6 +264,8 @@ public:
 
     /**
      * Determines whether the table is empty.
+     *
+     * O(1)
      */
     bool empty() const
     {
@@ -258,6 +274,8 @@ public:
 
     /**
      * Gets the traits associated with this array hash.
+     *
+     * O(1)
      */
     const array_hash_traits &traits() const
     {
@@ -266,6 +284,8 @@ public:
 
     /**
      * Inserts @a str into the table.
+     *
+     * O(m) where m is the length of @a str
      *
      * @param str  string to insert
      * @return  true if @a str is successfully inserted, false if @a str
@@ -312,6 +332,8 @@ public:
     /**
      * Inserts @a str into the table.
      *
+     * O(m) where m is the length of @a str
+     *
      * @param str  string to insert
      * @return  true iff @a str is successfully inserted, false if @a str
      *          already appears in the table
@@ -323,6 +345,8 @@ public:
 
     /**
      * Erases a string from the table.
+     *
+     * O(m) where m is the length of @a str
      *
      * @param str  string to erase
      * @return  instances of @a str that were erased
@@ -345,6 +369,8 @@ public:
     /**
      * Erases a string from the table.
      *
+     * O(m) where m is the length of @a str
+     *
      * @param str  string to erase
      * @return  instances of @a str that were erased
      */
@@ -355,6 +381,8 @@ public:
 
     /**
      * Erases a string from the hash table.
+     *
+     * O(1)
      *
      * @param pos  iterator to the string to erase
      */
@@ -369,6 +397,8 @@ public:
 
     /**
      * Clears all the elements from the hash table.
+     *
+     * O(n) where n is traits.slot_count
      */
     void clear()
     {
@@ -377,7 +407,21 @@ public:
     }
 
     /**
+     * Swaps information between two array hashes.
+     *
+     * O(1)
+     */
+    void swap(array_hash<std::string>& rhs)
+    {
+        std::swap(_data, rhs._data);
+        std::swap(_size, rhs._size);
+        std::swap(_traits, rhs._traits);
+    }
+
+    /**
      * Gets an iterator to the first element in the table.
+     *
+     * O(n) where n = traits.slot_count
      */
     iterator begin() const
     {
@@ -397,6 +441,8 @@ public:
 
     /**
      * Gets an iterator to one past the last element in the hash table.
+     *
+     * O(1)
      */
     iterator end() const
     {
@@ -405,6 +451,8 @@ public:
 
     /**
      * Gets a reverse iterator to the first element in reverse order.
+     *
+     * O(1)
      */
     reverse_iterator rbegin() const
     {
@@ -413,6 +461,8 @@ public:
 
     /**
      * Gets a reverse iterator to the last element in reverse order.
+     *
+     * O(n) where n = traits.slot_count
      */
     reverse_iterator rend() const
     {
@@ -421,6 +471,8 @@ public:
 
     /**
      * Searches for @a str in the table.
+     *
+     * O(m) where m is the length of @a str
      *
      * @param str  string to search for
      * @return  iterator to @a str in the table, or @a end() if @a str
@@ -445,6 +497,8 @@ public:
     /**
      * Searches for @a str in the table.
      *
+     * O(m) where m is the length of @a str
+     *
      * @param str  string to search for
      * @return  iterator to @a str in the table, or @a end() if @a str
      *          is not in the table
@@ -456,6 +510,8 @@ public:
 
     /**
      * Equality operator.
+     *
+     * O(n) where n = @a size()
      */
     bool operator==(const array_hash<std::string>& rhs)
     {
@@ -479,6 +535,8 @@ public:
 
     /**
      * Inequality operator.
+     *
+     * O(n) where n = @a size
      */
     bool operator!=(const array_hash<std::string>& rhs)
     {
@@ -501,6 +559,8 @@ public:
 
         /**
          * Move this iterator forward to the next element in the table.
+         *
+         * worst case O(n) where n = traits.slot_count
          *
          * Calling this function on an end() iterator does nothing.
          *
@@ -532,6 +592,8 @@ public:
 
         /**
          * Move this iterator backward to the previous element in the table.
+         *
+         * worst case O(n) where n = traits.slot_count
          *
          * Calling this function on a begin iterator does nothing.
          *
@@ -587,6 +649,8 @@ public:
 
         /**
          * Postfix increment operator.
+         *
+         * worst case O(n) where n = traits.slot_count
          */
         iterator operator++(int)
         {
@@ -597,6 +661,8 @@ public:
 
         /**
          * Postfix decrement operator.
+         *
+         * worst case O(n) where n = traits.slot_count
          */
         iterator operator--(int)
         {
@@ -607,6 +673,8 @@ public:
 
         /**
          * Iterator dereference operator.
+         *
+         * O(1)
          *
          * @return  character pointer to the string this iterator points to
          */
@@ -620,6 +688,8 @@ public:
 
         /**
          * Standard equality operator.
+         *
+         * O(1)
          */
         bool operator==(const iterator& rhs)
         {
@@ -628,6 +698,8 @@ public:
 
         /**
          * Standard inequality operator.
+         *
+         * O(1)
          */
         bool operator!=(const iterator& rhs)
         {
@@ -771,6 +843,8 @@ private:
 
     /**
      * Appends a string to a list of strings in a slot.
+     *
+     * Assumes the slot is big enough to hold the string.
      *
      * @param str     string to append
      * @param p       pointer to the location in the slot this string
