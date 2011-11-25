@@ -53,24 +53,21 @@ TEST(testConstructor)
     BOOST_CHECK(h.empty());
 }
 
-/*
 TEST(testExists)
 {
-    set<string> inserted;
-    hat_set<string> hs;
-    foreach (const string& str, data) {
-        // keep track of what has been inserted already
-        hs.insert(str);
-        inserted.insert(str);
+    hat_trie_traits traits;
+    traits.burst_threshold = 2;
+    hat_set<string> h(traits);
+    h.insert("abcde");
+    h.insert("abcd");
+    h.insert("abc");
+    h.insert("b");
+    h.print();
 
-        // make sure the inserted data is the only data that appears
-        // in the array hash
-        foreach (const string& s, data) {
-            BOOST_CHECK_EQUAL(inserted.find(s) != inserted.end(), hs.exists(s));
-        }
-    }
+    BOOST_CHECK(h.exists("a") == false);
+    BOOST_CHECK(h.exists("abcde"));
+    BOOST_CHECK(h.exists("ag") == false);
 }
-*/
 
 TEST(testFind)
 {

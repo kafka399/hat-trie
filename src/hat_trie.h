@@ -282,17 +282,21 @@ class hat_trie {
      * @return  true iff @a s is in the trie
      */
     bool exists(const key_type &word) const {
-        using namespace std;  // TODO
         // Locate s in the trie's structure.
         const char *ps = word.c_str();
         _node_pointer n = _locate(ps);
-        //cout << "_locate gave node: " << n.p->ch() << endl;
 
-        if (n.type == CONTAINER_POINTER) {
-            //cout << "container pointer" << endl;
-            return ((_container *) n.p)->exists(ps);
+        if (*ps == '\0') {
+            // The string was found in the trie's structure
+            return n.p->word();
         }
-        return n.p->word();
+        if (n.type == CONTAINER_POINTER) {
+            // Determine whether the remainder of the string is inside
+            // a container or not
+            _container *c = (_container * )n.p;
+            return c->_store.find(ps) != c->_store.end();
+        }
+        return false;
     }
 
     /**
