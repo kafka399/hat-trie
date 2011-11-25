@@ -29,6 +29,10 @@
 #include <utility>
 #include <iterator>
 
+// TODO
+#include <iostream>
+using namespace std;
+
 namespace stx {
 
 /**
@@ -527,7 +531,51 @@ public:
          */
         iterator& operator--()
         {
-            throw "not implemented";
+            if (_p) {
+                // Find the iterator's current location in the slot
+                char *next = _data[_slot] + sizeof(size_type);
+                char *prev = next;
+                while (next != _p) {
+                    prev = next;
+                    next += *((length_type *) next) + sizeof(length_type);
+                }
+
+                if (prev != next) {
+                    // Move backwards in the current slot
+                    _p = prev;
+                } else {
+                    // Move back to the previous occupied slot
+                    --_slot;
+                    while (_slot >= 0 && _data[_slot] == NULL) {
+                        --_slot;
+                    }
+
+                    if (_slot < 0) {
+                        // We are at the beginning. Make this a begin
+                        // iterator
+                        while (_data[_slot] == NULL) {
+                            ++_slot;
+                        }
+                        _p = _data[_slot] + sizeof(size_type);
+                        return *this;
+                    }
+                }
+            } else {
+                // Subtracting from end(). Find the very last slot
+                // in the table.
+                _slot = _slot_count - 1;
+                while (_data[_slot] == NULL) {
+                    --_slot;
+                }
+            }
+
+            // Move to the last element in this slot
+            char *next = _data[_slot] + sizeof(size_type);
+            while (*((length_type *)next) != 0) {
+                _p = next;
+                length_type l = *((length_type *)next);
+                next += sizeof(length_type) + l;
+            }
             return *this;
         }
 
