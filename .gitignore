@@ -4,6 +4,7 @@ bin/
 obj/
 main.cpp
 Debug*/
+lib/
 
 # eclipse project files
 .*project

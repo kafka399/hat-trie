@@ -1,26 +1,21 @@
 # List objects in order of DEPENDENCY. For example, if obj/main.o depends on
 # obj/matrix.o, list obj/matrix.o first.
-OBJECTS = 
-EXE = bin/main
-
 TESTOBJS = obj/array_hash_test.o
 TESTEXE = bin/test
 
 # make variables
 OFLAGS   = -O0
-CXX      = gcc-4.2 --coverage
+CXX      = /opt/llvm/bin/clang++
 CXXFLAGS = -Wall -c $(OFLAGS) 
-LDFLAGS  = -lboost_unit_test_framework-mt -lstdc++
+LDFLAGS  = -lboost_unit_test_framework-mt -lprofile_rt -L/opt/llvm/lib
 
 COMPILE.cpp = $(CXX) $(CXXFLAGS)
 
 all: test
 
-main: $(OBJECTS)
-	$(CXX) $(OFLAGS) $(OBJECTS) -o $(EXE) $(LDFLAGS)
-
 test: $(TESTOBJS)
 	$(CXX) $(OFLAGS) $(TESTOBJS) -o $(TESTEXE) $(LDFLAGS)
+	./$(TESTEXE)
 
 cover: $(TESTOBJS)
 	$(CXX) --coverage -o $(TESTEXE) $(LDFLAGS) $(TESTOBJS)
@@ -32,7 +27,7 @@ obj/%.o: src/%.cpp
 	$(COMPILE.cpp) -o $@ $<
 
 obj/%.o: test/%.cpp
-	$(COMPILE.cpp) -o $@ $<
+	$(COMPILE.cpp) --coverage -o $@ $<
 
 clean:
 	rm -f $(OBJECTS) $(EXE)
