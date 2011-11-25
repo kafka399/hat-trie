@@ -54,6 +54,7 @@ CASE(testConstructor)
     BOOST_CHECK(ah.find("") == ah.end());
     BOOST_CHECK(ah.begin() == ah.end());
     BOOST_CHECK(ah.size() == 0);
+    BOOST_CHECK(ah.empty());
 }
 
 CASE(testExists)
@@ -208,6 +209,16 @@ CASE(testEquality)
 
     array_hash<string> c;
     BOOST_CHECK(a != c);
+}
+
+CASE(testClear)
+{
+    array_hash<string> a(data.begin(), data.end());
+    a.clear();
+    BOOST_CHECK(a.size() == 0);
+    BOOST_CHECK(a.begin() == a.end());
+    BOOST_CHECK(a.empty());
+    BOOST_CHECK(a.find("") == a.end());
 }
 
 BOOST_AUTO_TEST_SUITE_END()

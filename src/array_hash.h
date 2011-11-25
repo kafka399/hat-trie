@@ -146,11 +146,7 @@ public:
     array_hash(const array_hash_traits &traits = array_hash_traits()) :
             _traits(traits)
     {
-        _data = new char *[_traits.slot_count];
-        for (int i = 0; i < _traits.slot_count; ++i) {
-            _data[i] = NULL;
-        }
-        _size = 0;
+        _init();
     }
 
     /**
@@ -161,12 +157,7 @@ public:
             const array_hash_traits& traits = array_hash_traits()) :
             _traits(traits)
     {
-        // Initialize the array hash
-        _data = new char *[_traits.slot_count];
-        for (int i = 0; i < _traits.slot_count; ++i) {
-            _data[i] = NULL;
-        }
-        _size = 0;
+        _init();
 
         // Insert the data in the iterator range
         while (first != last) {
@@ -180,10 +171,7 @@ public:
      */
     ~array_hash()
     {
-        for (int i = 0; i < _traits.slot_count; ++i) {
-            delete[] _data[i];
-        }
-        delete[] _data;
+        _destroy();
     }
 
     /**
@@ -206,10 +194,7 @@ public:
 
             // Empty the current data array
             if (_data) {
-                for (int i = 0; i < _traits.slot_count; ++i) {
-                    delete[] _data[i];
-                }
-                delete[] _data;
+                _destroy();
             }
 
             // Copy the data from the other array hash
@@ -261,6 +246,14 @@ public:
     size_t size() const
     {
         return _size;
+    }
+
+    /**
+     * Determines whether the table is empty.
+     */
+    bool empty() const
+    {
+        return size() == 0;
     }
 
     /**
@@ -372,6 +365,15 @@ public:
         if (pos._p) {
             _erase_word(pos._p, pos._slot);
         }
+    }
+
+    /**
+     * Clears all the elements from the hash table.
+     */
+    void clear()
+    {
+        _destroy();
+        _init();
     }
 
     /**
@@ -648,6 +650,30 @@ private:
     array_hash_traits _traits;
     size_t _size;
     char **_data;
+
+    /**
+     * Initializes the internal data pointers.
+     */
+    void _init()
+    {
+        _data = new char *[_traits.slot_count];
+        for (int i = 0; i < _traits.slot_count; ++i) {
+            _data[i] = NULL;
+        }
+        _size = 0;
+    }
+
+    /**
+     * Clears all the memory used by the table.
+     */
+    void _destroy()
+    {
+        for (int i = 0; i < _traits.slot_count; ++i) {
+            delete[] _data[i];
+        }
+        delete[] _data;
+        _data = NULL;
+    }
 
     /**
      * Hashes @a str to an integer, its slot in the hash table.
