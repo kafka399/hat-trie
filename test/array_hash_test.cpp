@@ -6,9 +6,9 @@
  */
 
 #define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE array_hash
+#define BOOST_TEST_MODULE arrayHash
 
-#define CASE BOOST_AUTO_TEST_CASE
+#define TEST BOOST_AUTO_TEST_CASE
 
 #include <string>
 #include <set>
@@ -38,17 +38,17 @@ struct Data
     }
 };
 
-BOOST_FIXTURE_TEST_SUITE(ArrayHash, Data)
+BOOST_FIXTURE_TEST_SUITE(arrayHash, Data)
 
 template <class A, class B>
 void check_equal(const A& a, const B& b)
 {
     set<string> x(a.begin(), a.end());
     set<string> y(b.begin(), b.end());
-    BOOST_REQUIRE(x == y);
+    BOOST_CHECK(x == y);
 }
 
-CASE(testConstructor)
+TEST(testConstructor)
 {
     array_hash<string> ah;
     BOOST_CHECK(ah.find("") == ah.end());
@@ -57,7 +57,7 @@ CASE(testConstructor)
     BOOST_CHECK(ah.empty());
 }
 
-CASE(testExists)
+TEST(testExists)
 {
     set<string> inserted;
     array_hash<string> ah;
@@ -69,12 +69,12 @@ CASE(testExists)
         // make sure the inserted data is the only data that appears
         // in the array hash
         foreach (const string& s, data) {
-            BOOST_REQUIRE_EQUAL(inserted.find(s) != inserted.end(), ah.exists(s));
+            BOOST_CHECK_EQUAL(inserted.find(s) != inserted.end(), ah.exists(s));
         }
     }
 }
 
-CASE(testFind)
+TEST(testFind)
 {
     array_hash<string> ah(data.begin(), data.end());
     for (array_hash<string>::iterator it = ah.begin(); it != ah.end(); ++it) {
@@ -82,18 +82,18 @@ CASE(testFind)
         // this is what we want because the iterators should
         // dereference to not only the same value, but the same
         // location in memory
-        BOOST_REQUIRE(*(ah.find(*it)) == *it);
+        BOOST_CHECK(*(ah.find(*it)) == *it);
     }
 }
 
-CASE(testCopyConstructor)
+TEST(testCopyConstructor)
 {
     array_hash<string> a(data.begin(), data.end());
     array_hash<string>b(a);
-    BOOST_REQUIRE(a == b);
+    BOOST_CHECK(a == b);
 }
 
-CASE(testTraits)
+TEST(testTraits)
 {
     // Make an array hash with default values, then some more
     // array hashes with varying traits
@@ -114,7 +114,7 @@ CASE(testTraits)
     check_equal(a, c);
 }
 
-CASE(testEraseByString)
+TEST(testEraseByString)
 {
     array_hash<string> ah(data.begin(), data.end());
     set<string> _data(data);
@@ -133,7 +133,7 @@ CASE(testEraseByString)
     }
 }
 
-CASE(testEraseByIterator)
+TEST(testEraseByIterator)
 {
     array_hash<string> ah(data.begin(), data.end());
     set<string> _data(data);
@@ -152,7 +152,7 @@ CASE(testEraseByIterator)
     }
 }
 
-CASE(testAssnOperator)
+TEST(testAssnOperator)
 {
     array_hash<string> ah;
     ah.insert("hello");
@@ -162,7 +162,7 @@ CASE(testAssnOperator)
     check_equal(ah, data);
 }
 
-CASE(testInsert)
+TEST(testInsert)
 {
     array_hash<string> ah;
     foreach (const string& str, data) {
@@ -173,7 +173,7 @@ CASE(testInsert)
     }
 }
 
-CASE(testReverseIteration)
+TEST(testReverseIteration)
 {
     // Initialize the stack
     array_hash<string> ah(data.begin(), data.end());
@@ -190,7 +190,7 @@ CASE(testReverseIteration)
     }
 }
 
-CASE(testIteratorBounds)
+TEST(testIteratorBounds)
 {
     array_hash<string> ah(data.begin(), data.end());
     array_hash<string>::const_iterator it = ah.begin();
@@ -201,7 +201,7 @@ CASE(testIteratorBounds)
     BOOST_CHECK(it == ah.end());
 }
 
-CASE(testEquality)
+TEST(testEquality)
 {
     array_hash<string> a(data.begin(), data.end());
     array_hash<string> b(data.begin(), data.end());
@@ -211,7 +211,7 @@ CASE(testEquality)
     BOOST_CHECK(a != c);
 }
 
-CASE(testClear)
+TEST(testClear)
 {
     array_hash<string> a(data.begin(), data.end());
     a.clear();

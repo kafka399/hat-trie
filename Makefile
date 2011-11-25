@@ -2,7 +2,7 @@
 # obj/matrix.o, list obj/matrix.o first.
 OBJS = obj/main.o
 EXE = bin/main
-TESTOBJS = obj/array_hash_test.o
+TESTOBJS = obj/array_hash_test.o obj/hat_set_test.o
 TESTEXE = bin/test
 
 # make variables
@@ -29,7 +29,8 @@ cover: $(TESTOBJS)
 	$(CXX) --coverage -o $(TESTEXE) $(LDFLAGS) $(TESTOBJS)
 	./$(TESTEXE)
 	gcov -o obj test/array_hash_test.cpp > /dev/null
-	rm `ls *.gcov | grep -v array_hash.h.gcov`
+	gcov -o obj test/hat_set_test.cpp > /dev/null
+	rm `ls *.gcov | grep -v "array_hash.h.gcov\|hat_trie.h.gcov"`
 
 obj/%.o: src/%.cpp
 	$(COMPILE.cpp) $(OFLAGS) -o $@ $<
@@ -56,5 +57,6 @@ depend:
 # Run this command:
 # 	makedepend src/*.cpp
 # ... then change src/*.o in this Makefile to obj/*.o.
-obj/array_hash_test.o: src/array_hash.h test/array_hash_test.cpp
-obj/main.o: src/array_hash.h src/main.cpp
+obj/array_hash_test.o: src/array_hash.h 
+obj/hat_set_test.o: src/array_hash.h src/hat*
+obj/main.o: src/array_hash.h src/main.cpp src/hat*
