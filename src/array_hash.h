@@ -118,9 +118,7 @@ public:
  */
 
 template <class T>
-class array_hash
-{
-};
+class array_hash { };
 
 /**
  * Hash table container for unsorted strings.

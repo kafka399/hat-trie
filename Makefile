@@ -1,20 +1,28 @@
 # List objects in order of DEPENDENCY. For example, if obj/main.o depends on
 # obj/matrix.o, list obj/matrix.o first.
+OBJS = obj/main.o
+EXE = bin/main
 TESTOBJS = obj/array_hash_test.o
 TESTEXE = bin/test
 
 # make variables
-OFLAGS   = -O0
+OFLAGS   = -O2
 CXX      = /opt/llvm/bin/clang++
-CXXFLAGS = -Wall -c $(OFLAGS) 
+CXXFLAGS = -Wall -c 
 LDFLAGS  = -lboost_unit_test_framework-mt -lprofile_rt -L/opt/llvm/lib
 
 COMPILE.cpp = $(CXX) $(CXXFLAGS)
 
-all: test
+all: main
+
+main: $(OBJS)
+	$(CXX) $(OFLAGS) $(OBJS) -o $(EXE)
+
+time: main
+	time bin/main < inputs/kjv
 
 test: $(TESTOBJS)
-	$(CXX) $(OFLAGS) $(TESTOBJS) -o $(TESTEXE) $(LDFLAGS)
+	$(CXX) $(TESTOBJS) -o $(TESTEXE) $(LDFLAGS)
 	./$(TESTEXE)
 
 cover: $(TESTOBJS)
@@ -24,13 +32,13 @@ cover: $(TESTOBJS)
 	rm `ls *.gcov | grep -v array_hash.h.gcov`
 
 obj/%.o: src/%.cpp
-	$(COMPILE.cpp) -o $@ $<
+	$(COMPILE.cpp) $(OFLAGS) -o $@ $<
 
 obj/%.o: test/%.cpp
 	$(COMPILE.cpp) --coverage -o $@ $<
 
 clean:
-	rm -f $(OBJECTS) $(EXE)
+	rm -f $(OBJS) $(EXE)
 	rm -f $(TESTOBJS) $(TESTEXE)
 
 depend:
@@ -49,3 +57,4 @@ depend:
 # 	makedepend src/*.cpp
 # ... then change src/*.o in this Makefile to obj/*.o.
 obj/array_hash_test.o: src/array_hash.h test/array_hash_test.cpp
+obj/main.o: src/array_hash.h src/main.cpp

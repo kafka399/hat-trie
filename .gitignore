@@ -21,3 +21,6 @@ boost/
 
 # coverage files
 *.gcov
+
+# input test data
+inputs/
