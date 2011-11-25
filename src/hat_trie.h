@@ -282,11 +282,14 @@ class hat_trie {
      * @return  true iff @a s is in the trie
      */
     bool exists(const key_type &word) const {
+        using namespace std;  // TODO
         // Locate s in the trie's structure.
         const char *ps = word.c_str();
         _node_pointer n = _locate(ps);
+        //cout << "_locate gave node: " << n.p->ch() << endl;
 
         if (n.type == CONTAINER_POINTER) {
+            //cout << "container pointer" << endl;
             return ((_container *) n.p)->exists(ps);
         }
         return n.p->word();
@@ -629,23 +632,35 @@ class hat_trie {
         const char *ps = word.c_str();
         _node_pointer n = _locate(ps);
 
-        // Search for the word in the trie.
         iterator result;
-        if ((n.type == CONTAINER_POINTER &&
-                ((_container *) n.p)->exists(ps)) ||
-                n.p->word()) {
-            // The word is in the trie. Find its location and initialize the
-            // return iterator to that location.
-            result = n;
-            result._cached_word = std::string(word.c_str(), ps);
-            if (*ps != '\0') {
-                result._word = false;
-                result._container_iterator = ((_container *) n.p)->_store.find(ps);
+        if (*ps == '\0') {
+            // The word is in the trie at the node returned by _locate
+            if (n.p->word()) {
+                result = n;
+                result._cached_word = std::string(word.c_str());
+            } else {
+                // The word is not a word in the trie
+                result = end();
             }
-
         } else {
-            // The word wasn't found in the trie.
-            result = end();
+            if (n.type == CONTAINER_POINTER) {
+                // The word could be in this container
+                _container *c = (_container *)n.p;
+                array_hash<std::string>::iterator it = c->_store.find(ps);
+                if (it != c->_store.end()) {
+                    // The word is in the trie
+                    result._position = n;
+                    result._word = false;
+                    result._cached_word = std::string(word.c_str(), ps);
+                    result._container_iterator = it;
+                } else {
+                    // The word is not in the trie
+                    result = end();
+                }
+            } else {
+                // The word is not in the trie
+                result = end();
+            }
         }
         return result;
     }
