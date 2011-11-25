@@ -188,4 +188,14 @@ CASE(testReverseIteration)
     }
 }
 
+CASE(testEquality)
+{
+    array_hash<string> a(data.begin(), data.end());
+    array_hash<string> b(data.begin(), data.end());
+    BOOST_CHECK(a == b);
+
+    array_hash<string> c;
+    BOOST_CHECK(a != c);
+}
+
 BOOST_AUTO_TEST_SUITE_END()

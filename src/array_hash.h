@@ -481,6 +481,14 @@ public:
         return false;
     }
 
+    /**
+     * Inequality operator.
+     */
+    bool operator!=(const array_hash<std::string>& rhs)
+    {
+        return !operator==(rhs);
+    }
+
     class iterator : public std::iterator<std::bidirectional_iterator_tag,
             const char *>
     {
