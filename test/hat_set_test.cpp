@@ -62,7 +62,6 @@ TEST(testExists)
     h.insert("abcd");
     h.insert("abc");
     h.insert("b");
-    h.print();
 
     BOOST_CHECK(h.exists("a") == false);
     BOOST_CHECK(h.exists("abcde"));
@@ -78,12 +77,36 @@ TEST(testFind)
     h.insert("abcd");
     h.insert("abc");
     h.insert("b");
-    h.print();
     BOOST_CHECK(h.find("a") == h.end());
     BOOST_CHECK_EQUAL(*h.find("b"), "b");
     BOOST_CHECK_EQUAL(*h.find("abcde"), "abcde");
     BOOST_CHECK(h.find("agf") == h.end());
     BOOST_CHECK(h.find("abcdefg") == h.end());
+}
+
+TEST(testInsert)
+{
+    hat_set<string> h;
+
+    // Test c string insert
+    BOOST_CHECK(h.insert("abc") == true);
+    BOOST_CHECK(h.insert("ab") == true);
+    BOOST_CHECK(h.insert("a") == true);
+    BOOST_CHECK(h.insert("a") == false);
+
+    // Test string insert
+    string s = "abc";
+    BOOST_CHECK(h.insert(s) == false);
+    s = "abcd";
+    BOOST_CHECK(h.insert(s) == true);
+
+    // Test iterator insert
+    hat_set<string>::iterator it = h.find("abc");
+    BOOST_CHECK(*h.insert(it, "abcd") == "abcd");
+
+    // Test range insert
+    hat_set<string> a(data.begin(), data.end());
+    BOOST_CHECK(a.size() == data.size());
 }
 
 BOOST_AUTO_TEST_SUITE_END()

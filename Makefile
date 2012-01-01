@@ -2,7 +2,7 @@
 # obj/matrix.o, list obj/matrix.o first.
 OBJS = obj/main.o
 EXE = bin/main
-TESTOBJS = obj/array_hash_test.o 
+TESTOBJS = obj/array_hash_test.o obj/hat_set_test.o
 TESTEXE = bin/test
 
 # make variables

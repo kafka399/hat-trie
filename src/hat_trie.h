@@ -431,6 +431,8 @@ class hat_trie {
                 ++_size;
                 return true;
             }
+
+            // word was already in the trie
             return false;
 
         } else {
