@@ -19,8 +19,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// TODO backwards iteration
-
 #ifndef ARRAY_HASH_H
 #define ARRAY_HASH_H
 
@@ -38,25 +36,26 @@ namespace stx {
  * \subsection Usage
  * \code
  * array_hash_traits traits;
- * traits.burst_threshold = 8192;
+ * traits.slot_count = 256;
+ * traits.allocation_chunk_size = 64;
  * hat_set<string> rawr(traits);
  * rawr.insert(...);
  * ...
  * \endcode
  */
-class array_hash_traits {
-
-  public:
-    array_hash_traits() {
-        slot_count = 512;
-        allocation_chunk_size = 32;
+class array_hash_traits
+{
+public:
+    array_hash_traits(int slot_count = 512, int allocation_chunk_size = 32) :
+        slot_count(slot_count), allocation_chunk_size(allocation_chunk_size)
+    {
     }
 
     /**
      * Number of slots in the hash table. Higher values use more
      * memory but may show faster access times.
      *
-     * Default 512. Must be positive.
+     * Default 512. Must be a positive power of 2.
      */
     int slot_count;
 
@@ -66,7 +65,7 @@ class array_hash_traits {
      * size until there is enough space for a word.  In general, higher values
      * use more memory but require fewer memory copy operations.  Try to guess
      * how many average characters your strings will use, then multiply that
-     * by (hat_trie__traits.burst_threshold / array_hash_traits::slot_count) to
+     * by (hat_trie_traits.burst_threshold / array_hash_traits::slot_count) to
      * get a good estimate for this value.
      *
      * If you want memory allocations to be exactly as big as they need to
@@ -81,42 +80,42 @@ class array_hash_traits {
 };
 
 /*
-array-hash public interface:
-class array_hash {
+ array-hash public interface:
+ class array_hash {
 
-  public:
-    array_hash();
-    ~array_hash();
+ public:
+ array_hash();
+ ~array_hash();
 
-    // accessors
-    bool exists(const char *str) const;
-    iterator find(const char *str) const;
-    size_t size() const;
+ // accessors
+ bool exists(const char *str) const;
+ iterator find(const char *str) const;
+ size_t size() const;
 
-    // modifiers
-    bool insert(const char *str);
-    void erase(const char *str);
-    void erase(iterator);
+ // modifiers
+ bool insert(const char *str);
+ void erase(const char *str);
+ void erase(iterator);
 
-    iterator begin() const;
-    iterator end() const;
+ iterator begin() const;
+ iterator end() const;
 
-    class iterator {
+ class iterator {
 
-      public:
-        iterator();
-        iterator(const iterator& rhs);
+ public:
+ iterator();
+ iterator(const iterator& rhs);
 
-        iterator& operator++();
-        iterator& operator--();
+ iterator& operator++();
+ iterator& operator--();
 
-        const char *operator*() const;
-        bool operator==(const iterator& rhs);
-        bool operator!=(const iterator& rhs);
+ const char *operator*() const;
+ bool operator==(const iterator& rhs);
+ bool operator!=(const iterator& rhs);
 
-    };
-};
-*/
+ };
+ };
+ */
 
 template <class T>
 class array_hash { };
@@ -125,46 +124,110 @@ class array_hash { };
  * Hash table container for unsorted strings.
  */
 template <>
-class array_hash<std::string> {
-
-  private:
+class array_hash<std::string>
+{
+private:
     typedef uint16_t length_type;
     typedef uint32_t size_type;
 
-  public:
+public:
     class iterator;
+    typedef std::reverse_iterator<iterator> reverse_iterator;
+    typedef iterator const_iterator;
+    typedef reverse_iterator const_reverse_iterator;
 
     /**
      * Default constructor.
      *
+     * O(1)
+     *
      * @param traits  array hash customization traits
      */
     array_hash(const array_hash_traits &traits = array_hash_traits()) :
-            _traits(traits) {
-        _data = new char *[_traits.slot_count];
-        for (int i = 0; i < _traits.slot_count; ++i) {
-            _data[i] = NULL;
+            _traits(traits)
+    {
+        _init();
+    }
+
+    /**
+     * Iterator range constructor.
+     *
+     * O(n) where n is the number of elements between first and last
+     */
+    template <class Iterator>
+    array_hash(Iterator first, const Iterator& last,
+            const array_hash_traits& traits = array_hash_traits()) :
+            _traits(traits)
+    {
+        _init();
+
+        // Insert the data in the iterator range
+        while (first != last) {
+            insert(*first);
+            ++first;
         }
-        _size = 0;
     }
 
     /**
      * Standard destructor.
      */
-    ~array_hash() {
-        for (int i = 0; i < _traits.slot_count; ++i) {
-            delete [] _data[i];
+    ~array_hash()
+    {
+        _destroy();
+    }
+
+    /**
+     * Copy constructor.
+     *
+     * O(n) where n = traits.slot_count
+     */
+    array_hash(const array_hash<std::string> &rhs)
+    {
+        _data = NULL;
+        operator=(rhs);
+    }
+
+    /**
+     * Assignment operator.
+     *
+     * O(n) where n = traits.slot_count
+     */
+    array_hash<std::string>& operator=(const array_hash<std::string> &rhs)
+    {
+        if (this != &rhs) {
+            _traits = rhs._traits;
+            _size = rhs._size;
+
+            // Empty the current data array
+            if (_data) {
+                _destroy();
+            }
+
+            // Copy the data from the other array hash
+            _data = new char *[_traits.slot_count];
+            for (int i = 0; i < _traits.slot_count; ++i) {
+                if (rhs._data[i]) {
+                    size_t space = *rhs._data[i];
+                    _data[i] = new char[space];
+                    memcpy(_data[i], rhs._data[i], space);
+                } else {
+                    _data[i] = NULL;
+                }
+            }
         }
-        delete [] _data;
+        return *this;
     }
 
     /**
      * Determines whether @a str is in the table.
      *
+     * O(m) where m is the length of @a str
+     *
      * @param str  string to search for
      * @return  true iff @a str is in the table
      */
-    bool exists(const char *str) const {
+    bool exists(const char *str) const
+    {
         // Determine which slot in the table should contain str.
         length_type length;
         char *p = _data[_hash(str, length)];
@@ -178,27 +241,56 @@ class array_hash<std::string> {
     }
 
     /**
-     * Gets the number of elements in the table.
+     * Determines whether @a str is in the table.
+     *
+     * O(m) where m is the length of @a str
      */
-    size_t size() const {
+    bool exists(const std::string& str) const
+    {
+        return exists(str.c_str());
+    }
+
+    /**
+     * Gets the number of elements in the table.
+     *
+     * O(1)
+     */
+    size_t size() const
+    {
         return _size;
     }
 
     /**
-     * Gets the traits associated with this array hash.
+     * Determines whether the table is empty.
+     *
+     * O(1)
      */
-    const array_hash_traits &traits() const {
+    bool empty() const
+    {
+        return size() == 0;
+    }
+
+    /**
+     * Gets the traits associated with this array hash.
+     *
+     * O(1)
+     */
+    const array_hash_traits &traits() const
+    {
         return _traits;
     }
 
     /**
      * Inserts @a str into the table.
      *
+     * O(m) where m is the length of @a str
+     *
      * @param str  string to insert
      * @return  true if @a str is successfully inserted, false if @a str
      *          already appears in the table
      */
-    bool insert(const char *str) {
+    bool insert(const char *str)
+    {
         length_type length;
         int slot = _hash(str, length);
         char *p = _data[slot];
@@ -210,7 +302,7 @@ class array_hash<std::string> {
             }
 
             // Resize the slot if it doesn't have enough space.
-            size_type current = *((size_type *)(p));
+            size_type current = *((size_type *) (p));
             size_type required = occupied + sizeof(length_type) + length;
             if (required > current) {
                 _grow_slot(slot, current, required);
@@ -221,8 +313,8 @@ class array_hash<std::string> {
 
         } else {
             // Make a new slot for this string.
-            size_type required =
-                sizeof(size_type) + 2 * sizeof(length_type) + length;
+            size_type required = sizeof(size_type) + 2 * sizeof(length_type)
+                    + length;
             _grow_slot(slot, 0, required);
 
             // Position for writing to the slot.
@@ -236,11 +328,29 @@ class array_hash<std::string> {
     }
 
     /**
-     * Erases a string from the hash table.
+     * Inserts @a str into the table.
+     *
+     * O(m) where m is the length of @a str
+     *
+     * @param str  string to insert
+     * @return  true iff @a str is successfully inserted, false if @a str
+     *          already appears in the table
+     */
+    bool insert(const std::string& str)
+    {
+        return insert(str.c_str());
+    }
+
+    /**
+     * Erases a string from the table.
+     *
+     * O(m) where m is the length of @a str
      *
      * @param str  string to erase
+     * @return  instances of @a str that were erased
      */
-    void erase(const char *str) {
+    size_type erase(const char *str)
+    {
         length_type length;
         int slot = _hash(str, length);
         char *p = _data[slot];
@@ -248,23 +358,71 @@ class array_hash<std::string> {
             size_type occupied;
             if ((p = _search(str, p, length, occupied)) != NULL) {
                 _erase_word(p, slot);
+                return 1;
             }
         }
+        return 0;
+    }
+
+    /**
+     * Erases a string from the table.
+     *
+     * O(m) where m is the length of @a str
+     *
+     * @param str  string to erase
+     * @return  instances of @a str that were erased
+     */
+    size_type erase(const std::string& str)
+    {
+        return erase(str.c_str());
     }
 
     /**
      * Erases a string from the hash table.
      *
+     * O(1)
+     *
      * @param pos  iterator to the string to erase
      */
-    void erase(const iterator &pos) {
-        _erase_word(pos._p, pos._slot);
+    void erase(const iterator &pos)
+    {
+        // Only erase if the iterator does not point to the end
+        // of the collection
+        if (pos._p) {
+            _erase_word(pos._p, pos._slot);
+        }
+    }
+
+    /**
+     * Clears all the elements from the hash table.
+     *
+     * O(n) where n is traits.slot_count
+     */
+    void clear()
+    {
+        _destroy();
+        _init();
+    }
+
+    /**
+     * Swaps information between two array hashes.
+     *
+     * O(1)
+     */
+    void swap(array_hash<std::string>& rhs)
+    {
+        std::swap(_data, rhs._data);
+        std::swap(_size, rhs._size);
+        std::swap(_traits, rhs._traits);
     }
 
     /**
      * Gets an iterator to the first element in the table.
+     *
+     * O(n) where n = traits.slot_count
      */
-    iterator begin() const {
+    iterator begin() const
+    {
         iterator result;
         if (size() == 0) {
             result = end();
@@ -281,19 +439,45 @@ class array_hash<std::string> {
 
     /**
      * Gets an iterator to one past the last element in the hash table.
+     *
+     * O(1)
      */
-    iterator end() const {
+    iterator end() const
+    {
         return iterator(_traits.slot_count, NULL, _data, _traits.slot_count);
+    }
+
+    /**
+     * Gets a reverse iterator to the first element in reverse order.
+     *
+     * O(1)
+     */
+    reverse_iterator rbegin() const
+    {
+        return reverse_iterator(end());
+    }
+
+    /**
+     * Gets a reverse iterator to the last element in reverse order.
+     *
+     * O(n) where n = traits.slot_count
+     */
+    reverse_iterator rend() const
+    {
+        return reverse_iterator(begin());
     }
 
     /**
      * Searches for @a str in the table.
      *
+     * O(m) where m is the length of @a str
+     *
      * @param str  string to search for
      * @return  iterator to @a str in the table, or @a end() if @a str
      *          is not in the table
      */
-    iterator find(const char *str) const {
+    iterator find(const char *str) const
+    {
         // Determine which slot in the table should contain str.
         length_type length;
         int slot = _hash(str, length);
@@ -308,19 +492,80 @@ class array_hash<std::string> {
         return iterator(slot, p, _data, _traits.slot_count);
     }
 
-    class iterator : std::iterator<std::bidirectional_iterator_tag,
-                                   const char *> {
+    /**
+     * Searches for @a str in the table.
+     *
+     * O(m) where m is the length of @a str
+     *
+     * @param str  string to search for
+     * @return  iterator to @a str in the table, or @a end() if @a str
+     *          is not in the table
+     */
+    iterator find(const std::string& str) const
+    {
+        return find(str.c_str());
+    }
+
+    /**
+     * Equality operator.
+     *
+     * O(n) where n = @a size()
+     */
+    bool operator==(const array_hash<std::string>& rhs)
+    {
+        if (size() == rhs.size()) {
+            // don't want to do a memory comparison because traits
+            // may differ
+            iterator me = begin();
+            iterator them = rhs.begin();
+            iterator stop = end();
+            while (me != stop) {
+                if (strcmp(*me, *them) != 0) {
+                    return false;
+                }
+                ++me;
+                ++them;
+            }
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Inequality operator.
+     *
+     * O(n) where n = @a size
+     */
+    bool operator!=(const array_hash<std::string>& rhs)
+    {
+        return !operator==(rhs);
+    }
+
+    class iterator : public std::iterator<std::bidirectional_iterator_tag,
+            const char *>
+    {
         friend class array_hash;
 
-      public:
-        iterator() : _slot(0), _p(NULL), _data(NULL) { }
+    public:
+        // correct the STL's assumption that this iterator is not a
+        // const iterator
+        typedef const char * reference;
+
+        iterator() : _slot(0), _p(NULL), _data(NULL)
+        {
+        }
 
         /**
          * Move this iterator forward to the next element in the table.
          *
+         * worst case O(n) where n = traits.slot_count
+         *
+         * Calling this function on an end() iterator does nothing.
+         *
          * @return  self-reference
          */
-        iterator& operator++() {
+        iterator& operator++()
+        {
             // Move p to the next string in this slot.
             if (_p) {
                 _p += *((length_type *) _p) + sizeof(length_type);
@@ -346,18 +591,94 @@ class array_hash<std::string> {
         /**
          * Move this iterator backward to the previous element in the table.
          *
+         * worst case O(n) where n = traits.slot_count
+         *
+         * Calling this function on a begin iterator does nothing.
+         *
          * @return  self-reference
          */
-        iterator& operator--() {
+        iterator& operator--()
+        {
+            if (_p) {
+                // Find the iterator's current location in the slot
+                char *next = _data[_slot] + sizeof(size_type);
+                char *prev = next;
+                while (next != _p) {
+                    prev = next;
+                    next += *((length_type *) next) + sizeof(length_type);
+                }
+
+                if (prev != next) {
+                    // Move backwards in the current slot, then we're done
+                    _p = prev;
+                    return *this;
+                } else {
+                    // Move back to the previous occupied slot
+                    int tmp = _slot;
+                    --_slot;
+                    while (_slot >= 0 && _data[_slot] == NULL) {
+                        --_slot;
+                    }
+
+                    if (_slot < 0) {
+                        // We are at the beginning. Make this a begin
+                        // iterator
+                        _slot = tmp;
+                        return *this;
+                    }
+                }
+            } else {
+                // Subtracting from end(). Find the very last slot
+                // in the table.
+                _slot = _slot_count - 1;
+                while (_data[_slot] == NULL) {
+                    --_slot;
+                }
+            }
+
+            // Move to the last element in this slot
+            char *next = _data[_slot] + sizeof(size_type);
+            while (*((length_type *)next) != 0) {
+                _p = next;
+                length_type l = *((length_type *)next);
+                next += sizeof(length_type) + l;
+            }
             return *this;
+        }
+
+        /**
+         * Postfix increment operator.
+         *
+         * worst case O(n) where n = traits.slot_count
+         */
+        iterator operator++(int)
+        {
+            iterator result = *this;
+            operator++();
+            return result;
+        }
+
+        /**
+         * Postfix decrement operator.
+         *
+         * worst case O(n) where n = traits.slot_count
+         */
+        iterator operator--(int)
+        {
+            iterator result = *this;
+            operator--();
+            return result;
         }
 
         /**
          * Iterator dereference operator.
          *
+         * O(1)
+         *
          * @return  character pointer to the string this iterator points to
          */
-        const char *operator*() const {
+        const char *operator*() const
+        {
             if (_p) {
                 return _p + sizeof(length_type);
             }
@@ -366,33 +687,64 @@ class array_hash<std::string> {
 
         /**
          * Standard equality operator.
+         *
+         * O(1)
          */
-        bool operator==(const iterator& rhs) {
+        bool operator==(const iterator& rhs)
+        {
             return _p == rhs._p;
         }
 
         /**
          * Standard inequality operator.
+         *
+         * O(1)
          */
-        bool operator!=(const iterator& rhs) {
+        bool operator!=(const iterator& rhs)
+        {
             return !operator==(rhs);
         }
 
-      private:
+    private:
         int _slot;
         char *_p;
         char **_data;
         int _slot_count;
 
         iterator(int slot, char *p, char **data, int slot_count) :
-                 _slot(slot), _p(p), _data(data),
-                 _slot_count(slot_count) { }
+                _slot(slot), _p(p), _data(data), _slot_count(slot_count)
+        {
+        }
     };
 
-  private:
+private:
     array_hash_traits _traits;
     size_t _size;
     char **_data;
+
+    /**
+     * Initializes the internal data pointers.
+     */
+    void _init()
+    {
+        _data = new char *[_traits.slot_count];
+        for (int i = 0; i < _traits.slot_count; ++i) {
+            _data[i] = NULL;
+        }
+        _size = 0;
+    }
+
+    /**
+     * Clears all the memory used by the table.
+     */
+    void _destroy()
+    {
+        for (int i = 0; i < _traits.slot_count; ++i) {
+            delete[] _data[i];
+        }
+        delete[] _data;
+        _data = NULL;
+    }
 
     /**
      * Hashes @a str to an integer, its slot in the hash table.
@@ -403,7 +755,8 @@ class array_hash<std::string> {
      *
      * @return  hashed value of @a str, its slot in the table
      */
-    int _hash(const char *str, length_type &length, int seed = 23) const {
+    int _hash(const char *str, length_type &length, int seed = 23) const
+    {
         int h = seed;
         length = 0;
         while (str[length]) {
@@ -412,11 +765,11 @@ class array_hash<std::string> {
             ++length;
         }
 
-        ++length;  // include space for the NULL terminator
-        return h & (_traits.slot_count - 1);  // same as h %
-                                              // _traits.slot_count if
-                                              // _traits.slot_count is a
-                                              // power of 2
+        ++length; // include space for the NULL terminator
+        return h & (_traits.slot_count - 1); // same as h %
+                                             // _traits.slot_count if
+                                             // _traits.slot_count is a
+                                             // power of 2
     }
 
     /**
@@ -432,16 +785,14 @@ class array_hash<std::string> {
      * @return  If @a str is found in the table, returns a pointer to
      *          the string and its corresponding length. If not, returns NULL.
      */
-    char *_search(
-            const char *str,
-            char *p,
-            length_type length,
-            size_type &occupied) const {
+    char *_search(const char *str, char *p, length_type length,
+            size_type &occupied) const
+    {
         occupied = -1;
         char *start = p;
 
         // Search for str in the slot p points to.
-        p += sizeof(size_type);  // skip past size at beginning of slot
+        p += sizeof(size_type); // skip past size at beginning of slot
         length_type w = *((length_type *) p);
         while (w != 0) {
             p += sizeof(length_type);
@@ -467,11 +818,16 @@ class array_hash<std::string> {
      * @param current   current size of the slot
      * @param required  required size of the slot
      */
-    void _grow_slot(int slot, size_type current, size_type required) {
+    void _grow_slot(int slot, size_type current, size_type required)
+    {
         // Determine how much space the new slot needs.
         size_type new_size = current;
-        while (new_size < required) {
-            new_size += _traits.allocation_chunk_size;
+        if (_traits.allocation_chunk_size == 0) {
+            new_size = required;
+        } else {
+            while (new_size < required) {
+                new_size += _traits.allocation_chunk_size;
+            }
         }
 
         // Make a new slot and copy all the data over.
@@ -479,20 +835,23 @@ class array_hash<std::string> {
         _data[slot] = new char[new_size];
         if (p != NULL) {
             memcpy(_data[slot], p, current);
-            delete [] p;
+            delete[] p;
         }
-        *((size_type *)(_data[slot])) = new_size;
+        *((size_type *) (_data[slot])) = new_size;
     }
 
     /**
      * Appends a string to a list of strings in a slot.
+     *
+     * Assumes the slot is big enough to hold the string.
      *
      * @param str     string to append
      * @param p       pointer to the location in the slot this string
      *                should occupy
      * @param length  length of @a str
      */
-    void _append_string(const char *str, char *p, length_type length) {
+    void _append_string(const char *str, char *p, length_type length)
+    {
         // Write the length of the string, the string itself, the NULL
         // terminator, and a 0 after all of that (for the length of the
         // next string).
@@ -510,25 +869,24 @@ class array_hash<std::string> {
      * @param p     word to erase
      * @param slot  slot @a p is in
      */
-    void _erase_word(char *p, int slot) {
-        int length = *(length_type *)(p);
-        size_type size = *((size_type *)_data[slot]);
+    void _erase_word(char *p, int slot)
+    {
+        int length = *(length_type *) (p);
+        size_type size = *((size_type *) _data[slot]);
 
         // Erase the word by overwriting it.
         int n = size - (p - _data[slot]);
         memcpy(p, p + sizeof(length_type) + length, n);
 
         // If that made the slot empty, erase the slot.
-        if (*((length_type *)(_data[slot] + sizeof(size_type))) == 0) {
-            delete [] _data[slot];
+        if (*((length_type *) (_data[slot] + sizeof(size_type))) == 0) {
+            delete[] _data[slot];
             _data[slot] = NULL;
         }
         --_size;
     }
-
 };
 
-}  // namespace stx
+} // namespace stx
 
 #endif  // ARRAY_HASH_H
-

@@ -1,10 +1,26 @@
-# executable files
+# executable files and ouput directories
 run
-bin
-obj
+bin/
+obj/
+main.cpp
+Debug*/
+lib/
 
-# google profiling tools
-prof*
+# eclipse project files
+.*project
+.settings/
 
 # documentation files
-doc/html
+doc/html/
+
+# unit testing files
+cute/
+
+# boost files
+boost/
+
+# coverage files
+*.gcov
+
+# input test data
+inputs/

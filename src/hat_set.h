@@ -39,17 +39,17 @@ template <>
 class hat_set<std::string> {
 
   private:
-    typedef hat_trie<std::string> hat_trie;
+    typedef hat_trie<std::string> hat_trie_type;
     typedef hat_set<std::string>  _self;
 
   public:
     // STL types
-    typedef hat_trie::size_type         size_type;
-    typedef hat_trie::key_type          key_type;
-    typedef hat_trie::value_type        value_type;
+    typedef hat_trie_type::size_type         size_type;
+    typedef hat_trie_type::key_type          key_type;
+    typedef hat_trie_type::value_type        value_type;
 
-    typedef hat_trie::iterator          iterator;
-    typedef hat_trie::const_iterator    const_iterator;
+    typedef hat_trie_type::iterator          iterator;
+    typedef hat_trie_type::const_iterator    const_iterator;
 
     /**
      * Default constructor.
@@ -62,12 +62,25 @@ class hat_set<std::string> {
             trie(traits, ah_traits) { }
 
     /**
-     * Default constructor.
+     * Array hash traits constructor.
      *
      * @param ah_traits  array hash customization traits
      */
     hat_set(const array_hash_traits &ah_traits) :
             trie(ah_traits) { }
+
+    /**
+     * Builds a HAT set from the data in [first, last).
+     *
+     * @param first, last  iterators specifying a range of elements to
+     *                     initialize the tree with
+     */
+    template <class input_iterator>
+    hat_set(const input_iterator &first, const input_iterator &last,
+            const hat_trie_traits &traits = hat_trie_traits(),
+            const array_hash_traits &ah_traits = array_hash_traits()) :
+        trie(first, last, traits, ah_traits)
+    { }
 
     /**
      * Searches for a word in the trie.
@@ -143,11 +156,7 @@ class hat_set<std::string> {
      * on both versions of this function showed significant slowdown on
      * the pair-returning version -- several orders of magnitude. We believe
      * deviating from the standard in the face of such significant slowdown
-     * is a worthy sacrifice for blazing fast insertion times. And besides,
-     * who uses the iterator return value anyway? =)
-     *
-     * Note: for a more in-depth discussion of rationale, see the HTML
-     * documentation.
+     * is a worthy sacrifice for blazing fast insertion times.
      *
      * @param word  word to insert
      *
@@ -161,8 +170,10 @@ class hat_set<std::string> {
     /**
      * Inserts a word into the trie.
      *
-     * Uses C-strings instead of C++ strings. This function is no more
-     * efficient than the string version. It is provided for convenience.
+     * Uses C-strings instead of C++ strings. This function is no faster
+     * than the string version. It is provided because calling insert()
+     * with a C-string invokes an expensive string copy operation if
+     * the string version is the only function provided.
      *
      * @param word  word to insert
      * @return  true if @a word is inserted into the trie, false if @a word
@@ -199,6 +210,24 @@ class hat_set<std::string> {
      */
     iterator insert(const iterator &pos, const value_type &word) {
         return trie.insert(pos, word);
+    }
+
+    /**
+     * Erases a word from the trie.
+     *
+     * @param word  word to erase
+     */
+    size_type erase(const key_type &word) {
+        return trie.erase(word);
+    }
+
+    /**
+     * Erases a word from the trie.
+     *
+     * @param pos  iterator to the word to erase
+     */
+    void erase(const iterator &pos) {
+        trie.erase(pos);
     }
 
     /**
@@ -242,8 +271,68 @@ class hat_set<std::string> {
         trie.swap(rhs.trie);
     }
 
+    /**
+     * Prints the hierarchical structure of the trie.
+     *
+     * The output is indented to indicate trie depth. Words are marked
+     * by a ~, and containers are marked by a *. For example, a trie with
+     * a @a burst_threshold of 2 with the words the, their, there, they're,
+     * train, trust, truth, bear, and breath would produce this output:
+     *
+     *   b *
+     *     reath ~
+     *     ear ~
+     *   t
+     *     h
+     *      e ~
+     *        r *
+     *          e ~
+     *        y *
+     *          `re ~
+     *        i *
+     *          r ~
+     *     r
+     *       a *
+     *         in ~
+     *       u *
+     *         st ~
+     *         th ~
+     *
+     * (This isn't exactly right because of the particular bursting
+     * algorithm this implementation uses, but it is a good example.)
+     *
+     * @param out  output stream to print to. cout by default
+     */
+    void print() {
+        trie.print();
+    }
+
+    bool operator<(const hat_set<std::string>& rhs) {
+        return trie < rhs.trie;
+    }
+
+    bool operator<=(const hat_set<std::string>& rhs) {
+        return trie <= rhs.trie;
+    }
+
+    bool operator>(const hat_set<std::string>& rhs) {
+        return trie > rhs.trie;
+    }
+
+    bool operator>=(const hat_set<std::string>& rhs) {
+        return trie >= rhs.trie;
+    }
+
+    bool operator==(const hat_set<std::string>& rhs) {
+        return trie == rhs.trie;
+    }
+
+    bool operator!=(const hat_set<std::string>& rhs) {
+        return trie != rhs.trie;
+    }
+
   private:
-    hat_trie trie;
+    hat_trie_type trie;
 
 };
 
