@@ -126,6 +126,30 @@ TEST(testForwardIteration)
 
 TEST(testSwap)
 {
+    hat_set<string> control(data.begin(), data.end());
+    hat_set<string> a(data.begin(), data.end());
+    hat_set<string> b;
+
+    a.swap(b);
+    BOOST_CHECK(a.empty());
+    check_equal(b, control);
+}
+
+TEST(testCount)
+{
+    hat_set<string> h;
+    h.insert("hello");
+    BOOST_CHECK(h.count("hello") == 1);
+    BOOST_CHECK(h.count("") == 0);
+}
+
+TEST(testClear)
+{
+    hat_set<string> h;
+    h.insert("hello");
+    h.clear();
+    BOOST_CHECK(h.empty());
 }
 
 BOOST_AUTO_TEST_SUITE_END()
+
