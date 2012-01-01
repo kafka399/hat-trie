@@ -2,10 +2,10 @@
  * @mainpage
  *
  * This project is intended to be a fully operational, standards compliant
- * HAT-trie. It will eventually mirror the STL set interface, but for now,
- * it is still VERY much a work in progress.
+ * HAT-trie.
  *
  * @section Implemented
+ *
  * Here is a list of the major operations that are implemented:
  *
  * @li @c begin()
@@ -25,6 +25,16 @@
  *
  * In a @c hat_set, @c record is a @c std::string. In a @c hat_map, @c record
  * is a @c pair<std::string, T>.
+ *
+ * @section Future
+ *
+ * Here is a list of major operations that have yet to be implemented:
+ *
+ * @li reverse iteration
+ * @li @c lower_bound(string)
+ * @li @c upper_bound(string)
+ * @li @c equal_range(string)
+ * @li @c match_prefix(string) (an extension)
  *
  * @section Usage
  *
@@ -62,6 +72,8 @@
  *
  * @li @c exists(string) -- returns true iff there is a record in the trie
  * with a matching key
+ * @li @c match_prefix(string) -- returns a set of all strings that have
+ * the parameter as a prefix. To be implemented.
  *
  * @section Deviations
  * The hat@_trie interface differs from the standard in a few ways:

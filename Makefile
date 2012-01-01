@@ -13,6 +13,8 @@ LDFLAGS  = -lboost_unit_test_framework-mt -lprofile_rt -L/opt/llvm/lib
 
 COMPILE.cpp = $(CXX) $(CXXFLAGS)
 
+.PHONY: doc
+
 all: main
 
 main: $(OBJS)
@@ -42,6 +44,14 @@ clean:
 depend:
 	makedepend src/*.cpp 2>/dev/null
 	echo "Now replace src/*.o with obj/*.o in Makefile"
+
+doc:
+	doxygen
+	git checkout gh-pages
+	rm -rf `ls | grep -v doc`
+	mv doc/html/* .
+	rm -rf doc
+	git commit .
 
 # List dependencies here. Order doesn't matter.
 # Ex:
