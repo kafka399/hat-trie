@@ -45,6 +45,14 @@ struct HatTrieData
 
 BOOST_FIXTURE_TEST_SUITE(hatSet, HatTrieData)
 
+template <class A, class B>
+void check_equal(const A& a, const B& b)
+{
+    set<string> x(a.begin(), a.end());
+    set<string> y(b.begin(), b.end());
+    BOOST_CHECK(x == y);
+}
+
 TEST(testConstructor)
 {
     hat_set<string> h;
@@ -107,6 +115,17 @@ TEST(testInsert)
     // Test range insert
     hat_set<string> a(data.begin(), data.end());
     BOOST_CHECK(a.size() == data.size());
+}
+
+TEST(testForwardIteration)
+{
+    hat_set<string> h(data.begin(), data.end());
+    set<string> s(h.begin(), h.end());
+    check_equal(s, data);
+}
+
+TEST(testSwap)
+{
 }
 
 BOOST_AUTO_TEST_SUITE_END()
