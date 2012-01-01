@@ -517,14 +517,14 @@ public:
             // don't want to do a memory comparison because traits
             // may differ
             iterator me = begin();
-            iterator they = rhs.begin();
+            iterator them = rhs.begin();
             iterator stop = end();
             while (me != stop) {
-                if (strcmp(*me, *they) != 0) {
+                if (strcmp(*me, *them) != 0) {
                     return false;
                 }
                 ++me;
-                ++they;
+                ++them;
             }
             return true;
         }
@@ -609,8 +609,9 @@ public:
                 }
 
                 if (prev != next) {
-                    // Move backwards in the current slot
+                    // Move backwards in the current slot, then we're done
                     _p = prev;
+                    return *this;
                 } else {
                     // Move back to the previous occupied slot
                     int tmp = _slot;

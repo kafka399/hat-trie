@@ -175,18 +175,40 @@ TEST(testInsert)
 
 TEST(testReverseIteration)
 {
-    // Initialize the stack
-    array_hash<string> ah(data.begin(), data.end());
-    stack<string> st;
-    foreach (const string& str, ah) {
-        st.push(str);
+    // Perform the test with a regular array hash
+    {
+        // Initialize the stack
+        array_hash<string> ah(data.begin(), data.end());
+        stack<string> st;
+        foreach (const string& str, ah) {
+            st.push(str);
+        }
+
+        // Make sure the reverse iterator produces the same
+        // values in reverse order
+        for (array_hash<string>::reverse_iterator it = ah.rbegin(); it != ah.rend(); ++it) {
+            BOOST_CHECK_EQUAL(st.top(), *it);
+            st.pop();
+        }
     }
 
-    // Make sure the reverse iterator produces the same
-    // values in reverse order
-    for (array_hash<string>::reverse_iterator it = ah.rbegin(); it != ah.rend(); ++it) {
-        BOOST_CHECK_EQUAL(st.top(), *it);
-        st.pop();
+    // Perform the test with an array hash with different traits
+    {
+        // Initialize the stack
+        array_hash_traits traits;
+        traits.slot_count = 2;
+        array_hash<string> ah(data.begin(), data.end(), traits);
+        stack<string> st;
+        foreach (const string& str, ah) {
+            st.push(str);
+        }
+
+        // Make sure the reverse iterator produces the same
+        // values in reverse order
+        for (array_hash<string>::reverse_iterator it = ah.rbegin(); it != ah.rend(); ++it) {
+            BOOST_CHECK_EQUAL(st.top(), *it);
+            st.pop();
+        }
     }
 }
 
@@ -199,6 +221,10 @@ TEST(testIteratorBounds)
     it = ah.end();
     ++it;
     BOOST_CHECK(it == ah.end());
+
+    // Make sure dereferencing an end iterator gives us NULL
+    const char *ch = *it;
+    BOOST_CHECK(ch == NULL);
 }
 
 TEST(testEquality)
@@ -209,6 +235,12 @@ TEST(testEquality)
 
     array_hash<string> c;
     BOOST_CHECK(a != c);
+
+    array_hash<string> d;
+    array_hash<string> e;
+    d.insert("hello");
+    e.insert("rawr");
+    BOOST_CHECK(d != e);
 }
 
 TEST(testClear)
@@ -221,4 +253,16 @@ TEST(testClear)
     BOOST_CHECK(a.find("") == a.end());
 }
 
+TEST(testSwap)
+{
+    array_hash<string> control(data.begin(), data.end());
+    array_hash<string> a(data.begin(), data.end());
+    array_hash<string> b;
+
+    a.swap(b);
+    BOOST_CHECK(a.empty());
+    BOOST_CHECK(b == control);
+}
+
 BOOST_AUTO_TEST_SUITE_END()
+

@@ -2,7 +2,7 @@
 # obj/matrix.o, list obj/matrix.o first.
 OBJS = obj/main.o
 EXE = bin/main
-TESTOBJS = obj/array_hash_test.o obj/hat_set_test.o
+TESTOBJS = obj/array_hash_test.o 
 TESTEXE = bin/test
 
 # make variables
@@ -22,10 +22,6 @@ time: main
 	time bin/main < inputs/kjv
 
 test: $(TESTOBJS)
-	$(CXX) $(TESTOBJS) -o $(TESTEXE) $(LDFLAGS)
-	./$(TESTEXE)
-
-cover: $(TESTOBJS)
 	$(CXX) --coverage -o $(TESTEXE) $(LDFLAGS) $(TESTOBJS)
 	./$(TESTEXE)
 	gcov -o obj test/array_hash_test.cpp > /dev/null
@@ -41,6 +37,7 @@ obj/%.o: test/%.cpp
 clean:
 	rm -f $(OBJS) $(EXE)
 	rm -f $(TESTOBJS) $(TESTEXE)
+	rm obj/*
 
 depend:
 	makedepend src/*.cpp 2>/dev/null
