@@ -13,9 +13,12 @@
  * @li @c count(string)
  * @li @c empty()
  * @li @c end()
+ * @li @c erase(string)
+ * @li @c erase(iterator)
  * @li @c exists(string)
  * @li @c find(string)
  * @li @c insert(record)
+ * @li @c insert(iterator, iterator)
  * @li @c size()
  * @li @c swap(hat_set &)
  * @li forward iteraton and iterator dereferencing
@@ -36,6 +39,8 @@
  * @subsection Example
  * In the vast majority of cases, these classes are used in exactly the
  * same way as their STL counterparts. Just replace @c set with @c hat_set.
+ * (See the Deviations section for differences.)
+ *
  * @code
  * #include "hat_set.h"
  *
@@ -63,5 +68,11 @@
  *
  * @li @c insert(record) -- returns a @c bool rather than a <tt> pair<iterator,
  * bool></tt>. See the HTML documentation for rationale.
+ * @li iterator traversals are unordered. Ordered traversals are in the
+ * works.
+ *
+ * @section Testing
+ * The test files in the test/ directory achieve > 95% coverage of hat_trie.h
+ * and array_hash.h.
  */
 

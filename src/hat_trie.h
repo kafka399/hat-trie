@@ -94,7 +94,10 @@ class hat_trie_traits {
      * A hat_trie container is burst when its size passes this
      * threshold. Higher values use less memory, but may be slower.
      *
-     * Default 16384. Must be > 0 and <= 32,768.
+     * Set this value to 0 to turn this data structure into a
+     * retrieval tree and leave out array hashes completely.
+     *
+     * Default 16384. Must be >= 0 and <= 32,768.
      */
     size_t burst_threshold;
 
@@ -394,11 +397,7 @@ class hat_trie {
      * on both versions of this function showed significant slowdown on
      * the pair-returning version -- several orders of magnitude. We believe
      * deviating from the standard in the face of such significant slowdown
-     * is a worthy sacrifice for blazing fast insertion times. And besides,
-     * who uses the iterator return value anyway? =)
-     *
-     * Note: for a more in-depth discussion of rationale, see the HTML
-     * documentation.
+     * is a worthy sacrifice for blazing fast insertion times.
      *
      * @param word  word to insert
      *
@@ -967,7 +966,8 @@ class hat_trie {
         // Try to insert s into the container.
         if (htc->insert(s)) {
             ++_size;
-            if (htc->size() > _traits.burst_threshold) {
+            if (_traits.burst_threshold > 0 &&
+                    htc->size() > _traits.burst_threshold) {
                 // The container has too many strings in it; burst the
                 // container into a node.
                 _burst(htc);

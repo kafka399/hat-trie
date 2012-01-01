@@ -65,7 +65,7 @@ public:
      * size until there is enough space for a word.  In general, higher values
      * use more memory but require fewer memory copy operations.  Try to guess
      * how many average characters your strings will use, then multiply that
-     * by (hat_trie__traits.burst_threshold / array_hash_traits::slot_count) to
+     * by (hat_trie_traits.burst_threshold / array_hash_traits::slot_count) to
      * get a good estimate for this value.
      *
      * If you want memory allocations to be exactly as big as they need to

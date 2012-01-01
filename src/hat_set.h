@@ -156,11 +156,7 @@ class hat_set<std::string> {
      * on both versions of this function showed significant slowdown on
      * the pair-returning version -- several orders of magnitude. We believe
      * deviating from the standard in the face of such significant slowdown
-     * is a worthy sacrifice for blazing fast insertion times. And besides,
-     * who uses the iterator return value anyway? =)
-     *
-     * Note: for a more in-depth discussion of rationale, see the HTML
-     * documentation.
+     * is a worthy sacrifice for blazing fast insertion times.
      *
      * @param word  word to insert
      *
@@ -174,8 +170,10 @@ class hat_set<std::string> {
     /**
      * Inserts a word into the trie.
      *
-     * Uses C-strings instead of C++ strings. This function is no more
-     * efficient than the string version. It is provided for convenience.
+     * Uses C-strings instead of C++ strings. This function is no faster
+     * than the string version. It is provided because calling insert()
+     * with a C-string invokes an expensive string copy operation if
+     * the string version is the only function provided.
      *
      * @param word  word to insert
      * @return  true if @a word is inserted into the trie, false if @a word
