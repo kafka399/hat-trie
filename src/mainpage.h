@@ -39,6 +39,7 @@
  * @code
  * #include "hat_set.h"
  *
+ * using namespace std;
  * using namespace stx;
  *
  * int main() {
