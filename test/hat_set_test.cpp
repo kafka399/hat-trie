@@ -151,5 +151,16 @@ TEST(testClear)
     BOOST_CHECK(h.empty());
 }
 
+TEST(testEquals)
+{
+    hat_set<string> a(data.begin(), data.end());
+    hat_set<string> b(data.begin(), data.end());
+    hat_set<string> c;
+
+    BOOST_CHECK(a == b);
+    BOOST_CHECK(a != c);
+    BOOST_CHECK(b != c);
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 

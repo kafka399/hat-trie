@@ -309,6 +309,30 @@ class hat_set<std::string> {
         trie.print();
     }
 
+    bool operator<(const hat_set<std::string>& rhs) {
+        return trie < rhs.trie;
+    }
+
+    bool operator<=(const hat_set<std::string>& rhs) {
+        return trie <= rhs.trie;
+    }
+
+    bool operator>(const hat_set<std::string>& rhs) {
+        return trie > rhs.trie;
+    }
+
+    bool operator>=(const hat_set<std::string>& rhs) {
+        return trie >= rhs.trie;
+    }
+
+    bool operator==(const hat_set<std::string>& rhs) {
+        return trie == rhs.trie;
+    }
+
+    bool operator!=(const hat_set<std::string>& rhs) {
+        return trie != rhs.trie;
+    }
+
   private:
     hat_trie_type trie;
 
