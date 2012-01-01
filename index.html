@@ -72,7 +72,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="title">hat-trie Documentation</div>  </div>
 </div>
 <div class="contents">
-<div class="textblock"><p>This project is intended to be a fully operational, standards compliant HAT-trie. It will eventually mirror the STL set interface, but for now, it is still VERY much a work in progress.</p>
+<div class="textblock"><p>This project is intended to be a fully operational, standards compliant HAT-trie.</p>
 <h2><a class="anchor" id="Implemented"></a>
 Implemented</h2>
 <p>Here is a list of the major operations that are implemented:</p>
@@ -93,6 +93,16 @@ Implemented</h2>
 <li>forward iteraton and iterator dereferencing</li>
 </ul>
 <p>In a <code>hat_set</code>, <code>record</code> is a <code>std::string</code>. In a <code>hat_map</code>, <code>record</code> is a <code>pair&lt;std::string, T&gt;</code>.</p>
+<h2><a class="anchor" id="Future"></a>
+Future</h2>
+<p>Here is a list of major operations that have yet to be implemented:</p>
+<ul>
+<li>reverse iteration </li>
+<li><code>lower_bound(string)</code> </li>
+<li><code>upper_bound(string)</code> </li>
+<li><code>equal_range(string)</code> </li>
+<li><code>match_prefix(string)</code> (an extension)</li>
+</ul>
 <h2><a class="anchor" id="Usage"></a>
 Usage</h2>
 <h3><a class="anchor" id="Installation"></a>
@@ -118,15 +128,19 @@ Example</h3>
 Extensions</h2>
 <p>There are a few non-standard extensions to the hat_trie interface:</p>
 <ul>
-<li><code>exists(string)</code> -- returns true iff there is a record in the trie with a matching key</li>
+<li><code>exists(string)</code> -- returns true iff there is a record in the trie with a matching key </li>
+<li><code>match_prefix(string)</code> -- returns a set of all strings that have the parameter as a prefix. To be implemented.</li>
 </ul>
 <h2><a class="anchor" id="Deviations"></a>
 Deviations</h2>
 <p>The hat interface differs from the standard in a few ways:</p>
 <ul>
 <li><code>insert(record)</code> -- returns a <code>bool</code> rather than a <code> pair&lt;iterator, bool&gt;</code>. See the HTML documentation for rationale. </li>
-<li>iterator traversals are unordered. Ordered traversals are in the works. </li>
+<li>iterator traversals are unordered. Ordered traversals are in the works.</li>
 </ul>
+<h2><a class="anchor" id="Testing"></a>
+Testing</h2>
+<p>The test files in the test/ directory achieve &gt; 95% coverage of <a class="el" href="hat__trie_8h_source.html">hat_trie.h</a> and <a class="el" href="array__hash_8h_source.html">array_hash.h</a>. </p>
 </div></div>
 <!-- window showing the filter options -->
 <div id="MSearchSelectWindow"
@@ -145,7 +159,7 @@ Deviations</h2>
 
 
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Jan 1 2012 17:19:44 for hat-trie by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Jan 1 2012 17:40:25 for hat-trie by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.7.5.1
 </small></address>

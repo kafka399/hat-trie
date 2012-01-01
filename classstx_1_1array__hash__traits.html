@@ -120,7 +120,7 @@ Public Attributes</h2></td></tr>
       </table>
 </div>
 <div class="memdoc">
-<p>This value only affects the speed of the insert() operation. When a slot in the array hash is allocated, it is allocated in blocks of this size until there is enough space for a word. In general, higher values use more memory but require fewer memory copy operations. Try to guess how many average characters your strings will use, then multiply that by (hat_trie__traits.burst_threshold / <a class="el" href="classstx_1_1array__hash__traits.html#ad577b8612db3284bb585aa9ba80b6e16">array_hash_traits::slot_count</a>) to get a good estimate for this value.</p>
+<p>This value only affects the speed of the insert() operation. When a slot in the array hash is allocated, it is allocated in blocks of this size until there is enough space for a word. In general, higher values use more memory but require fewer memory copy operations. Try to guess how many average characters your strings will use, then multiply that by (<a class="el" href="classstx_1_1hat__trie__traits.html#a2f02ea08f0c5df34a8b505aa2123333c">hat_trie_traits.burst_threshold</a> / <a class="el" href="classstx_1_1array__hash__traits.html#ad577b8612db3284bb585aa9ba80b6e16">array_hash_traits::slot_count</a>) to get a good estimate for this value.</p>
 <p>If you want memory allocations to be exactly as big as they need to be (rather than in block chunks), set this value to 0. This may be your best option in memory-tight situations. Insertion speed is still impressive even with abundant memory copy operations.</p>
 <p>Default 32. Must be non-negative. </p>
 
@@ -162,7 +162,7 @@ Public Attributes</h2></td></tr>
 
 
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Jan 1 2012 17:19:44 for hat-trie by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Jan 1 2012 17:40:25 for hat-trie by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.7.5.1
 </small></address>
