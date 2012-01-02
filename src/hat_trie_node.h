@@ -180,9 +180,7 @@ class hat_trie_node : public hat_trie_node_base {
   public:
     /// Default constructor.
     hat_trie_node(char ch = '\0') : _node_base(ch) {
-        for (int i = 0; i < HT_ALPHABET_SIZE; ++i) {
-            _children[i] = NULL;
-        }
+        memset(_children, NULL, sizeof(_node_base *) * HT_ALPHABET_SIZE);
         set_word(false);
     }
 

@@ -31,7 +31,7 @@ struct HatTrieData
     HatTrieData()
     {
         ifstream file;
-        file.open("inputs/kjv");
+        file.open("test/inputs/kjv");
         if (!file) {
             throw "file not opened";
         }

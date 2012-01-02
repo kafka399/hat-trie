@@ -87,7 +87,7 @@ class hat_trie_traits {
 
   public:
     hat_trie_traits() {
-        burst_threshold = 2;
+        burst_threshold = 16384;
     }
 
     /**

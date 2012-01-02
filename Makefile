@@ -6,7 +6,7 @@ TESTOBJS = obj/array_hash_test.o obj/hat_set_test.o
 TESTEXE = bin/test
 
 # make variables
-OFLAGS   = -O2
+OFLAGS   = 
 CXX      = /opt/llvm/bin/clang++
 CXXFLAGS = -Wall -c 
 LDFLAGS  = -lboost_unit_test_framework-mt -lprofile_rt -L/opt/llvm/lib
@@ -18,7 +18,7 @@ COMPILE.cpp = $(CXX) $(CXXFLAGS)
 all: main
 
 main: $(OBJS)
-	$(CXX) $(OFLAGS) $(OBJS) -o $(EXE)
+	$(CXX) $(OFLAGS) $(OBJS) -o $(EXE) 
 
 time: main
 	time bin/main < inputs/kjv

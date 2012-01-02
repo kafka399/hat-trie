@@ -728,9 +728,7 @@ private:
     void _init()
     {
         _data = new char *[_traits.slot_count];
-        for (int i = 0; i < _traits.slot_count; ++i) {
-            _data[i] = NULL;
-        }
+        memset(_data, NULL, _traits.slot_count * sizeof(char*));
         _size = 0;
     }
 
