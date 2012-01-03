@@ -105,7 +105,6 @@ class hat_trie_traits {
      * Default 16384. Must be >= 0 and <= 32,768.
      */
     size_t burst_threshold;
-
 };
 
 /// Gets a reference to the string in the parameter
@@ -121,37 +120,34 @@ const std::string &ref(const std::pair<std::string, T> &p) {
 }
 
 // forward declarations
-class htnode;
+struct htnode;
 struct ahnode;
 
+/// Consolidates storage between bucket pointers and node pointers
 union child_ptr {
     ahnode *bucket;
     htnode *node;
 };
 
 /// Stores information required by each hat trie node
-class htnode {
-    friend class hat_trie<std::string>;
-
-  public:
+struct htnode {
     htnode(char ch = '\0') : ch(ch), parent(NULL) {
-        memset(_children, NULL, sizeof(child_ptr) * HT_ALPHABET_SIZE);
+        memset(children, NULL, sizeof(child_ptr) * HT_ALPHABET_SIZE);
     }
 
     /// Getter for the word field
-    bool word() const { return _types[HT_ALPHABET_SIZE]; }
+    bool word() const { return types[HT_ALPHABET_SIZE]; }
 
     /// Setter for the word field
-    void set_word(bool b) { _types[HT_ALPHABET_SIZE] = b; }
+    void set_word(bool b) { types[HT_ALPHABET_SIZE] = b; }
 
     char ch;
     htnode *parent;
-
-  private:
-    std::bitset<HT_ALPHABET_SIZE + 1> _types;  // +1 is an end of word flag
-    child_ptr _children[HT_ALPHABET_SIZE];  // pointers to children
+    std::bitset<HT_ALPHABET_SIZE + 1> types;  // +1 is an end of word flag
+    child_ptr children[HT_ALPHABET_SIZE];  // pointers to children
 };
 
+/// Stores information required by each array hash node
 struct ahnode {
     bucket *table;
     char ch;
@@ -169,20 +165,25 @@ struct htnode_ptr {
     uint8_t type;   // type of the pointer
 
     htnode_ptr() { ptr.node = NULL; }
+
     htnode_ptr(child_ptr ptr, uint8_t type) : ptr(ptr), type(type) { }
+
     htnode_ptr(htnode *node) {
         ptr.node = node;
         type = NODE_POINTER;
     }
+
     htnode_ptr(ahnode *bucket) {
         ptr.bucket = bucket;
         type = BUCKET_POINTER;
     }
 
+    /// Gets the status of the word flag
     bool word() {
         return type == NODE_POINTER ? ptr.node->word() : ptr.bucket->word;
     }
 
+    /// Sets the word flag
     void set_word(bool value) {
         if (type == NODE_POINTER) {
             ptr.node->set_word(value);
@@ -191,14 +192,19 @@ struct htnode_ptr {
         }
     }
 
+    /// Gets the character
     char ch() {
         return type == NODE_POINTER ? ptr.node->ch : ptr.bucket->ch;
     }
 
+    /// Gets the parent node
     htnode *parent() {
         return type == NODE_POINTER ? ptr.node->parent : ptr.bucket->parent;
     }
 };
+
+template <class T>
+class hat_trie;
 
 /**
  * Trie-based data structure for managing sorted strings.
@@ -431,8 +437,8 @@ class hat_trie<std::string> {
 
                 // Insert the new bucket into the trie's structure
                 at->parent = p;
-                p->_children[index].bucket = at;
-                p->_types[index] = BUCKET_POINTER;
+                p->children[index].bucket = at;
+                p->types[index] = BUCKET_POINTER;
                 ++pos;
             } else if (n.type == BUCKET_POINTER) {
                 // The container for s already exists.
@@ -499,11 +505,11 @@ class hat_trie<std::string> {
                 delete b->table;
                 delete b;
 
-                // Mark the container's slot in its parent's _children
+                // Mark the container's slot in its parent's children
                 // array as NULL.
                 for (int i = 0; i < HT_ALPHABET_SIZE; ++i) {
-                    if (current->_children[i].bucket == b) {
-                        current->_children[i].bucket = NULL;
+                    if (current->children[i].bucket == b) {
+                        current->children[i].bucket = NULL;
                         break;
                     }
                 }
@@ -543,11 +549,11 @@ class hat_trie<std::string> {
                 delete b->table;
                 delete b;
 
-                // Mark the container's slot in its parent's _children
+                // Mark the container's slot in its parent's children
                 // array as NULL.
                 for (int i = 0; i < HT_ALPHABET_SIZE; ++i) {
-                    if (current->_children[i].bucket == b) {
-                        current->_children[i].bucket = NULL;
+                    if (current->children[i].bucket == b) {
+                        current->children[i].bucket = NULL;
                         break;
                     }
                 }
@@ -880,8 +886,8 @@ class hat_trie<std::string> {
             }
             out << std::endl;
             for (int i = 0; i < HT_ALPHABET_SIZE; ++i) {
-                if (p->_children[i].bucket) {
-                    _print(out, htnode_ptr(p->_children[i], p->_types[i]),
+                if (p->children[i].bucket) {
+                    _print(out, htnode_ptr(p->children[i], p->types[i]),
                            space + "  ");
                 }
             }
@@ -912,13 +918,13 @@ class hat_trie<std::string> {
         child_ptr v;
         while (*s) {
             int index = *s;
-            v = p->_children[index];
+            v = p->children[index];
             if (v.bucket) {
                 ++s;
-                if (p->_types[index] == NODE_POINTER) {
+                if (p->types[index] == NODE_POINTER) {
                     // Keep moving down the trie structure.
                     p = v.node;
-                } else if (p->_types[index] == BUCKET_POINTER) {
+                } else if (p->types[index] == BUCKET_POINTER) {
                     // s should appear in the container v
                     return htnode_ptr(v, BUCKET_POINTER);
                 }
@@ -984,7 +990,7 @@ class hat_trie<std::string> {
             // children.
             bool children = false;
             for (int i = 0; i < HT_ALPHABET_SIZE && !children; ++i) {
-                children |= (bool)current->_children[i].bucket;
+                children |= (bool)current->children[i].bucket;
             }
 
             // If the current node doesn't have any children and isn't a
@@ -994,11 +1000,11 @@ class hat_trie<std::string> {
                 current = current->parent;
                 delete tmp;
 
-                // Mark the slot in current's parent's _children array
+                // Mark the slot in current's parent's children array
                 // as NULL.
                 for (int i = 0; i < HT_ALPHABET_SIZE; ++i) {
-                    if (current->_children[i].node == tmp) {
-                        current->_children[i].node = NULL;
+                    if (current->children[i].node == tmp) {
+                        current->children[i].node = NULL;
                         break;
                     }
                 }
@@ -1051,30 +1057,30 @@ class hat_trie<std::string> {
             int index = (*it)[0];
 
             // Do we need to make a new container?
-            if (result->_children[index].bucket == NULL) {
+            if (result->children[index].bucket == NULL) {
                 // Make a new container and position it under the new node.
                 ahnode *insertion = new ahnode();
                 insertion->table = new bucket(_ah_traits);
                 insertion->ch = (*it)[0];
                 insertion->parent = result;
-                result->_children[index].bucket = insertion;
-                result->_types[index] = BUCKET_POINTER;
+                result->children[index].bucket = insertion;
+                result->types[index] = BUCKET_POINTER;
 
                 // Set the new container's word field.
                 insertion->word = (*it)[1] == '\0';
             }
 
             // Insert the rest of the word into a container.
-            result->_children[index].bucket->table->insert(*it + 1);  /// TODO lolwut?
-            //((_container *)result->_children[index])->insert(*(it + 1));
+            result->children[index].bucket->table->insert(*it + 1);  /// TODO lolwut?
+            //((_container *)result->children[index])->insert(*(it + 1));
         }
 
         // Position the new node in the trie.
         htnode *p = htc->parent;
         result->parent = p;
         int index = htc->ch;
-        p->_children[index].node = result;
-        p->_types[index] = NODE_POINTER;
+        p->children[index].node = result;
+        p->types[index] = NODE_POINTER;
         delete htc->table;
         delete htc;
     }
@@ -1093,10 +1099,10 @@ class hat_trie<std::string> {
 
         // Search for the next child under this node starting at pos.
         for (int i = pos; i < HT_ALPHABET_SIZE && result.ptr.node == NULL; ++i) {
-            if (p->_children[i].node) {
+            if (p->children[i].node) {
                 // Move to the child we just found.
-                result.ptr.node = p->_children[i].node;
-                result.type = p->_types[i];
+                result.ptr.node = p->children[i].node;
+                result.type = p->types[i];
 
                 // Add this motion to the word.
                 word += result.ch();

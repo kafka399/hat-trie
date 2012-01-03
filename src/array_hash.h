@@ -120,15 +120,6 @@ public:
 template <class T>
 class array_hash { };
 
-#ifdef HAT_TRIE_H
-
-// forward declarations for hat trie
-template <class T>
-class hat_trie;
-class htnode;
-
-#endif
-
 /**
  * Hash table container for unsorted strings.
  */
