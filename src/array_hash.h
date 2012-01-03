@@ -120,17 +120,35 @@ public:
 template <class T>
 class array_hash { };
 
+#ifdef HAT_TRIE_H
+
+// forward declarations for hat trie
+template <class T>
+class hat_trie;
+class htnode;
+
+#endif
+
 /**
  * Hash table container for unsorted strings.
  */
 template <>
 class array_hash<std::string>
 {
-private:
+#ifdef HAT_TRIE_H
+    // Define some extra values for use by the HAT-trie
+  public:
+    char ch;
+    bool word;
+    htnode *parent;
+
+#endif
+
+  private:
     typedef uint16_t length_type;
     typedef uint32_t size_type;
 
-public:
+  public:
     class iterator;
     typedef std::reverse_iterator<iterator> reverse_iterator;
     typedef iterator const_iterator;
