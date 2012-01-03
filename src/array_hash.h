@@ -126,11 +126,11 @@ class array_hash { };
 template <>
 class array_hash<std::string>
 {
-private:
+  private:
     typedef uint16_t length_type;
     typedef uint32_t size_type;
 
-public:
+  public:
     class iterator;
     typedef std::reverse_iterator<iterator> reverse_iterator;
     typedef iterator const_iterator;

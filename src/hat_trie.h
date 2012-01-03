@@ -65,11 +65,16 @@
 
 #include <iostream>  // for std::ostream
 #include <string>
+#include <bitset>
 
 #include "array_hash.h"
-#include "hat_trie_node.h"
 
 namespace stx {
+
+/// number of distinct characters a hat trie can store
+const int HT_ALPHABET_SIZE = 128;
+
+typedef array_hash<std::string> bucket;
 
 /**
  * Provides a way to tune the performance characteristics of a HAT-trie.
@@ -86,8 +91,8 @@ namespace stx {
 class hat_trie_traits {
 
   public:
-    hat_trie_traits() {
-        burst_threshold = 16384;
+    hat_trie_traits(size_t burst_threshold = 16384) {
+        this->burst_threshold = burst_threshold;
     }
 
     /**
@@ -100,88 +105,9 @@ class hat_trie_traits {
      * Default 16384. Must be >= 0 and <= 32,768.
      */
     size_t burst_threshold;
-
 };
 
-/*
-hat_trie public interface:
-class hat_trie {
-
-  public:
-    // STL types
-    typedef size_t           size_type;
-    typedef std::string      key_type;
-    typedef key_type         value_type;
-    typedef key_type &       reference;
-    typedef const key_type & const_reference;
-    typedef std::less<char>  key_compare;
-    typedef key_compare      value_compare;
-
-    class iterator;
-    typedef iterator const_iterator;
-
-    // constructors and destructors
-    hat_trie(hat_trie_traits traits = hat_trie_traits());
-    template <class input_iterator>
-    hat_trie(const input_iterator &first, const input_iterator &last);
-    virtual ~hat_trie();
-
-    // accessors
-    bool exists(const key_type &record) const;
-    size_t count(const key_type &record) const;
-    bool empty() const;
-    key_compare key_comp() const;
-    size_type size() const;
-    value_compare value_comp() const;
-    void print(std::ostream &out = std::cout) const { _print(out, _root); }
-
-    // modifiers
-    void clear();
-
-    bool insert(const key_type &record);
-    bool insert(const char *word);
-    template <class input_iterator>
-    void insert(input_iterator first, const input_iterator &last);
-    iterator insert(const iterator &, const key_type &word);
-
-    void erase(const iterator &pos);
-    size_type erase(const key_type &word);
-    void erase(iterator first, const iterator &last);
-
-    // iterators
-    iterator begin() const;
-    iterator end() const;
-    iterator find(const key_type &s) const;
-
-    // utilities
-    void swap(_self &rhs);
-
-    // comparison operators
-    friend bool operator<(const _self &lhs, const _self &rhs);
-    friend bool operator>(const _self &lhs, const _self &rhs);
-    friend bool operator<=(const _self &lhs, const _self &rhs);
-    friend bool operator>=(const _self &lhs, const _self &rhs);
-    friend bool operator==(const _self &lhs, const _self &rhs);
-    friend bool operator!=(const _self &lhs, const _self &rhs);
-
-    class iterator {
-
-      public:
-        iterator();
-
-        iterator operator++(int);
-        iterator &operator++();
-        iterator operator--(int);
-        iterator &operator--();
-
-        key_type operator*() const;
-        bool operator==(const iterator &rhs);
-        bool operator!=(const iterator &rhs);
-
-    };
-};
-*/
-
+/// Gets a reference to the string in the parameter
 template <class T> const std::string &ref(const T &t);
 
 const std::string &ref(const std::string &s) {
@@ -193,48 +119,107 @@ const std::string &ref(const std::pair<std::string, T> &p) {
     return p.first;
 }
 
+// forward declarations
+struct htnode;
+struct ahnode;
+
+/// Consolidates storage between bucket pointers and node pointers
+union child_ptr {
+    ahnode *bucket;
+    htnode *node;
+};
+
+/// Stores information required by each hat trie node
+struct htnode {
+    htnode(char ch = '\0') : ch(ch), parent(NULL) {
+        memset(children, NULL, sizeof(child_ptr) * HT_ALPHABET_SIZE);
+    }
+
+    /// Getter for the word field
+    bool word() const { return types[HT_ALPHABET_SIZE]; }
+
+    /// Setter for the word field
+    void set_word(bool b) { types[HT_ALPHABET_SIZE] = b; }
+
+    char ch;
+    htnode *parent;
+    std::bitset<HT_ALPHABET_SIZE + 1> types;  // +1 is an end of word flag
+    child_ptr children[HT_ALPHABET_SIZE];  // pointers to children
+};
+
+/// Stores information required by each array hash node
+struct ahnode {
+    bucket *table;
+    char ch;
+    bool word;
+    htnode *parent;
+
+    ahnode() : table(NULL), ch('\0'), word(false), parent(NULL) { }
+};
+
+/// valid values for an htnode_ptr
+enum { NODE_POINTER = 0, BUCKET_POINTER = 1 };
+
+struct htnode_ptr {
+    child_ptr ptr;  // pointer to a node in the trie
+    uint8_t type;   // type of the pointer
+
+    htnode_ptr() { ptr.node = NULL; }
+
+    htnode_ptr(child_ptr ptr, uint8_t type) : ptr(ptr), type(type) { }
+
+    htnode_ptr(htnode *node) {
+        ptr.node = node;
+        type = NODE_POINTER;
+    }
+
+    htnode_ptr(ahnode *bucket) {
+        ptr.bucket = bucket;
+        type = BUCKET_POINTER;
+    }
+
+    /// Gets the status of the word flag
+    bool word() {
+        return type == NODE_POINTER ? ptr.node->word() : ptr.bucket->word;
+    }
+
+    /// Sets the word flag
+    void set_word(bool value) {
+        if (type == NODE_POINTER) {
+            ptr.node->set_word(value);
+        } else if (type == BUCKET_POINTER) {
+            ptr.bucket->word = value;
+        }
+    }
+
+    /// Gets the character
+    char ch() {
+        return type == NODE_POINTER ? ptr.node->ch : ptr.bucket->ch;
+    }
+
+    /// Gets the parent node
+    htnode *parent() {
+        return type == NODE_POINTER ? ptr.node->parent : ptr.bucket->parent;
+    }
+};
+
+template <class T>
+class hat_trie;
+
 /**
  * Trie-based data structure for managing sorted strings.
  */
-template <class T>
-class hat_trie {
+template <>
+class hat_trie<std::string> {
 
   private:
-    // types node_base values could point to. This is stored in
-    // one bit, so the only valid values are 0 and 1
-    enum { NODE_POINTER = 0, CONTAINER_POINTER = 1 };
-
     typedef hat_trie _self;
-    typedef hat_trie_node _node;
-    typedef hat_trie_container _container;
-    typedef hat_trie_node_base _node_base;
-
-    // pairs node_base pointers with their type (whether they point to
-    // nodes or containers)
-    class _node_pointer {
-
-      public:
-        unsigned char type;
-        _node_base *p;
-
-        _node_pointer(unsigned char type = 0, _node_base *p = NULL) :
-                type(type), p(p) { }
-
-        // Conversion constructor from node * to _node_pointer type
-        _node_pointer(_node *n) : type(NODE_POINTER), p(n) { }
-
-        // comparison operators
-        bool operator==(const _node_pointer &rhs)
-        { return p == rhs.p; }
-        bool operator!=(const _node_pointer &rhs)
-        { return !operator==(rhs); }
-    };
 
   public:
     // STL types
     typedef size_t           size_type;
     typedef std::string      key_type;
-    typedef T                value_type;
+    typedef std::string      value_type;
     typedef std::less<char>  key_compare;
 
     class iterator;
@@ -287,17 +272,16 @@ class hat_trie {
     bool exists(const key_type &word) const {
         // Locate s in the trie's structure.
         const char *ps = word.c_str();
-        _node_pointer n = _locate(ps);
+        htnode_ptr n = _locate(ps);
 
         if (*ps == '\0') {
             // The string was found in the trie's structure
-            return n.p->word();
+            return n.word();
         }
-        if (n.type == CONTAINER_POINTER) {
+        if (n.type == BUCKET_POINTER) {
             // Determine whether the remainder of the string is inside
             // a container or not
-            _container *c = (_container * )n.p;
-            return c->_store.find(ps) != c->_store.end();
+            return n.ptr.bucket->table->exists(ps);
         }
         return false;
     }
@@ -379,7 +363,9 @@ class hat_trie {
      *
      * @param out  output stream to print to. cout by default
      */
-    void print(std::ostream &out = std::cout) const { _print(out, _root); }
+    void print(std::ostream &out = std::cout) const {
+        _print(out, _root);
+    }
 
     /**
      * Removes all the elements in the trie.
@@ -421,12 +407,12 @@ class hat_trie {
      */
     bool insert(const char *word) {
         const char *pos = word;
-        _node_pointer n = _locate(pos);
+        htnode_ptr n = _locate(pos);
         if (*pos == '\0') {
             // word was found in the trie's structure. Mark its location
             // as the end of a word.
-            if (n.p->word() == false) {
-                n.p->set_word(true);
+            if (n.word() == false) {
+                n.set_word(true);
                 ++_size;
                 return true;
             }
@@ -436,27 +422,31 @@ class hat_trie {
 
         } else {
             // word was not found in the trie's structure. Either make a
-            // new container for it or insert it into an already
-            // existing container.
-            _container *c = NULL;
+            // new bucket for it or insert it into an already
+            // existing bucket
+            ahnode *at = NULL;
             if (n.type == NODE_POINTER) {
-                // Make a new container for word.
-                _node *p = (_node *) n.p;
+                // Make a new bucket for word
+                htnode *p = n.ptr.node;
                 int index = *pos;
-                c = new _container(index, _ah_traits);
 
-                // Insert the new container into the trie's structure.
-                c->_parent = p;
-                p->_children[index] = c;
-                p->_types[index] = CONTAINER_POINTER;
+                at = new ahnode();
+                at->table = new bucket(_ah_traits);
+                at->ch = index;
+                at->word = false;
+
+                // Insert the new bucket into the trie's structure
+                at->parent = p;
+                p->children[index].bucket = at;
+                p->types[index] = BUCKET_POINTER;
                 ++pos;
-            } else if (n.type == CONTAINER_POINTER) {
+            } else if (n.type == BUCKET_POINTER) {
                 // The container for s already exists.
-                c = (_container *) n.p;
+                at = n.ptr.bucket;
             }
 
             // Insert the rest of word into the container.
-            return _insert(c, pos);
+            return _insert(at, pos);
         }
     }
 
@@ -501,31 +491,32 @@ class hat_trie {
      *             that exists somewhere in the trie.
      */
     void erase(const iterator &pos) {
-        _node *current = NULL;
-        if (pos._position.type == CONTAINER_POINTER) {
-            _container *c = (_container *)pos._position.p;
+        htnode *current = NULL;
+        if (pos._position.type == BUCKET_POINTER) {
+            ahnode *b = pos._position.ptr.bucket;
             if (pos._word) {
-                c->erase("");
+                b->word = false;
             } else {
-                c->erase(pos._container_iterator);
+                b->table->erase(pos._container_iterator);
             }
 
-            if (c->size() == 0 && c->word() == false) {
-                current = c->_parent;
-                delete c;
+            if (b->table->size() == 0 && b->word == false) {
+                current = b->parent;
+                delete b->table;
+                delete b;
 
-                // Mark the container's slot in its parent's _children
+                // Mark the container's slot in its parent's children
                 // array as NULL.
                 for (int i = 0; i < HT_ALPHABET_SIZE; ++i) {
-                    if (current->_children[i] == c) {
-                        current->_children[i] = NULL;
+                    if (current->children[i].bucket == b) {
+                        current->children[i].bucket = NULL;
                         break;
                     }
                 }
             }
 
         } else {
-            current = (_node *) pos._position.p;
+            current = pos._position.ptr.node;
             current->set_word(false);
         }
         --_size;
@@ -543,25 +534,26 @@ class hat_trie {
      */
     size_type erase(const key_type &key) {
         const char *ps = ref(key).c_str();
-        _node_pointer n = _locate(ps);
-        _node *current = NULL;
+        htnode_ptr n = _locate(ps);
+        htnode *current = NULL;
         int result = 0;
 
-        if (n.type == CONTAINER_POINTER) {
+        if (n.type == BUCKET_POINTER) {
             // The word is either in a container or is represented by the
             // container itself.
-            _container *c = (_container *)n.p;
-            result = c->erase(ps);
-            if (result > 0 && c->size() == 0 && c->word() == false) {
+            ahnode *b = n.ptr.bucket;
+            result = b->table->erase(ps);
+            if (result > 0 && b->table->size() == 0 && b->word == false) {
                 // Erase the container.
-                current = c->_parent;
-                delete c;
+                current = b->parent;
+                delete b->table;
+                delete b;
 
-                // Mark the container's slot in its parent's _children
+                // Mark the container's slot in its parent's children
                 // array as NULL.
                 for (int i = 0; i < HT_ALPHABET_SIZE; ++i) {
-                    if (current->_children[i] == c) {
-                        current->_children[i] = NULL;
+                    if (current->children[i].bucket == b) {
+                        current->children[i].bucket = NULL;
                         break;
                     }
                 }
@@ -570,7 +562,7 @@ class hat_trie {
         } else {
             // The word is represented by a node in the trie. Set the word
             // field on the node to false.
-            current = (_node *) n.p;
+            current = n.ptr.node;
             current->set_word(false);
             result = 1;
         }
@@ -635,12 +627,12 @@ class hat_trie {
     iterator find(const key_type &key) const {
         const std::string &word = ref(key);
         const char *ps = word.c_str();
-        _node_pointer n = _locate(ps);
+        htnode_ptr n = _locate(ps);
 
         iterator result;
         if (*ps == '\0') {
             // The word is in the trie at the node returned by _locate
-            if (n.p->word()) {
+            if (n.word()) {
                 result = n;
                 result._cached_word = std::string(word.c_str());
             } else {
@@ -648,11 +640,11 @@ class hat_trie {
                 result = end();
             }
         } else {
-            if (n.type == CONTAINER_POINTER) {
+            if (n.type == BUCKET_POINTER) {
                 // The word could be in this container
-                _container *c = (_container *)n.p;
-                array_hash<std::string>::iterator it = c->_store.find(ps);
-                if (it != c->_store.end()) {
+                ahnode *b = n.ptr.bucket;
+                bucket::iterator it = b->table->find(ps);
+                if (it != b->table->end()) {
                     // The word is in the trie
                     result._position = n;
                     result._word = false;
@@ -716,7 +708,7 @@ class hat_trie {
          * @return  self-reference
          */
         iterator &operator++() {
-            if (_position.type == CONTAINER_POINTER) {
+            if (_position.type == BUCKET_POINTER) {
                 // If word is set, then this container represents a word as
                 // well as storing words. The first iteration into the
                 // container is over the word represented by the container.
@@ -729,8 +721,7 @@ class hat_trie {
                 }
 
                 // If we aren't at the end of the container, stop here.
-                if (_container_iterator !=
-                        ((_container *) _position.p)->_store.end()) {
+                if (_container_iterator != _position.ptr.bucket->table->end()) {
                     return *this;
                 }
             }
@@ -780,7 +771,7 @@ class hat_trie {
                 // Print the word that has been cached over the trie traversal.
                 return _cached_word;
 
-            } else if (_position.type == CONTAINER_POINTER) {
+            } else if (_position.type == BUCKET_POINTER) {
                 // Pull a word from the container.
                 return _cached_word + *_container_iterator;
             }
@@ -799,7 +790,7 @@ class hat_trie {
         bool operator==(const iterator &rhs) {
             // TODO does iterator comparison need to be on more than
             // just pointer?
-            return _position == rhs._position;
+            return _position.ptr.bucket == rhs._position.ptr.bucket;
         }
 
         /**
@@ -814,10 +805,10 @@ class hat_trie {
 
       private:
         // Current position in the trie
-        _node_pointer _position;
+        htnode_ptr _position;
 
         // Internal iterator across container types
-        typename array_hash<key_type>::iterator _container_iterator;
+        typename bucket::iterator _container_iterator;
         bool _word;
 
         // Caches the word as we move up and down the trie and
@@ -831,7 +822,7 @@ class hat_trie {
          * this function ensures that the iterator's internal iterator
          * across the elements in the container is properly initialized.
          */
-        iterator(_node_pointer n) {
+        iterator(htnode_ptr n) {
             operator=(n);
         }
 
@@ -842,12 +833,11 @@ class hat_trie {
          * function ensures that the iterator's internal iterator across
          * the elements in the container is properly initialized.
          */
-        iterator &operator=(_node_pointer n) {
+        iterator &operator=(htnode_ptr n) {
             this->_position = n;
-            if (_position.type == CONTAINER_POINTER) {
-                _container_iterator =
-                        ((_container *) _position.p)->_store.begin();
-                _word = _position.p->word();
+            if (_position.type == BUCKET_POINTER) {
+                _container_iterator = _position.ptr.bucket->table->begin();
+                _word = _position.ptr.bucket->word;
             }
             return *this;
         }
@@ -857,7 +847,7 @@ class hat_trie {
   private:
     hat_trie_traits _traits;
     array_hash_traits _ah_traits;
-    _node *_root;  // pointer to the root of the trie
+    htnode *_root;  // pointer to the root of the trie
     size_type _size;  // number of distinct elements in the trie
 
     /**
@@ -870,35 +860,35 @@ class hat_trie {
      * @param space  spaces to indent this level of the trie
      */
     void _print(std::ostream &out,
-                const _node_pointer &n,
+                const htnode_ptr &n,
                 const std::string &space = "") const {
-        if (n.type == CONTAINER_POINTER) {
-            _container *c = (_container *) n.p;
-            if (c->ch() != '\0') {
-                out << space << c->ch() << " *";
-                if (c->word()) {
+        if (n.type == BUCKET_POINTER) {
+            ahnode *b = n.ptr.bucket;
+            if (b->ch != '\0') {
+                out << space << b->ch << " *";
+                if (b->word) {
                     out << "~";
                 }
                 out << std::endl;
             }
 
-            typename array_hash<key_type>::iterator it;
-            it = c->_store.begin();
-            for (it = c->_store.begin(); it != c->_store.end(); ++it) {
+            typename bucket::iterator it;
+            it = b->table->begin();
+            for (it = b->table->begin(); it != b->table->end(); ++it) {
                 out << space + "  " << *it << " ~" << std::endl;
             }
 
         } else if (n.type == NODE_POINTER) {
-            _node *p = (_node *) n.p;
-            out << space << p->ch();
+            htnode *p = n.ptr.node;
+            out << space << p->ch;
             if (p->word()) {
                 out << " ~";
             }
             out << std::endl;
             for (int i = 0; i < HT_ALPHABET_SIZE; ++i) {
-                if (p->_children[i]) {
-                    _print(out, _node_pointer(p->_types[i],
-                           p->_children[i]), space + "  ");
+                if (p->children[i].bucket) {
+                    _print(out, htnode_ptr(p->children[i], p->types[i]),
+                           space + "  ");
                 }
             }
         }
@@ -910,7 +900,7 @@ class hat_trie {
      */
     void _init() {
         _size = 0;
-        _root = new _node();
+        _root = new htnode();
     }
 
     /**
@@ -920,33 +910,33 @@ class hat_trie {
      *           <code>*s = '\0'</code>, @a s is in the trie part of this
      *           data structure. If not, @a s is either completed in a
      *           container or is not in the trie at all.
-     * @return  a _node_pointer to the location where @a s should appear
+     * @return  a htnode_ptr to the location where @a s should appear
      *          in the trie
      */
-    _node_pointer _locate(const char *&s) const {
-        _node *p = _root;
-        _node_base *v = NULL;
+    htnode_ptr _locate(const char *&s) const {
+        htnode *p = _root;
+        child_ptr v;
         while (*s) {
             int index = *s;
-            v = p->_children[index];
-            if (v) {
+            v = p->children[index];
+            if (v.bucket) {
                 ++s;
-                if (p->_types[index] == NODE_POINTER) {
+                if (p->types[index] == NODE_POINTER) {
                     // Keep moving down the trie structure.
-                    p = (_node *) v;
-                } else if (p->_types[index] == CONTAINER_POINTER) {
+                    p = v.node;
+                } else if (p->types[index] == BUCKET_POINTER) {
                     // s should appear in the container v
-                    return _node_pointer(CONTAINER_POINTER, v);
+                    return htnode_ptr(v, BUCKET_POINTER);
                 }
             } else {
                 // s should appear underneath this node
-                return _node_pointer(NODE_POINTER, p);
+                return htnode_ptr(p);
             }
         }
 
         // If we get here, no container was found that could have held
         // s, meaning node n represents s in the trie.
-        return _node_pointer(NODE_POINTER, p);
+        return htnode_ptr(p);
     }
 
     /**
@@ -962,14 +952,21 @@ class hat_trie {
      *      true if @a s is successfully inserted into @a htc, false
      *      otherwise
      */
-    bool _insert(_container *htc, const char *s) {
+    bool _insert(ahnode *htc, const char *s) {
         // Try to insert s into the container.
-        if (htc->insert(s)) {
+        bool result;
+        if (*s == '\0') {
+            result = !htc->word;
+            htc->word = true;
+        } else {
+            result = htc->table->insert(s);
+        }
+
+        if (result) {
             ++_size;
             if (_traits.burst_threshold > 0 &&
-                    htc->size() > _traits.burst_threshold) {
-                // The container has too many strings in it; burst the
-                // container into a node.
+                    htc->table->size() > _traits.burst_threshold) {
+                // burst the bucket into nodes
                 _burst(htc);
             }
             return true;
@@ -985,7 +982,7 @@ class hat_trie {
      *
      * @param current  node to start from
      */
-    void _erase_empty_nodes(_node *current) {
+    void _erase_empty_nodes(htnode *current) {
         while (current && current != _root && current->word() == false) {
             // Erase all the nodes that aren't words and don't
             // have any children above the erased node or container.
@@ -993,21 +990,21 @@ class hat_trie {
             // children.
             bool children = false;
             for (int i = 0; i < HT_ALPHABET_SIZE && !children; ++i) {
-                children |= (bool)current->_children[i];
+                children |= (bool)current->children[i].bucket;
             }
 
             // If the current node doesn't have any children and isn't a
             // word, delete it.
             if (children == false) {
-                _node *tmp = current;
-                current = current->_parent;
+                htnode *tmp = current;
+                current = current->parent;
                 delete tmp;
 
-                // Mark the slot in current's parent's _children array
+                // Mark the slot in current's parent's children array
                 // as NULL.
                 for (int i = 0; i < HT_ALPHABET_SIZE; ++i) {
-                    if (current->_children[i] == tmp) {
-                        current->_children[i] = NULL;
+                    if (current->children[i].node == tmp) {
+                        current->children[i].node = NULL;
                         break;
                     }
                 }
@@ -1048,39 +1045,43 @@ class hat_trie {
      *
      * @param htc  container to burst
      */
-    void _burst(_container *htc) {
+    void _burst(ahnode *htc) {
         // Construct a new node.
-        _node *result = new _node(htc->ch());
-        result->set_word(htc->word());
+        htnode *result = new htnode(htc->ch);
+        result->set_word(htc->word);
 
         // Make a set of containers for the data in the old container and
         // add them to the new node.
-        typename array_hash<key_type>::iterator it;
-        for (it = htc->_store.begin(); it != htc->_store.end(); ++it) {
+        typename bucket::iterator it;
+        for (it = htc->table->begin(); it != htc->table->end(); ++it) {
             int index = (*it)[0];
 
             // Do we need to make a new container?
-            if (result->_children[index] == NULL) {
+            if (result->children[index].bucket == NULL) {
                 // Make a new container and position it under the new node.
-                _container *insertion = new _container((*it)[0], _ah_traits);
-                insertion->_parent = result;
-                result->_children[index] = insertion;
-                result->_types[index] = CONTAINER_POINTER;
+                ahnode *insertion = new ahnode();
+                insertion->table = new bucket(_ah_traits);
+                insertion->ch = (*it)[0];
+                insertion->parent = result;
+                result->children[index].bucket = insertion;
+                result->types[index] = BUCKET_POINTER;
 
                 // Set the new container's word field.
-                insertion->set_word(((*it)[1] == '\0'));
+                insertion->word = (*it)[1] == '\0';
             }
 
             // Insert the rest of the word into a container.
-            ((_container *)result->_children[index])->insert(*it + 1);
+            result->children[index].bucket->table->insert(*it + 1);  /// TODO lolwut?
+            //((_container *)result->children[index])->insert(*(it + 1));
         }
 
         // Position the new node in the trie.
-        _node *p = htc->_parent;
-        result->_parent = p;
-        int index = htc->ch();
-        p->_children[index] = result;
-        p->_types[index] = NODE_POINTER;
+        htnode *p = htc->parent;
+        result->parent = p;
+        int index = htc->ch;
+        p->children[index].node = result;
+        p->types[index] = NODE_POINTER;
+        delete htc->table;
         delete htc;
     }
 
@@ -1093,18 +1094,18 @@ class hat_trie {
      * @return  a pointer to the next child under this node starting from
      *          @a pos, or NULL if this node has no children
      */
-    static _node_pointer _next_child(_node *p, size_type pos, key_type &word) {
-        _node_pointer result;
+    static htnode_ptr _next_child(htnode *p, size_type pos, key_type &word) {
+        htnode_ptr result;
 
         // Search for the next child under this node starting at pos.
-        for (int i = pos; i < HT_ALPHABET_SIZE && result.p == NULL; ++i) {
-            if (p->_children[i]) {
+        for (int i = pos; i < HT_ALPHABET_SIZE && result.ptr.node == NULL; ++i) {
+            if (p->children[i].node) {
                 // Move to the child we just found.
-                result.p = p->_children[i];
-                result.type = p->_types[i];
+                result.ptr.node = p->children[i].node;
+                result.type = p->types[i];
 
                 // Add this motion to the word.
-                word += result.p->ch();
+                word += result.ch();
             }
         }
         return result;
@@ -1120,27 +1121,29 @@ class hat_trie {
      * @param word  cached word in the trie traversal
      * @return  a pointer to the next node in the trie that marks a word
      */
-    static _node_pointer _next_word(_node_pointer n, key_type &word) {
+    static htnode_ptr _next_word(htnode_ptr n, key_type &word) {
         // Stop early if we get a NULL pointer.
-        if (n.p == NULL) { return _node_pointer(); }
+        if (n.ptr.node == NULL) { return htnode_ptr(); }
 
-        _node_pointer result;
+        htnode_ptr result;
         if (n.type == NODE_POINTER) {
             // Move to the leftmost child under this node.
-            result = _next_child((_node *) n.p, 0, word);
+            result = _next_child(n.ptr.node, 0, word);
         }
 
-        if (result.p == NULL) {
+        if (result.ptr.node == NULL) {
             // This node has no children. Move up in the trie until
             // we can move right.
-            _node_pointer next;
+            htnode_ptr next;
             int pos;
-            while (n.p->_parent && next.p == NULL) {
+            htnode *parent = n.parent();
+            while (parent && next.ptr.node == NULL) {
                 // Looks like we can't move to the right. Move up a level
                 // in the trie and try again.
                 pos = _pop_back(word) + 1;
-                next = _next_child(n.p->_parent, pos, word);
-                n = n.p->_parent;
+                next = _next_child(parent, pos, word);
+                n = parent;
+                parent = n.ptr.node->parent;
             }
             result = next;
         }
@@ -1157,11 +1160,11 @@ class hat_trie {
      * @return  lexicographically least node from @a n. This function
      *          may return @a n itself
      */
-    static _node_pointer _least(_node_pointer n, key_type &word) {
-        while (n.p && n.p->word() == false && n.type == NODE_POINTER) {
+    static htnode_ptr _least(htnode_ptr n, key_type &word) {
+        while (n.ptr.node && n.word() == false && n.type == NODE_POINTER) {
             // Find the leftmost child of this node and move in
             // that direction.
-            n = _next_child((_node *) n.p, 0, word);
+            n = _next_child(n.ptr.node, 0, word);
         }
         return n;
     }
