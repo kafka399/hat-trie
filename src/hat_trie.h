@@ -129,7 +129,7 @@ union child_ptr {
     htnode *node;
 };
 
-/// Stores information required by each hat trie node
+// Stores information required by each hat trie node
 struct htnode {
     htnode(char ch = '\0') : ch(ch), parent(NULL) {
         memset(children, NULL, sizeof(child_ptr) * HT_ALPHABET_SIZE);
@@ -147,7 +147,7 @@ struct htnode {
     child_ptr children[HT_ALPHABET_SIZE];  // pointers to children
 };
 
-/// Stores information required by each array hash node
+// Stores information required by each array hash node
 struct ahnode {
     bucket *table;
     char ch;
@@ -157,7 +157,7 @@ struct ahnode {
     ahnode() : table(NULL), ch('\0'), word(false), parent(NULL) { }
 };
 
-/// valid values for an htnode_ptr
+// valid values for an htnode_ptr
 enum { NODE_POINTER = 0, BUCKET_POINTER = 1 };
 
 struct htnode_ptr {
@@ -178,12 +178,12 @@ struct htnode_ptr {
         type = BUCKET_POINTER;
     }
 
-    /// Gets the status of the word flag
+    // Gets the status of the word flag
     bool word() {
         return type == NODE_POINTER ? ptr.node->word() : ptr.bucket->word;
     }
 
-    /// Sets the word flag
+    // Sets the word flag
     void set_word(bool value) {
         if (type == NODE_POINTER) {
             ptr.node->set_word(value);
@@ -192,12 +192,12 @@ struct htnode_ptr {
         }
     }
 
-    /// Gets the character
+    // Gets the character
     char ch() {
         return type == NODE_POINTER ? ptr.node->ch : ptr.bucket->ch;
     }
 
-    /// Gets the parent node
+    // Gets the parent node
     htnode *parent() {
         return type == NODE_POINTER ? ptr.node->parent : ptr.bucket->parent;
     }
