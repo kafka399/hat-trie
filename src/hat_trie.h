@@ -77,16 +77,16 @@ const int HT_ALPHABET_SIZE = 128;
 typedef array_hash<std::string> bucket;
 
 /**
- * Provides a way to tune the performance characteristics of a HAT-trie.
+ * @brief Provides a way to tune the performance characteristics of a HAT-trie.
  *
- * \subsection Usage
- * \code
+ * @subsection Usage
+ * @code
  * hat_trie_traits traits;
  * traits.burst_threshold = 8192;
  * hat_set<string> rawr(traits);
  * rawr.insert(...);
  * ...
- * \endcode
+ * @endcode
  */
 class hat_trie_traits {
 
@@ -123,7 +123,7 @@ const std::string &ref(const std::pair<std::string, T> &p) {
 struct htnode;
 struct ahnode;
 
-/// Consolidates storage between bucket pointers and node pointers
+// Consolidates storage between bucket pointers and node pointers
 union child_ptr {
     ahnode *bucket;
     htnode *node;
@@ -206,14 +206,10 @@ struct htnode_ptr {
 template <class T>
 class hat_trie;
 
-/**
- * Trie-based data structure for managing sorted strings.
- */
+/// Trie-based data structure for managing sorted strings. Don't use this
+/// class directly. Use hat_set or hat_map
 template <>
 class hat_trie<std::string> {
-
-  private:
-    typedef hat_trie _self;
 
   public:
     // STL types
@@ -679,26 +675,19 @@ class hat_trie<std::string> {
      * Swaps the data in two hat_trie objects.
      *
      * This function operates in constant time because all it needs to do
-     * is swap two primitive values.
+     * is swap a few primitives.
      *
      * @param rhs  hat_trie object to swap data with
      */
-    void swap(_self &rhs) {
+    void swap(hat_trie &rhs) {
         using std::swap;
         swap(_root, rhs._root);
         swap(_size, rhs._size);
         swap(_traits, rhs._traits);
     }
 
-    // TODO explain all the state an iterator maintains
-    //     TODO is this the best way to solve this problem?
-    //      pros - done automatically so programmer won't forget
-    //             simple code
-    //      cons - not intuitive because assigning to a position in
-    //             the trie would intuitively affect all the state
-    //             in the iterator
     /**
-     * Iterates over the elements in a HAT-trie.
+     * @brief Iterates over the elements in a HAT-trie
      *
      * A HAT-trie iterator has to maintain a lot of state to determine
      * its current position. The code to construct iterators is pretty

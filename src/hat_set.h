@@ -26,11 +26,10 @@
 
 namespace stx {
 
-/// Forward declaration of the hat_set class.
 template <class T> class hat_set;
 
 /**
- * HAT-trie set class that implements (most of) the STL set interface.
+ * @brief HAT-trie based set that implements most of the STL set interface
  *
  * Note: the only available template parameter is std::string. Using
  * any other template parameter will result in a compile-time error.
@@ -54,6 +53,8 @@ class hat_set<std::string> {
     /**
      * Default constructor.
      *
+     * O(1)
+     *
      * @param traits     hat trie customization traits
      * @param ah_traits  array hash customization traits
      */
@@ -72,6 +73,8 @@ class hat_set<std::string> {
     /**
      * Builds a HAT set from the data in [first, last).
      *
+     * O(1)
+     *
      * @param first, last  iterators specifying a range of elements to
      *                     initialize the tree with
      */
@@ -85,6 +88,8 @@ class hat_set<std::string> {
     /**
      * Searches for a word in the trie.
      *
+     * O(m)  m = length of the string
+     *
      * @param word  word to search for
      * @return  true iff @a word is in the trie
      */
@@ -97,6 +102,8 @@ class hat_set<std::string> {
      *
      * In set containers, this number will either be 1 or 0.
      *
+     * O(m)  m = length of the string
+     *
      * @param word  word to search for
      * @return  number of times @a word appears in the trie
      */
@@ -107,6 +114,8 @@ class hat_set<std::string> {
     /**
      * Determines whether this set is empty.
      *
+     * O(1)
+     *
      * @return  true iff the container has no data
      */
     bool empty() const {
@@ -115,6 +124,8 @@ class hat_set<std::string> {
 
     /**
      * Gets the number of elements in the trie.
+     *
+     * O(1)
      *
      * @return  number of elements in the trie
      */
@@ -125,6 +136,8 @@ class hat_set<std::string> {
     /**
      * Gets a const reference to the traits associated with this trie.
      *
+     * O(1)
+     *
      * @return  traits associated with this trie
      */
     const hat_trie_traits &traits() const {
@@ -134,6 +147,8 @@ class hat_set<std::string> {
     /**
      * Gets the array hash traits associated with the hash tables in
      * this trie.
+     *
+     * O(1)
      *
      * @return  array hash traits associated with this trie
      */
@@ -152,11 +167,26 @@ class hat_set<std::string> {
      * Inserts a word into the trie.
      *
      * According to the standard, this function should return a
-     * pair<iterator, bool> rather than just a bool. However, timing tests
-     * on both versions of this function showed significant slowdown on
-     * the pair-returning version -- several orders of magnitude. We believe
-     * deviating from the standard in the face of such significant slowdown
-     * is a worthy sacrifice for blazing fast insertion times.
+     * pair<iterator, bool> rather than just a bool. The lack of a
+     * pair returning insert function is intentional because a pair
+     * returning insert takes twice as long as the bool version
+     * implemented now. The slowdown is significant enough to make
+     * insertion time comparable to an STL set (red-black tree), whuch
+     * is unacceptable for a high-performance data structure like a
+     * HAT-trie. Calling insert() then find() is the intended solution.
+     *
+     * I consider this acceptable because iterators are unstable. Like
+     * STL iterators, HAT-trie iterators are invalidated on any call to
+     * insert or erase because memory may be rearranged by a burst
+     * operation. Additionally, in a typical scenario, keys aren't operated
+     * on as they are inserted. Insertion and operation occur in two
+     * different passes, meaning any iterators collected during the
+     * insertion pass would be invalidated by the start of the operation
+     * pass anyway.
+     *
+     * Feel free to notify me if you disagree.
+     *
+     * O(m)  m = length of the string
      *
      * @param word  word to insert
      *
@@ -175,6 +205,8 @@ class hat_set<std::string> {
      * with a C-string invokes an expensive string copy operation if
      * the string version is the only function provided.
      *
+     * O(m)  m = length of the string
+     *
      * @param word  word to insert
      * @return  true if @a word is inserted into the trie, false if @a word
      *          was already in the trie
@@ -185,6 +217,8 @@ class hat_set<std::string> {
 
     /**
      * Inserts several words into the trie.
+     *
+     * O(n)  n = elements in [first, last)
      *
      * @param first, last  iterators specifying a range of words to add
      *                     to the trie. All words in the range
@@ -203,6 +237,8 @@ class hat_set<std::string> {
      * gain is unachievable in a HAT-trie because the time required to
      * verify that @a position points to the right place is just as
      * expensive as a regular insert operation.
+     *
+     * O(m)  m = length of the string
      *
      * @param pos   unused
      * @param word  word to insert
@@ -236,6 +272,8 @@ class hat_set<std::string> {
      * If there are no elements in the trie, the iterator pointing to
      * trie.end() is returned.
      *
+     * O(1)
+     *
      * @return  iterator to the first element in the trie
      */
     iterator begin() const {
@@ -245,6 +283,8 @@ class hat_set<std::string> {
     /**
      * Gets an iterator to one past the last element in the trie.
      *
+     * O(1)
+     *
      * @return iterator to one past the last element in the trie
      */
     iterator end() const {
@@ -253,6 +293,8 @@ class hat_set<std::string> {
 
     /**
      * Searches for @a word in the trie.
+     *
+     * O(m)  m = length of the string
      *
      * @param word  word to search for
      * @return  iterator to @a word in the trie, or @a end() if @a word
@@ -264,6 +306,8 @@ class hat_set<std::string> {
 
     /**
      * Swaps the data in two hat_set objects.
+     *
+     * O(1)
      *
      * @param rhs  hat_set object to swap data with
      */

@@ -30,18 +30,18 @@
 namespace stx {
 
 /**
- * Provides a way to tune the performance characteristics of an
+ * @brief Provides a way to tune the performance characteristics of an
  * array hash table.
  *
- * \subsection Usage
- * \code
+ * @subsection Usage
+ * @code
  * array_hash_traits traits;
  * traits.slot_count = 256;
  * traits.allocation_chunk_size = 64;
  * hat_set<string> rawr(traits);
  * rawr.insert(...);
  * ...
- * \endcode
+ * @endcode
  */
 class array_hash_traits
 {
@@ -76,53 +76,12 @@ public:
      * Default 32. Must be non-negative.
      */
     int allocation_chunk_size;
-
 };
 
-/*
- array-hash public interface:
- class array_hash {
-
- public:
- array_hash();
- ~array_hash();
-
- // accessors
- bool exists(const char *str) const;
- iterator find(const char *str) const;
- size_t size() const;
-
- // modifiers
- bool insert(const char *str);
- void erase(const char *str);
- void erase(iterator);
-
- iterator begin() const;
- iterator end() const;
-
- class iterator {
-
- public:
- iterator();
- iterator(const iterator& rhs);
-
- iterator& operator++();
- iterator& operator--();
-
- const char *operator*() const;
- bool operator==(const iterator& rhs);
- bool operator!=(const iterator& rhs);
-
- };
- };
- */
-
 template <class T>
-class array_hash { };
+class array_hash;
 
-/**
- * Hash table container for unsorted strings.
- */
+/// Time- and space-efficient hash table for strings
 template <>
 class array_hash<std::string>
 {
