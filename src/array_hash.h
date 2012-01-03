@@ -27,6 +27,10 @@
 #include <utility>
 #include <iterator>
 
+/// TODO
+#include <iostream>
+using namespace std;
+
 namespace stx {
 
 /**
@@ -135,15 +139,6 @@ class htnode;
 template <>
 class array_hash<std::string>
 {
-#ifdef HAT_TRIE_H
-    // Define some extra values for use by the HAT-trie
-  public:
-    char ch;
-    bool word;
-    htnode *parent;
-
-#endif
-
   private:
     typedef uint16_t length_type;
     typedef uint32_t size_type;
@@ -165,6 +160,8 @@ class array_hash<std::string>
             _traits(traits)
     {
         _init();
+        //cout << endl;
+        //cout << "constructor called. data = " << _data << " size = " << _size << endl;
     }
 
     /**
@@ -309,10 +306,12 @@ class array_hash<std::string>
      */
     bool insert(const char *str)
     {
+        //cout << "top of ahinsert: " << _data << " " << _size << endl;
         length_type length;
         int slot = _hash(str, length);
         char *p = _data[slot];
         if (p) {
+            //cout << "  found a slot" << endl;
             size_type occupied;
             if (_search(str, p, length, occupied) != NULL) {
                 // str is already in the table. Nothing needs to be done.
@@ -330,6 +329,7 @@ class array_hash<std::string>
             p = _data[slot] + occupied - sizeof(length_type);
 
         } else {
+            //cout << "  new slot required" << endl;
             // Make a new slot for this string.
             size_type required = sizeof(size_type) + 2 * sizeof(length_type)
                     + length;
@@ -342,6 +342,7 @@ class array_hash<std::string>
         // Write str into the slot.
         _append_string(str, p, length);
         ++_size;
+        //cout << "bottom of ahinsert: " << _size << endl;
         return true;
     }
 

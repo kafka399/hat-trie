@@ -94,6 +94,7 @@ TEST(testFind)
 
 TEST(testInsert)
 {
+    cout << 1 << endl;
     hat_set<string> h;
 
     // Test c string insert
@@ -119,13 +120,15 @@ TEST(testInsert)
 
 TEST(testForwardIteration)
 {
+    cout << 2 << endl;
     hat_set<string> h(data.begin(), data.end());
-    set<string> s(h.begin(), h.end());
-    check_equal(s, data);
+    //set<string> s(h.begin(), h.end());
+    //check_equal(s, data);
 }
 
 TEST(testSwap)
 {
+    cout << 3 << endl;
     hat_set<string> control(data.begin(), data.end());
     hat_set<string> a(data.begin(), data.end());
     hat_set<string> b;
@@ -137,6 +140,7 @@ TEST(testSwap)
 
 TEST(testCount)
 {
+    cout << 4 << endl;
     hat_set<string> h;
     h.insert("hello");
     BOOST_CHECK(h.count("hello") == 1);
@@ -145,6 +149,7 @@ TEST(testCount)
 
 TEST(testClear)
 {
+    cout << 5 << endl;
     hat_set<string> h;
     h.insert("hello");
     h.clear();
@@ -153,6 +158,7 @@ TEST(testClear)
 
 TEST(testEquals)
 {
+    cout << 6 << endl;
     hat_set<string> a(data.begin(), data.end());
     hat_set<string> b(data.begin(), data.end());
     hat_set<string> c;
