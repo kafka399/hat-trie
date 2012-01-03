@@ -92,6 +92,7 @@ TEST(testFind)
     BOOST_CHECK(h.find("abcdefg") == h.end());
 }
 
+/*
 TEST(testInsert)
 {
     cout << 1 << endl;
@@ -122,8 +123,8 @@ TEST(testForwardIteration)
 {
     cout << 2 << endl;
     hat_set<string> h(data.begin(), data.end());
-    //set<string> s(h.begin(), h.end());
-    //check_equal(s, data);
+    set<string> s(h.begin(), h.end());
+    check_equal(s, data);
 }
 
 TEST(testSwap)
@@ -167,6 +168,7 @@ TEST(testEquals)
     BOOST_CHECK(a != c);
     BOOST_CHECK(b != c);
 }
+*/
 
 BOOST_AUTO_TEST_SUITE_END()
 

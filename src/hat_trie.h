@@ -138,7 +138,7 @@ class htnode {
     friend class hat_trie<std::string>;
 
   public:
-    htnode(char ch = '\0') {
+    htnode(char ch = '\0') : ch(ch), parent(NULL) {
         memset(_children, NULL, sizeof(child_ptr) * HT_ALPHABET_SIZE);
     }
 
@@ -161,6 +161,8 @@ struct ahnode {
     char ch;
     bool word;
     htnode *parent;
+
+    ahnode() : table(NULL), ch('\0'), word(false), parent(NULL) { }
 };
 
 /// valid values for an htnode_ptr
@@ -170,7 +172,7 @@ struct htnode_ptr {
     child_ptr ptr;  // pointer to a node in the trie
     uint8_t type;   // type of the pointer
 
-    htnode_ptr() { }
+    htnode_ptr() { ptr.node = NULL; }
     htnode_ptr(child_ptr ptr, uint8_t type) : ptr(ptr), type(type) { }
     htnode_ptr(htnode *node) {
         ptr.node = node;
@@ -635,13 +637,17 @@ class hat_trie<std::string> {
         const char *ps = word.c_str();
         htnode_ptr n = _locate(ps);
 
+        //cout << "located " << n.ch() << endl;
         iterator result;
         if (*ps == '\0') {
+            //cout << "at node returned by locate" << endl;
             // The word is in the trie at the node returned by _locate
             if (n.word()) {
+                //cout << "word is true" << endl;
                 result = n;
                 result._cached_word = std::string(word.c_str());
             } else {
+                //cout << "word is false" << endl;
                 // The word is not a word in the trie
                 result = end();
             }
