@@ -379,11 +379,24 @@ class hat_trie<std::string> {
      * Inserts a word into the trie.
      *
      * According to the standard, this function should return a
-     * pair<iterator, bool> rather than just a bool. However, timing tests
-     * on both versions of this function showed significant slowdown on
-     * the pair-returning version -- several orders of magnitude. We believe
-     * deviating from the standard in the face of such significant slowdown
-     * is a worthy sacrifice for blazing fast insertion times.
+     * pair<iterator, bool> rather than just a bool. The lack of a
+     * pair returning insert function is intentional because a pair
+     * returning insert takes twice as long as the bool version
+     * implemented now. The slowdown is significant enough to make
+     * insertion time comparable to an STL set (red-black tree), whuch
+     * is unacceptable for a high-performance data structure like a
+     * HAT-trie. Calling insert() then find() is the intended solution.
+     *
+     * I consider this acceptable because iterators are unstable. Like
+     * STL iterators, HAT-trie iterators are invalidated on any call to
+     * insert or erase because memory may be rearranged by a burst
+     * operation. Additionally, in a typical scenario, keys aren't operated
+     * on as they are inserted. Insertion and operation occur in two
+     * different passes, meaning any iterators collected during the
+     * insertion pass would be invalidated by the start of the operation
+     * pass anyway.
+     *
+     * Feel free to notify me if you disagree.
      *
      * @param word  word to insert
      *
