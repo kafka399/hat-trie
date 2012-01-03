@@ -69,10 +69,6 @@
 
 #include "array_hash.h"
 
-/// TODO
-#include <iostream>
-using namespace std;
-
 namespace stx {
 
 /// number of distinct characters a hat trie can store
@@ -404,11 +400,9 @@ class hat_trie<std::string> {
      *          was already in the trie
      */
     bool insert(const char *word) {
-        //cout << "inserting " << word << endl;
         const char *pos = word;
         htnode_ptr n = _locate(pos);
         if (*pos == '\0') {
-            //cout << "  found" << endl;
             // word was found in the trie's structure. Mark its location
             // as the end of a word.
             if (n.word() == false) {
@@ -421,34 +415,26 @@ class hat_trie<std::string> {
             return false;
 
         } else {
-            //cout << "  not found" << endl;
             // word was not found in the trie's structure. Either make a
             // new bucket for it or insert it into an already
             // existing bucket
             ahnode *at = NULL;
             if (n.type == NODE_POINTER) {
-                //cout << "    making a new one" << endl;
                 // Make a new bucket for word
                 htnode *p = n.ptr.node;
                 int index = *pos;
 
                 at = new ahnode();
                 at->table = new bucket(_ah_traits);
-                //cout << "      made a new one at " << at << endl;
                 at->ch = index;
                 at->word = false;
 
                 // Insert the new bucket into the trie's structure
-                //cout << "      size: " << at->size() << endl;
-                //cout << "      parent: " << at->parent << endl;
                 at->parent = p;
-                //cout << "      size: " << (void *)at->size() << endl;
-                //cout << "      parent: " << at->parent << " " << p << endl;
                 p->_children[index].bucket = at;
                 p->_types[index] = BUCKET_POINTER;
                 ++pos;
             } else if (n.type == BUCKET_POINTER) {
-                //cout << "    found one already" << endl;
                 // The container for s already exists.
                 at = n.ptr.bucket;
             }
@@ -637,17 +623,13 @@ class hat_trie<std::string> {
         const char *ps = word.c_str();
         htnode_ptr n = _locate(ps);
 
-        //cout << "located " << n.ch() << endl;
         iterator result;
         if (*ps == '\0') {
-            //cout << "at node returned by locate" << endl;
             // The word is in the trie at the node returned by _locate
             if (n.word()) {
-                //cout << "word is true" << endl;
                 result = n;
                 result._cached_word = std::string(word.c_str());
             } else {
-                //cout << "word is false" << endl;
                 // The word is not a word in the trie
                 result = end();
             }
@@ -965,15 +947,12 @@ class hat_trie<std::string> {
      *      otherwise
      */
     bool _insert(ahnode *htc, const char *s) {
-        //cout << "top of _insert. size: " << htc->size() << endl;
         // Try to insert s into the container.
         bool result;
         if (*s == '\0') {
-            //cout << "  no more" << endl;
             result = !htc->word;
             htc->word = true;
         } else {
-            //cout << "  more" << endl;
             result = htc->table->insert(s);
         }
 
@@ -982,7 +961,6 @@ class hat_trie<std::string> {
             if (_traits.burst_threshold > 0 &&
                     htc->table->size() > _traits.burst_threshold) {
                 // burst the bucket into nodes
-                //cout << "BURSTING: " << htc->size() << " > " << _traits.burst_threshold << endl;
                 _burst(htc);
             }
             return true;
