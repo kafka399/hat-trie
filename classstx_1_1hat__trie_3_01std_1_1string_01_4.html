@@ -97,6 +97,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <tr><td colspan="2"><h2><a name="nested-classes"></a>
 Classes</h2></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classstx_1_1hat__trie_3_01std_1_1string_01_4_1_1iterator.html">iterator</a></td></tr>
+<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Iterates over the elements in a HAT-trie.  <a href="classstx_1_1hat__trie_3_01std_1_1string_01_4_1_1iterator.html#details">More...</a><br/></td></tr>
 <tr><td colspan="2"><h2><a name="pub-types"></a>
 Public Types</h2></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a692e0f968ad287c2e50d95a302ef6793"></a><!-- doxytag: member="stx::hat_trie&lt; std::string &gt;::const_iterator" ref="a692e0f968ad287c2e50d95a302ef6793" args="" -->
@@ -133,7 +134,7 @@ Public Member Functions</h2></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">iterator&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classstx_1_1hat__trie_3_01std_1_1string_01_4.html#ae2ac2e385072f8f2c79f8fa7d2b1194c">insert</a> (const iterator &amp;, const key_type &amp;key)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classstx_1_1hat__trie_3_01std_1_1string_01_4.html#ab183516b0d6fa02289781f9e7779e3d9">print</a> (std::ostream &amp;out=std::cout) const </td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">size_type&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classstx_1_1hat__trie_3_01std_1_1string_01_4.html#ab3bd7f9b2bbc1702e403957f6eb1171b">size</a> () const </td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classstx_1_1hat__trie_3_01std_1_1string_01_4.html#a6ac180d3c43447ea8119c59866994450">swap</a> (_self &amp;rhs)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classstx_1_1hat__trie_3_01std_1_1string_01_4.html#a370ffa92c898bd1607f24ddf30ce7205">swap</a> (hat_trie &amp;rhs)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classstx_1_1hat__trie__traits.html">hat_trie_traits</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classstx_1_1hat__trie_3_01std_1_1string_01_4.html#a80fe3df755fd883eeeba16e76fd650d1">traits</a> () const </td></tr>
 <tr><td colspan="2"><h2><a name="friends"></a>
 Friends</h2></td></tr>
@@ -160,7 +161,7 @@ template&lt;class F &gt; </td></tr>
 <div class="textblock"><h3>template&lt;&gt;<br/>
 class stx::hat_trie&lt; std::string &gt;</h3>
 
-<p>Trie-based data structure for managing sorted strings. </p>
+<p>Trie-based data structure for managing sorted strings. Don't use this class directly. Use hat_set or hat_map </p>
 </div><hr/><h2>Constructor &amp; Destructor Documentation</h2>
 <a class="anchor" id="ab97ee11ebfce5424d0f7c15df1f1c63c"></a><!-- doxytag: member="stx::hat_trie&lt; std::string &gt;::hat_trie" ref="ab97ee11ebfce5424d0f7c15df1f1c63c" args="(const hat_trie_traits &amp;traits=hat_trie_traits(), const array_hash_traits &amp;ah_traits=array_hash_traits())" -->
 <div class="memitem">
@@ -677,14 +678,14 @@ template&lt;class input_iterator &gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="a6ac180d3c43447ea8119c59866994450"></a><!-- doxytag: member="stx::hat_trie&lt; std::string &gt;::swap" ref="a6ac180d3c43447ea8119c59866994450" args="(_self &amp;rhs)" -->
+<a class="anchor" id="a370ffa92c898bd1607f24ddf30ce7205"></a><!-- doxytag: member="stx::hat_trie&lt; std::string &gt;::swap" ref="a370ffa92c898bd1607f24ddf30ce7205" args="(hat_trie &amp;rhs)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">void stx::hat_trie&lt; std::string &gt;::swap </td>
           <td>(</td>
-          <td class="paramtype">_self &amp;&#160;</td>
+          <td class="paramtype">hat_trie&lt; std::string &gt; &amp;&#160;</td>
           <td class="paramname"><em>rhs</em></td><td>)</td>
           <td><code> [inline]</code></td>
         </tr>
@@ -692,7 +693,7 @@ template&lt;class input_iterator &gt; </div>
 </div>
 <div class="memdoc">
 <p>Swaps the data in two hat_trie objects.</p>
-<p>This function operates in constant time because all it needs to do is swap two primitive values.</p>
+<p>This function operates in constant time because all it needs to do is swap a few primitives.</p>
 <dl><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">rhs</td><td>hat_trie object to swap data with </td></tr>
@@ -740,7 +741,7 @@ template&lt;class input_iterator &gt; </div>
 
 
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Jan 2 2012 21:15:05 for hat-trie by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Jan 2 2012 21:28:27 for hat-trie by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.7.5.1
 </small></address>

@@ -88,6 +88,9 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div>
 <div class="contents">
 <!-- doxytag: class="stx::hat_set&lt; std::string &gt;" -->
+<p>HAT-trie based set that implements most of the STL set interface.  
+ <a href="classstx_1_1hat__set_3_01std_1_1string_01_4.html#details">More...</a></p>
+
 <p><code>#include &lt;<a class="el" href="hat__set_8h_source.html">hat_set.h</a>&gt;</code></p>
 
 <p><a href="classstx_1_1hat__set_3_01std_1_1string_01_4-members.html">List of all members.</a></p>
@@ -147,7 +150,7 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator&gt;=</b> (co
 <div class="textblock"><h3>template&lt;&gt;<br/>
 class stx::hat_set&lt; std::string &gt;</h3>
 
-<p>HAT-trie set class that implements (most of) the STL set interface.</p>
+<p>HAT-trie based set that implements most of the STL set interface. </p>
 <p>Note: the only available template parameter is std::string. Using any other template parameter will result in a compile-time error. </p>
 </div><hr/><h2>Constructor &amp; Destructor Documentation</h2>
 <a class="anchor" id="aed6df94070b74642cd677412f5a14f42"></a><!-- doxytag: member="stx::hat_set&lt; std::string &gt;::hat_set" ref="aed6df94070b74642cd677412f5a14f42" args="(const hat_trie_traits &amp;traits=hat_trie_traits(), const array_hash_traits &amp;ah_traits=array_hash_traits())" -->
@@ -175,6 +178,7 @@ class stx::hat_set&lt; std::string &gt;</h3>
 </div>
 <div class="memdoc">
 <p>Default constructor.</p>
+<p>O(1)</p>
 <dl><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">traits</td><td>hat trie customization traits </td></tr>
@@ -248,6 +252,7 @@ template&lt;class input_iterator &gt; </div>
 </div>
 <div class="memdoc">
 <p>Builds a HAT set from the data in [first, last).</p>
+<p>O(1)</p>
 <dl><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">first,last</td><td>iterators specifying a range of elements to initialize the tree with </td></tr>
@@ -273,6 +278,7 @@ template&lt;class input_iterator &gt; </div>
 <div class="memdoc">
 <p>Gets an iterator to the first element in the trie.</p>
 <p>If there are no elements in the trie, the iterator pointing to trie.end() is returned.</p>
+<p>O(1)</p>
 <dl class="return"><dt><b>Returns:</b></dt><dd>iterator to the first element in the trie </dd></dl>
 
 </div>
@@ -310,6 +316,7 @@ template&lt;class input_iterator &gt; </div>
 <div class="memdoc">
 <p>Counts the number of times a word appears in the trie.</p>
 <p>In set containers, this number will either be 1 or 0.</p>
+<p>O(m) m = length of the string</p>
 <dl><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">word</td><td>word to search for </td></tr>
@@ -334,6 +341,7 @@ template&lt;class input_iterator &gt; </div>
 </div>
 <div class="memdoc">
 <p>Determines whether this set is empty.</p>
+<p>O(1)</p>
 <dl class="return"><dt><b>Returns:</b></dt><dd>true iff the container has no data </dd></dl>
 
 </div>
@@ -352,6 +360,7 @@ template&lt;class input_iterator &gt; </div>
 </div>
 <div class="memdoc">
 <p>Gets an iterator to one past the last element in the trie.</p>
+<p>O(1)</p>
 <dl class="return"><dt><b>Returns:</b></dt><dd>iterator to one past the last element in the trie </dd></dl>
 
 </div>
@@ -419,6 +428,7 @@ template&lt;class input_iterator &gt; </div>
 </div>
 <div class="memdoc">
 <p>Searches for a word in the trie.</p>
+<p>O(m) m = length of the string</p>
 <dl><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">word</td><td>word to search for </td></tr>
@@ -444,6 +454,7 @@ template&lt;class input_iterator &gt; </div>
 </div>
 <div class="memdoc">
 <p>Searches for <em>word</em> in the trie.</p>
+<p>O(m) m = length of the string</p>
 <dl><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">word</td><td>word to search for </td></tr>
@@ -468,6 +479,7 @@ template&lt;class input_iterator &gt; </div>
 </div>
 <div class="memdoc">
 <p>Gets the array hash traits associated with the hash tables in this trie.</p>
+<p>O(1)</p>
 <dl class="return"><dt><b>Returns:</b></dt><dd>array hash traits associated with this trie </dd></dl>
 
 </div>
@@ -487,7 +499,10 @@ template&lt;class input_iterator &gt; </div>
 </div>
 <div class="memdoc">
 <p>Inserts a word into the trie.</p>
-<p>According to the standard, this function should return a pair&lt;iterator, bool&gt; rather than just a bool. However, timing tests on both versions of this function showed significant slowdown on the pair-returning version -- several orders of magnitude. We believe deviating from the standard in the face of such significant slowdown is a worthy sacrifice for blazing fast insertion times.</p>
+<p>According to the standard, this function should return a pair&lt;iterator, bool&gt; rather than just a bool. The lack of a pair returning insert function is intentional because a pair returning insert takes twice as long as the bool version implemented now. The slowdown is significant enough to make insertion time comparable to an STL set (red-black tree), whuch is unacceptable for a high-performance data structure like a HAT-trie. Calling <a class="el" href="classstx_1_1hat__set_3_01std_1_1string_01_4.html#a84c0efe16425750d0625fdc6c1383a1b">insert()</a> then <a class="el" href="classstx_1_1hat__set_3_01std_1_1string_01_4.html#a1e1964ef83ad9e0fe346dc84a9971add">find()</a> is the intended solution.</p>
+<p>I consider this acceptable because iterators are unstable. Like STL iterators, HAT-trie iterators are invalidated on any call to insert or erase because memory may be rearranged by a burst operation. Additionally, in a typical scenario, keys aren't operated on as they are inserted. Insertion and operation occur in two different passes, meaning any iterators collected during the insertion pass would be invalidated by the start of the operation pass anyway.</p>
+<p>Feel free to notify me if you disagree.</p>
+<p>O(m) m = length of the string</p>
 <dl><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">word</td><td>word to insert</td></tr>
@@ -514,6 +529,7 @@ template&lt;class input_iterator &gt; </div>
 <div class="memdoc">
 <p>Inserts a word into the trie.</p>
 <p>Uses C-strings instead of C++ strings. This function is no faster than the string version. It is provided because calling <a class="el" href="classstx_1_1hat__set_3_01std_1_1string_01_4.html#a84c0efe16425750d0625fdc6c1383a1b">insert()</a> with a C-string invokes an expensive string copy operation if the string version is the only function provided.</p>
+<p>O(m) m = length of the string</p>
 <dl><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">word</td><td>word to insert </td></tr>
@@ -551,6 +567,7 @@ template&lt;class input_iterator &gt; </div>
 </div>
 <div class="memdoc">
 <p>Inserts several words into the trie.</p>
+<p>O(n) n = elements in [first, last)</p>
 <dl><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">first,last</td><td>iterators specifying a range of words to add to the trie. All words in the range [first, last) are added </td></tr>
@@ -586,6 +603,7 @@ template&lt;class input_iterator &gt; </div>
 <div class="memdoc">
 <p>Inserts several words into the trie.</p>
 <p>In standard STL sets, this function can dramatically increase performance if <em>position</em> is set correctly. This performance gain is unachievable in a HAT-trie because the time required to verify that <em>position</em> points to the right place is just as expensive as a regular insert operation.</p>
+<p>O(m) m = length of the string</p>
 <dl><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">pos</td><td>unused </td></tr>
@@ -637,6 +655,7 @@ template&lt;class input_iterator &gt; </div>
 </div>
 <div class="memdoc">
 <p>Gets the number of elements in the trie.</p>
+<p>O(1)</p>
 <dl class="return"><dt><b>Returns:</b></dt><dd>number of elements in the trie </dd></dl>
 
 </div>
@@ -656,6 +675,7 @@ template&lt;class input_iterator &gt; </div>
 </div>
 <div class="memdoc">
 <p>Swaps the data in two hat_set objects.</p>
+<p>O(1)</p>
 <dl><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">rhs</td><td>hat_set object to swap data with </td></tr>
@@ -679,6 +699,7 @@ template&lt;class input_iterator &gt; </div>
 </div>
 <div class="memdoc">
 <p>Gets a const reference to the traits associated with this trie.</p>
+<p>O(1)</p>
 <dl class="return"><dt><b>Returns:</b></dt><dd>traits associated with this trie </dd></dl>
 
 </div>
@@ -704,7 +725,7 @@ template&lt;class input_iterator &gt; </div>
 
 
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Jan 2 2012 21:15:05 for hat-trie by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Jan 2 2012 21:28:27 for hat-trie by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.7.5.1
 </small></address>
